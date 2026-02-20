@@ -1,12 +1,14 @@
 # ACCEPTANCE_CHECKLIST.md — Intranet Anagami (MVP Fase 1)
 
 ## Propósito
+
 Checklist de validación para cierre del MVP.  
 Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ---
 
 ## A) Acceso y roles (Obligatorio)
+
 - [ ] Login funcional (correo/RUT según implementación) + cierre de sesión
 - [ ] Sesión expira por inactividad (timeout)
 - [ ] Roles existentes: Admin / RRHH / Contabilidad / Visitante
@@ -18,6 +20,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## B) Gestión de trabajadores (Obligatorio)
+
 - [ ] Crear trabajador
 - [ ] Editar trabajador
 - [ ] Listar trabajadores + búsqueda básica
@@ -30,6 +33,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## C) Gestión documental PDF (Obligatorio)
+
 - [ ] Subir documento (solo PDF)
 - [ ] Límite de tamaño: max 5MB (bloqueo y mensaje claro)
 - [ ] Documento queda asociado a:
@@ -46,6 +50,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## D) Notificaciones (Obligatorio)
+
 - [ ] Email al cargar documento
 - [ ] Email al aprobar documento
 - [ ] Email al rechazar documento
@@ -57,6 +62,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## E) Auditoría / Logs (Obligatorio)
+
 - [ ] Log de eventos críticos:
   - [ ] login/logout (o al menos login)
   - [ ] crear/editar trabajador
@@ -71,6 +77,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## F) Seguridad (Obligatorio)
+
 - [ ] RLS habilitado en tablas sensibles
 - [ ] Storage con reglas coherentes (no público sin control)
 - [ ] Validación en backend (no confiar solo en frontend)
@@ -81,6 +88,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## G) Usabilidad y responsive (Obligatorio)
+
 - [ ] Funciona en desktop y móvil (responsive)
 - [ ] Mensajes de error claros
 - [ ] Estados de carga (loading) en acciones críticas
@@ -89,6 +97,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## H) Entrega (Obligatorio)
+
 - [ ] Repo GitHub privado compartido con el cliente (si corresponde)
 - [ ] README con pasos de instalación/despliegue y variables de entorno
 - [ ] Credenciales Admin entregadas por canal seguro
@@ -100,6 +109,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## Registro de aceptación
+
 - Fecha de entrega:
 - URL Staging / Producción:
 - Usuarios de prueba:
