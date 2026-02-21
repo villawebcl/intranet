@@ -40,6 +40,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
 - Registro de auditoria en carga de documento.
 - Registro de auditoria en aprobacion/rechazo/descarga de documento.
+- Panel `/dashboard/audit` para consultar trazabilidad (admin).
 
 ## Rutas clave
 
@@ -52,6 +53,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - `/dashboard/workers/[workerId]/documents`
 - `/dashboard/workers/[workerId]/documents/new`
 - `/dashboard/notifications`
+- `/dashboard/audit`
 
 ## Reglas vigentes importantes
 
@@ -69,10 +71,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 ## Proximo bloque recomendado (MVP)
 
 1. Ajustar destinatarios y plantillas de email por evento (negocio final).
-2. Panel simple de auditoria para eventos de documentos.
-3. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
-4. Definir si limite 5MB se mantiene o se reduce por politica interna.
-5. Endurecer validaciones RLS/policies para escenarios finales.
+2. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
+3. Definir si limite 5MB se mantiene o se reduce por politica interna.
+4. Endurecer validaciones RLS/policies para escenarios finales.
+5. Evaluar registro de login/logout en `audit_logs`.
 
 ## Checklist de arranque por sesion
 

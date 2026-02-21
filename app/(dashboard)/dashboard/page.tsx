@@ -13,8 +13,8 @@ const modules = [
   },
   {
     name: "Documentos PDF",
-    description: "Pendiente de implementar",
-    href: "/dashboard",
+    description: "Carga, revision y descarga por trabajador",
+    href: "/dashboard/workers",
   },
   {
     name: "Notificaciones",
@@ -23,8 +23,8 @@ const modules = [
   },
   {
     name: "Auditoria",
-    description: "Pendiente de implementar",
-    href: "/dashboard",
+    description: "Eventos criticos y trazabilidad",
+    href: "/dashboard/audit",
   },
 ];
 
