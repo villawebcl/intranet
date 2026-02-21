@@ -60,7 +60,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
   let query = supabase
     .from("notifications")
-    .select("id, user_id, event_type, payload, created_at")
+    .select("id, user_id, event_type, payload, sent_at, created_at")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -110,12 +110,13 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Fecha</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Destino</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Payload</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {error ? (
               <tr>
-                <td colSpan={4} className="px-4 py-4 text-red-700">
+                <td colSpan={5} className="px-4 py-4 text-red-700">
                   No se pudieron cargar notificaciones: {error.message}
                 </td>
               </tr>
@@ -123,7 +124,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
             {!error && !notifications?.length ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                   No hay notificaciones registradas.
                 </td>
               </tr>
@@ -140,6 +141,9 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   <pre className="max-w-72 overflow-auto whitespace-pre-wrap">
                     {JSON.stringify(notification.payload, null, 2)}
                   </pre>
+                </td>
+                <td className="px-4 py-3 text-slate-700">
+                  {notification.sent_at ? formatDate(notification.sent_at) : "No enviado"}
                 </td>
               </tr>
             ))}

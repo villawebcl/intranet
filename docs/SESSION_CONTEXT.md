@@ -37,6 +37,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Registro interno en tabla `notifications` para eventos documentales.
   - Panel `/dashboard/notifications` para ver eventos recientes.
   - Envio de email via Resend en carga/aprobacion/rechazo (si ENV configurada).
+  - Plantillas de email centralizadas y trazabilidad `sent_at` por notificacion enviada.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
 - Registro de auditoria en carga de documento.
 - Registro de auditoria en aprobacion/rechazo/descarga de documento.
@@ -70,11 +71,11 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Ajustar destinatarios y plantillas de email por evento (negocio final).
-2. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
-3. Definir si limite 5MB se mantiene o se reduce por politica interna.
-4. Endurecer validaciones RLS/policies para escenarios finales.
-5. Evaluar registro de login/logout en `audit_logs`.
+1. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
+2. Definir si limite 5MB se mantiene o se reduce por politica interna.
+3. Endurecer validaciones RLS/policies para escenarios finales.
+4. Evaluar registro de login/logout en `audit_logs`.
+5. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
 ## Checklist de arranque por sesion
 

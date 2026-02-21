@@ -14,6 +14,11 @@ type InsertNotificationsParams = {
   createdBy: string;
 };
 
+export type InsertedNotification = {
+  id: string;
+  user_id: string;
+};
+
 const REVIEW_NOTIFICATION_ROLES: AppRole[] = ["admin", "rrhh"];
 
 export async function getUserIdsByRoles(roles: AppRole[]) {
@@ -55,7 +60,7 @@ export async function getUserEmailById(userId: string) {
 export async function insertNotifications(params: InsertNotificationsParams) {
   const uniqueUserIds = [...new Set(params.recipientUserIds.filter(Boolean))];
   if (!uniqueUserIds.length) {
-    return;
+    return [] as InsertedNotification[];
   }
 
   const rows = uniqueUserIds.map((userId) => ({
@@ -65,9 +70,47 @@ export async function insertNotifications(params: InsertNotificationsParams) {
     created_by: params.createdBy,
   }));
 
-  const { error } = await params.supabase.from("notifications").insert(rows);
+  const { data, error } = await params.supabase.from("notifications").insert(rows).select("id, user_id");
   if (error) {
     console.error("insert notifications failed", error);
+    return [] as InsertedNotification[];
+  }
+
+  return data ?? [];
+}
+
+export async function getUserEmailsByIds(userIds: string[]) {
+  const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+  if (!uniqueUserIds.length) {
+    return {} as Record<string, string>;
+  }
+
+  const emails: Record<string, string> = {};
+  await Promise.all(
+    uniqueUserIds.map(async (userId) => {
+      const email = await getUserEmailById(userId);
+      if (email) {
+        emails[userId] = email;
+      }
+    }),
+  );
+
+  return emails;
+}
+
+export async function markNotificationsSent(supabase: SupabaseClient, notificationIds: string[]) {
+  const uniqueIds = [...new Set(notificationIds.filter(Boolean))];
+  if (!uniqueIds.length) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ sent_at: new Date().toISOString() })
+    .in("id", uniqueIds);
+
+  if (error) {
+    console.error("mark notifications sent failed", error);
   }
 }
 

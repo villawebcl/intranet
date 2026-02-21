@@ -4,11 +4,16 @@ import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 
 import { canReviewDocuments, canUploadDocuments } from "@/lib/auth/roles";
-import { type AppRole } from "@/lib/constants/domain";
+import { type AppRole, type FolderType } from "@/lib/constants/domain";
+import {
+  buildDocumentReviewedEmail,
+  buildDocumentUploadedEmail,
+} from "@/lib/notifications/email-templates";
 import {
   getDefaultReviewerUserIds,
-  getUserEmailById,
+  getUserEmailsByIds,
   insertNotifications,
+  markNotificationsSent,
   sendResendEmail,
 } from "@/lib/notifications/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -106,6 +111,11 @@ function canReadDocumentModule(role: AppRole | null | undefined) {
   return canUploadDocuments(role) || canReviewDocuments(role);
 }
 
+function buildWorkerName(firstName: string | null | undefined, lastName: string | null | undefined, fallback: string) {
+  const fullName = [firstName ?? "", lastName ?? ""].join(" ").trim();
+  return fullName || fallback;
+}
+
 export async function uploadDocumentAction(formData: FormData) {
   const parsed = uploadDocumentSchema.safeParse({
     workerId: formData.get("workerId"),
@@ -151,7 +161,7 @@ export async function uploadDocumentAction(formData: FormData) {
 
   const { data: worker } = await context.supabase
     .from("workers")
-    .select("id, status")
+    .select("id, status, first_name, last_name")
     .eq("id", workerId)
     .maybeSingle();
 
@@ -212,7 +222,7 @@ export async function uploadDocumentAction(formData: FormData) {
   });
 
   const reviewerUserIds = await getDefaultReviewerUserIds();
-  await insertNotifications({
+  const insertedNotifications = await insertNotifications({
     supabase: context.supabase,
     recipientUserIds: [...reviewerUserIds, context.user.id],
     eventType: "document_uploaded",
@@ -226,16 +236,33 @@ export async function uploadDocumentAction(formData: FormData) {
     createdBy: context.user.id,
   });
 
-  if (context.user.email) {
-    await sendResendEmail({
-      to: context.user.email,
-      subject: `Documento cargado: ${fileValue.name}`,
-      html: `
-        <p>El documento <strong>${fileValue.name}</strong> se cargó correctamente.</p>
-        <p>Estado: <strong>pendiente</strong></p>
-      `,
-    });
-  }
+  const workerName = buildWorkerName(worker.first_name, worker.last_name, workerId);
+  const uploadedTemplate = buildDocumentUploadedEmail({
+    fileName: fileValue.name,
+    workerName,
+    folderType,
+  });
+  const emailsByUserId = await getUserEmailsByIds(insertedNotifications.map((notification) => notification.user_id));
+  const sentNotificationIds = (
+    await Promise.all(
+      insertedNotifications.map(async (notification) => {
+        const recipientEmail = emailsByUserId[notification.user_id];
+        if (!recipientEmail) {
+          return null;
+        }
+
+        const sent = await sendResendEmail({
+          to: recipientEmail,
+          subject: uploadedTemplate.subject,
+          html: uploadedTemplate.html,
+        });
+
+        return sent ? notification.id : null;
+      }),
+    )
+  ).filter((notificationId): notificationId is string => Boolean(notificationId));
+
+  await markNotificationsSent(context.supabase, sentNotificationIds);
 
   redirect(
     withMessage(returnPath, {
@@ -289,6 +316,12 @@ export async function reviewDocumentAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "Solo se pueden revisar documentos pendientes" }));
   }
 
+  const { data: worker } = await context.supabase
+    .from("workers")
+    .select("first_name, last_name")
+    .eq("id", parsed.data.workerId)
+    .maybeSingle();
+
   const { error: updateError } = await context.supabase
     .from("documents")
     .update({
@@ -315,7 +348,7 @@ export async function reviewDocumentAction(formData: FormData) {
   });
 
   const reviewerUserIds = await getDefaultReviewerUserIds();
-  await insertNotifications({
+  const insertedNotifications = await insertNotifications({
     supabase: context.supabase,
     recipientUserIds: [...reviewerUserIds, document.uploaded_by].filter(Boolean),
     eventType: parsed.data.decision === "aprobado" ? "document_approved" : "document_rejected",
@@ -330,27 +363,35 @@ export async function reviewDocumentAction(formData: FormData) {
     createdBy: context.user.id,
   });
 
-  const uploaderEmail = document.uploaded_by ? await getUserEmailById(document.uploaded_by) : null;
-  if (uploaderEmail) {
-    const subject =
-      parsed.data.decision === "aprobado"
-        ? `Documento aprobado: ${document.file_name}`
-        : `Documento rechazado: ${document.file_name}`;
-    const detail =
-      parsed.data.decision === "rechazado" && rejectionReason
-        ? `<p>Motivo de rechazo: <strong>${rejectionReason}</strong></p>`
-        : "";
+  const workerName = buildWorkerName(worker?.first_name, worker?.last_name, parsed.data.workerId);
+  const reviewedTemplate = buildDocumentReviewedEmail({
+    fileName: document.file_name,
+    workerName,
+    folderType: document.folder_type as FolderType,
+    decision: parsed.data.decision,
+    rejectionReason: parsed.data.decision === "rechazado" ? rejectionReason : null,
+  });
+  const emailsByUserId = await getUserEmailsByIds(insertedNotifications.map((notification) => notification.user_id));
+  const sentNotificationIds = (
+    await Promise.all(
+      insertedNotifications.map(async (notification) => {
+        const recipientEmail = emailsByUserId[notification.user_id];
+        if (!recipientEmail) {
+          return null;
+        }
 
-    await sendResendEmail({
-      to: uploaderEmail,
-      subject,
-      html: `
-        <p>Se actualizó la revisión del documento <strong>${document.file_name}</strong>.</p>
-        <p>Nuevo estado: <strong>${parsed.data.decision}</strong></p>
-        ${detail}
-      `,
-    });
-  }
+        const sent = await sendResendEmail({
+          to: recipientEmail,
+          subject: reviewedTemplate.subject,
+          html: reviewedTemplate.html,
+        });
+
+        return sent ? notification.id : null;
+      }),
+    )
+  ).filter((notificationId): notificationId is string => Boolean(notificationId));
+
+  await markNotificationsSent(context.supabase, sentNotificationIds);
 
   redirect(
     withMessage(returnPath, {
