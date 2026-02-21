@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { registerAuthLoginAction } from "@/app/(auth)/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 type LoginFormProps = {
@@ -34,6 +35,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       return;
     }
 
+    await registerAuthLoginAction();
     router.replace(nextPath);
     router.refresh();
   }

@@ -41,7 +41,16 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
 - Registro de auditoria en carga de documento.
 - Registro de auditoria en aprobacion/rechazo/descarga de documento.
+- Registro de auditoria en autenticacion:
+  - `auth_login` al iniciar sesion.
+  - `auth_logout` al cerrar sesion manualmente.
+  - `auth_logout` al cierre por inactividad (`reason=timeout`).
 - Panel `/dashboard/audit` para consultar trazabilidad (admin).
+- Hardening de permisos por rol (UI + backend + RLS):
+  - `visitante`: sin acceso al modulo documental (ver/descargar/subir/revisar).
+  - `contabilidad`: lectura documental (ver/descargar), sin subir/revisar.
+  - `admin`/`rrhh`: gestion documental completa.
+  - Consulta de resumen documental en ficha de trabajador solo para roles con acceso documental.
 
 ## Rutas clave
 
@@ -59,49 +68,87 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 ## Reglas vigentes importantes
 
 - Roles con gestion de trabajadores: `admin`, `rrhh`.
-- Rol sin gestion: `contabilidad`, `visitante` (solo lectura o sin acceso de edicion).
+- Roles documentales:
+  - `admin`, `rrhh`: ver/subir/revisar/descargar.
+  - `contabilidad`: ver/descargar (sin subir/revisar).
+  - `visitante`: sin acceso documental.
 - Carpetas son fijas por enum (`folder_01` ... `folder_12`), no dinamicas.
 - Seguridad real por RLS (no confiar solo en frontend).
 
 ## Estado de infraestructura
 
 - Migracion base creada en `supabase/migrations/20260220_000001_init_schema.sql`.
+- Migracion de hardening creada en `supabase/migrations/20260221_000002_permissions_hardening.sql`.
 - Variables de entorno en `.env.local`.
 - Proyecto Supabase ya creado y usuario admin configurado en `profiles`.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
-2. Endurecer validaciones RLS/policies para escenarios finales.
+1. Ejecutar pruebas manuales por rol en Supabase (admin/rrhh/contabilidad/visitante) y registrar evidencia.
+2. Validar en `/dashboard/audit` eventos `auth_login` y `auth_logout`.
 3. Definir si limite 5MB se mantiene o se reduce por politica interna.
-4. Evaluar registro de login/logout en `audit_logs`.
-5. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
+4. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
 ## Proxima sesion (ticket ya definido)
 
-- Nombre sugerido de rama: `feature/permissions-hardening`
-- Objetivo: cerrar permisos finales por rol, especialmente `visitante`, en UI + backend + RLS.
+- Nombre sugerido de rama: `feature/manual-qa-evidence`
+- Objetivo: cerrar evidencia manual de permisos + autenticacion para acceptance MVP.
 - Alcance:
-  1. Definir matriz final para `visitante` (ver, descargar, revisar, subir).
-  2. Ajustar condiciones de acceso en pantallas y acciones server.
-  3. Ajustar policies SQL/documentacion en `supabase/policies`.
-  4. Registrar pruebas manuales por rol en este archivo.
+  1. Ejecutar matriz de pruebas por rol documentada en este archivo.
+  2. Registrar capturas/evidencia de casos permitidos y bloqueados.
+  3. Verificar trazas `auth_login`, `auth_logout`, `document_*` en `/dashboard/audit`.
+  4. Marcar checklist de acceptance relacionado a roles/auditoria.
 - Criterios de aceptacion:
-  1. Intentos no permitidos fallan con mensaje claro.
-  2. RLS impide bypass desde cliente.
+  1. Pruebas manuales por rol completas y documentadas.
+  2. Evidencia de logs de autenticacion y documentos visible para admin.
   3. `npm run lint`, `npm run typecheck`, `npm run build` en verde.
   4. PR abierto y mergeable.
 
 ## Arranque 5 minutos (siguiente sesion)
 
 1. `git checkout main && git pull origin main`
-2. `git checkout -b feature/permissions-hardening`
+2. `git checkout -b feature/manual-qa-evidence`
 3. `npm run dev`
 4. Probar login admin y abrir:
    - `/dashboard/workers`
-   - `/dashboard/workers/[workerId]/documents`
-   - `/dashboard/notifications`
    - `/dashboard/audit`
+
+## Pruebas manuales recientes (2026-02-21)
+
+- Permissions hardening:
+  - Precondicion: usar un trabajador activo existente y al menos 1 PDF de prueba (<5MB).
+  - [ ] Admin
+    - [ ] Puede crear trabajador desde `/dashboard/workers/new`.
+    - [ ] Puede editar trabajador desde `/dashboard/workers/[workerId]/edit`.
+    - [ ] Puede subir PDF en `/dashboard/workers/[workerId]/documents/new`.
+    - [ ] Puede aprobar/rechazar en `/dashboard/workers/[workerId]/documents`.
+    - [ ] Puede descargar PDF en `/dashboard/workers/[workerId]/documents`.
+    - [ ] Puede ver auditoria en `/dashboard/audit`.
+  - [ ] RRHH
+    - [ ] Puede crear/editar trabajador.
+    - [ ] Puede subir PDF.
+    - [ ] Puede aprobar/rechazar documentos pendientes.
+    - [ ] Puede descargar PDF.
+    - [ ] No puede abrir `/dashboard/audit` (debe redirigir con error).
+  - [ ] Contabilidad
+    - [ ] Puede abrir `/dashboard/workers/[workerId]/documents` (lectura).
+    - [ ] Puede descargar PDF.
+    - [ ] No puede abrir `/dashboard/workers/[workerId]/documents/new` (mensaje de permisos).
+    - [ ] No puede aprobar/rechazar documentos.
+    - [ ] No puede crear/editar trabajador.
+  - [ ] Visitante
+    - [ ] Puede autenticarse y entrar al dashboard.
+    - [ ] No puede abrir `/dashboard/workers/[workerId]/documents` (mensaje de permisos).
+    - [ ] No puede abrir `/dashboard/workers/[workerId]/documents/new`.
+    - [ ] No puede descargar documentos.
+    - [ ] No puede crear/editar trabajador.
+  - Evidencia sugerida:
+    - [ ] Captura por rol con al menos un caso permitido y uno bloqueado.
+    - [ ] Captura de `/dashboard/audit` con eventos documentales visibles para admin.
+- Auditoria de autenticacion:
+  - [ ] Login exitoso genera `auth_login` en `/dashboard/audit`.
+  - [ ] Logout manual genera `auth_logout` con `metadata.reason = manual`.
+  - [ ] Logout por inactividad genera `auth_logout` con `metadata.reason = timeout`.
 
 ## Checklist de arranque por sesion
 

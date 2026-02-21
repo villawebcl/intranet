@@ -3,7 +3,11 @@
 import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 
-import { canReviewDocuments, canUploadDocuments } from "@/lib/auth/roles";
+import {
+  canDownloadDocuments,
+  canReviewDocuments,
+  canUploadDocuments,
+} from "@/lib/auth/roles";
 import { type AppRole, type FolderType } from "@/lib/constants/domain";
 import {
   buildDocumentReviewedEmail,
@@ -105,10 +109,6 @@ function isValidPdfFile(file: File) {
   }
 
   return file.name.toLowerCase().endsWith(".pdf");
-}
-
-function canReadDocumentModule(role: AppRole | null | undefined) {
-  return canUploadDocuments(role) || canReviewDocuments(role);
 }
 
 function buildWorkerName(firstName: string | null | undefined, lastName: string | null | undefined, fallback: string) {
@@ -420,7 +420,7 @@ export async function downloadDocumentAction(formData: FormData) {
     redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
 
-  if (!canReadDocumentModule(context.role)) {
+  if (!canDownloadDocuments(context.role)) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para descargar documentos" }));
   }
 

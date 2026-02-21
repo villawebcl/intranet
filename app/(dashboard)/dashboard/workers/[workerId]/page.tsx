@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { canManageWorkers, canReviewDocuments, canUploadDocuments } from "@/lib/auth/roles";
+import { canManageWorkers, canUploadDocuments, canViewDocuments } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { toggleWorkerStatusAction } from "../actions";
@@ -46,9 +46,8 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
     .maybeSingle();
 
   const canManage = canManageWorkers(profile?.role);
-  const canReview = canReviewDocuments(profile?.role);
   const canUpload = canUploadDocuments(profile?.role);
-  const canReadDocuments = canUpload || canReview;
+  const canReadDocuments = canViewDocuments(profile?.role);
 
   const { data: worker, error: workerError } = await supabase
     .from("workers")
@@ -60,10 +59,18 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
     notFound();
   }
 
-  const { data: documents, error: documentsError } = await supabase
-    .from("documents")
-    .select("folder_type, status")
-    .eq("worker_id", worker.id);
+  let documents: Array<{ folder_type: string; status: string }> | null = null;
+  let documentsError: { message: string } | null = null;
+
+  if (canReadDocuments) {
+    const { data, error } = await supabase
+      .from("documents")
+      .select("folder_type, status")
+      .eq("worker_id", worker.id);
+
+    documents = data;
+    documentsError = error;
+  }
 
   const folderSummary = folderTypes.reduce(
     (acc, folderType) => {
@@ -204,6 +211,12 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         {documentsError ? (
           <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             No se pudo cargar resumen documental: {documentsError.message}
+          </p>
+        ) : null}
+
+        {!canReadDocuments ? (
+          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Tu rol no tiene acceso al modulo documental de trabajadores.
           </p>
         ) : null}
 
