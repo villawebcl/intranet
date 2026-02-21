@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 
 import { canReviewDocuments, canUploadDocuments } from "@/lib/auth/roles";
 import { type AppRole } from "@/lib/constants/domain";
+import {
+  getDefaultReviewerUserIds,
+  getUserEmailById,
+  insertNotifications,
+  sendResendEmail,
+} from "@/lib/notifications/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import {
   downloadDocumentSchema,
@@ -205,6 +211,32 @@ export async function uploadDocumentAction(formData: FormData) {
     },
   });
 
+  const reviewerUserIds = await getDefaultReviewerUserIds();
+  await insertNotifications({
+    supabase: context.supabase,
+    recipientUserIds: [...reviewerUserIds, context.user.id],
+    eventType: "document_uploaded",
+    payload: {
+      workerId,
+      documentId: document.id,
+      folderType,
+      fileName: fileValue.name,
+      status: "pendiente",
+    },
+    createdBy: context.user.id,
+  });
+
+  if (context.user.email) {
+    await sendResendEmail({
+      to: context.user.email,
+      subject: `Documento cargado: ${fileValue.name}`,
+      html: `
+        <p>El documento <strong>${fileValue.name}</strong> se cargó correctamente.</p>
+        <p>Estado: <strong>pendiente</strong></p>
+      `,
+    });
+  }
+
   redirect(
     withMessage(returnPath, {
       success: "Documento cargado en estado pendiente",
@@ -244,7 +276,7 @@ export async function reviewDocumentAction(formData: FormData) {
 
   const { data: document, error: documentError } = await context.supabase
     .from("documents")
-    .select("id, status, worker_id")
+    .select("id, status, worker_id, uploaded_by, file_name, folder_type")
     .eq("id", parsed.data.documentId)
     .eq("worker_id", parsed.data.workerId)
     .maybeSingle();
@@ -281,6 +313,44 @@ export async function reviewDocumentAction(formData: FormData) {
       rejectionReason: parsed.data.decision === "rechazado" ? rejectionReason : null,
     },
   });
+
+  const reviewerUserIds = await getDefaultReviewerUserIds();
+  await insertNotifications({
+    supabase: context.supabase,
+    recipientUserIds: [...reviewerUserIds, document.uploaded_by].filter(Boolean),
+    eventType: parsed.data.decision === "aprobado" ? "document_approved" : "document_rejected",
+    payload: {
+      workerId: parsed.data.workerId,
+      documentId: document.id,
+      folderType: document.folder_type,
+      fileName: document.file_name,
+      decision: parsed.data.decision,
+      rejectionReason: parsed.data.decision === "rechazado" ? rejectionReason : null,
+    },
+    createdBy: context.user.id,
+  });
+
+  const uploaderEmail = document.uploaded_by ? await getUserEmailById(document.uploaded_by) : null;
+  if (uploaderEmail) {
+    const subject =
+      parsed.data.decision === "aprobado"
+        ? `Documento aprobado: ${document.file_name}`
+        : `Documento rechazado: ${document.file_name}`;
+    const detail =
+      parsed.data.decision === "rechazado" && rejectionReason
+        ? `<p>Motivo de rechazo: <strong>${rejectionReason}</strong></p>`
+        : "";
+
+    await sendResendEmail({
+      to: uploaderEmail,
+      subject,
+      html: `
+        <p>Se actualizó la revisión del documento <strong>${document.file_name}</strong>.</p>
+        <p>Nuevo estado: <strong>${parsed.data.decision}</strong></p>
+        ${detail}
+      `,
+    });
+  }
 
   redirect(
     withMessage(returnPath, {

@@ -33,6 +33,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Flujo de revision `pendiente -> aprobado/rechazado`.
   - Rechazo con motivo obligatorio.
   - Descarga mediante URL firmada.
+- Notificaciones:
+  - Registro interno en tabla `notifications` para eventos documentales.
+  - Panel `/dashboard/notifications` para ver eventos recientes.
+  - Envio de email via Resend en carga/aprobacion/rechazo (si ENV configurada).
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
 - Registro de auditoria en carga de documento.
 - Registro de auditoria en aprobacion/rechazo/descarga de documento.
@@ -47,6 +51,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - `/dashboard/workers/[workerId]/edit`
 - `/dashboard/workers/[workerId]/documents`
 - `/dashboard/workers/[workerId]/documents/new`
+- `/dashboard/notifications`
 
 ## Reglas vigentes importantes
 
@@ -63,11 +68,11 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Notificaciones internas (`notifications`) al cargar/aprobar/rechazar.
-2. Envio de emails (Resend) para cargar/aprobar/rechazar.
-3. Panel simple de auditoria para eventos de documentos.
-4. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
-5. Evaluar si limite 5MB se mantiene o se reduce por politica interna.
+1. Ajustar destinatarios y plantillas de email por evento (negocio final).
+2. Panel simple de auditoria para eventos de documentos.
+3. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
+4. Definir si limite 5MB se mantiene o se reduce por politica interna.
+5. Endurecer validaciones RLS/policies para escenarios finales.
 
 ## Checklist de arranque por sesion
 

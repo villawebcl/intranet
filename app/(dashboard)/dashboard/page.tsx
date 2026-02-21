@@ -18,8 +18,8 @@ const modules = [
   },
   {
     name: "Notificaciones",
-    description: "Pendiente de implementar",
-    href: "/dashboard",
+    description: "Panel de eventos documentales",
+    href: "/dashboard/notifications",
   },
   {
     name: "Auditoria",
