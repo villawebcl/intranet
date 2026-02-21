@@ -5,6 +5,12 @@
 Resumen operativo para retomar trabajo sin releer toda la documentacion.
 Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
+## Regla de mantenimiento (obligatoria)
+
+- Al iniciar una sesion: leer este archivo antes de tocar codigo.
+- Al cerrar una sesion: actualizar "Estado actual implementado" y "Proximo bloque recomendado".
+- Todo cambio relevante debe quedar en commit junto con la actualizacion de este archivo.
+
 ## Estado actual implementado
 
 - Auth con Supabase (login por email/password) en `/login`.
@@ -56,3 +62,17 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 3. Ejecutar `npm run lint` y `npm run typecheck` antes de cambios grandes.
 4. Implementar ticket pequeño y validar.
 5. Actualizar este archivo al cerrar cada bloque relevante.
+
+## Estrategia Git recomendada
+
+- No trabajar directo en `main` para features.
+- Usar una rama por ticket:
+  - `feature/auth-timeout`
+  - `feature/workers-crud`
+  - `feature/documents-upload`
+- Flujo sugerido:
+  1. Crear rama desde `main` actualizado.
+  2. Implementar cambio acotado.
+  3. Ejecutar lint/typecheck/build.
+  4. Abrir PR y merge a `main`.
+- Excepcion: cambios minimos de emergencia (hotfix pequeno) pueden ir directo a `main`.
