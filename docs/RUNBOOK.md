@@ -45,13 +45,19 @@ Pasos recomendados:
 2. Verificar tablas y RLS habilitado.
 3. Verificar bucket privado `documents` (solo PDF, max 5MB).
 
-## 6) Flujo sugerido por ticket
+## 6) Flujo obligatorio por ticket
 
-1. Crear rama por ticket.
-2. Implementar alcance acotado.
-3. Ejecutar `lint` + `typecheck`.
-4. Probar manualmente con al menos un rol.
-5. Abrir PR pequeno con checklist.
+1. Actualizar `main` local (`git pull`).
+2. Crear rama por ticket (`feature/<nombre-ticket>`).
+3. Implementar alcance acotado.
+4. Ejecutar `lint` + `typecheck` + `build`.
+5. Probar manualmente con al menos un rol.
+6. Abrir PR pequeno con checklist.
+7. Merge a `main` al aprobar.
+
+Regla:
+- No desarrollar features directo sobre `main`.
+- Excepcion: hotfix minimo y urgente.
 
 ## 7) Incidentes comunes
 

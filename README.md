@@ -23,6 +23,16 @@ Base inicial del MVP de gestion documental para Anagami Seguridad.
 - Leer primero: `docs/SESSION_CONTEXT.md`
 - Contexto completo: `docs/AI_CONTEXT.md`
 
+## Flujo de trabajo obligatorio
+
+1. Actualizar `main` local.
+2. Crear rama por ticket (`feature/...`).
+3. Implementar alcance acotado.
+4. Ejecutar `npm run lint`, `npm run typecheck` y `npm run build`.
+5. Abrir PR y hacer merge a `main`.
+
+No trabajar directo en `main` para features.
+
 ## Primeros pasos
 
 1. Instalar dependencias:
