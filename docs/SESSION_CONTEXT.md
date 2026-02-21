@@ -72,10 +72,36 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 ## Proximo bloque recomendado (MVP)
 
 1. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
-2. Definir si limite 5MB se mantiene o se reduce por politica interna.
-3. Endurecer validaciones RLS/policies para escenarios finales.
+2. Endurecer validaciones RLS/policies para escenarios finales.
+3. Definir si limite 5MB se mantiene o se reduce por politica interna.
 4. Evaluar registro de login/logout en `audit_logs`.
 5. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
+
+## Proxima sesion (ticket ya definido)
+
+- Nombre sugerido de rama: `feature/permissions-hardening`
+- Objetivo: cerrar permisos finales por rol, especialmente `visitante`, en UI + backend + RLS.
+- Alcance:
+  1. Definir matriz final para `visitante` (ver, descargar, revisar, subir).
+  2. Ajustar condiciones de acceso en pantallas y acciones server.
+  3. Ajustar policies SQL/documentacion en `supabase/policies`.
+  4. Registrar pruebas manuales por rol en este archivo.
+- Criterios de aceptacion:
+  1. Intentos no permitidos fallan con mensaje claro.
+  2. RLS impide bypass desde cliente.
+  3. `npm run lint`, `npm run typecheck`, `npm run build` en verde.
+  4. PR abierto y mergeable.
+
+## Arranque 5 minutos (siguiente sesion)
+
+1. `git checkout main && git pull origin main`
+2. `git checkout -b feature/permissions-hardening`
+3. `npm run dev`
+4. Probar login admin y abrir:
+   - `/dashboard/workers`
+   - `/dashboard/workers/[workerId]/documents`
+   - `/dashboard/notifications`
+   - `/dashboard/audit`
 
 ## Checklist de arranque por sesion
 
