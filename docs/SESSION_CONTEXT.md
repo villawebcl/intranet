@@ -28,8 +28,14 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Validacion backend: solo PDF y maximo 5MB.
   - Estado inicial del documento: `pendiente`.
   - Bloqueo de carga para trabajador inactivo.
+- Modulo documental (revision):
+  - Listado de documentos por trabajador (`/documents`) con filtros por carpeta/estado.
+  - Flujo de revision `pendiente -> aprobado/rechazado`.
+  - Rechazo con motivo obligatorio.
+  - Descarga mediante URL firmada.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
 - Registro de auditoria en carga de documento.
+- Registro de auditoria en aprobacion/rechazo/descarga de documento.
 
 ## Rutas clave
 
@@ -39,6 +45,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - `/dashboard/workers/new`
 - `/dashboard/workers/[workerId]`
 - `/dashboard/workers/[workerId]/edit`
+- `/dashboard/workers/[workerId]/documents`
 - `/dashboard/workers/[workerId]/documents/new`
 
 ## Reglas vigentes importantes
@@ -56,11 +63,11 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Flujo de revision `pendiente -> aprobado/rechazado` (con motivo rechazo).
-2. Vista/listado de documentos por trabajador y carpeta (detalle de archivos por carpeta).
-3. Descarga de PDF segun permisos por rol.
-4. Notificaciones (registro interno y correo).
-5. Panel simple de auditoria para eventos de documentos.
+1. Notificaciones internas (`notifications`) al cargar/aprobar/rechazar.
+2. Envio de emails (Resend) para cargar/aprobar/rechazar.
+3. Panel simple de auditoria para eventos de documentos.
+4. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
+5. Evaluar si limite 5MB se mantiene o se reduce por politica interna.
 
 ## Checklist de arranque por sesion
 
