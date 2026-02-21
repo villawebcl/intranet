@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { canManageWorkers } from "@/lib/auth/roles";
+import { canManageWorkers, canUploadDocuments } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { toggleWorkerStatusAction } from "../actions";
@@ -46,6 +46,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
     .maybeSingle();
 
   const canManage = canManageWorkers(profile?.role);
+  const canUpload = canUploadDocuments(profile?.role);
 
   const { data: worker, error: workerError } = await supabase
     .from("workers")
@@ -151,6 +152,14 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 </form>
               </>
             ) : null}
+            {canUpload ? (
+              <Link
+                href={`/dashboard/workers/${worker.id}/documents/new`}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Subir documento
+              </Link>
+            ) : null}
           </div>
         </header>
 
@@ -198,6 +207,14 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 <p className="mt-1 text-xs text-slate-600">Pendientes: {summary.pendiente}</p>
                 <p className="mt-1 text-xs text-slate-600">Aprobados: {summary.aprobado}</p>
                 <p className="mt-1 text-xs text-slate-600">Rechazados: {summary.rechazado}</p>
+                {canUpload ? (
+                  <Link
+                    href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
+                    className="mt-3 inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Subir PDF
+                  </Link>
+                ) : null}
               </article>
             );
           })}

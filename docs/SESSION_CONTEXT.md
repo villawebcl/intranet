@@ -23,7 +23,13 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Editar trabajador.
   - Activar/Desactivar trabajador.
   - Vista detalle de trabajador con las 12 carpetas fijas.
+- Modulo documental (base):
+  - Subida de PDF por trabajador y carpeta fija.
+  - Validacion backend: solo PDF y maximo 5MB.
+  - Estado inicial del documento: `pendiente`.
+  - Bloqueo de carga para trabajador inactivo.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
+- Registro de auditoria en carga de documento.
 
 ## Rutas clave
 
@@ -33,6 +39,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - `/dashboard/workers/new`
 - `/dashboard/workers/[workerId]`
 - `/dashboard/workers/[workerId]/edit`
+- `/dashboard/workers/[workerId]/documents/new`
 
 ## Reglas vigentes importantes
 
@@ -49,11 +56,11 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Subida de PDF a Storage `documents` (solo PDF, max 5MB).
-2. Asociar documento a trabajador + carpeta fija + metadatos minimos.
-3. Estado inicial del documento en `pendiente`.
-4. Flujo de revision `pendiente -> aprobado/rechazado` (con motivo rechazo).
-5. Vista/listado de documentos por trabajador y carpeta.
+1. Flujo de revision `pendiente -> aprobado/rechazado` (con motivo rechazo).
+2. Vista/listado de documentos por trabajador y carpeta (detalle de archivos por carpeta).
+3. Descarga de PDF segun permisos por rol.
+4. Notificaciones (registro interno y correo).
+5. Panel simple de auditoria para eventos de documentos.
 
 ## Checklist de arranque por sesion
 
