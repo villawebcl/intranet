@@ -18,6 +18,11 @@ Base inicial del MVP de gestion documental para Anagami Seguridad.
 - `supabase/seed/`: scripts de datos iniciales
 - `docs/`: contexto funcional, decisiones y runbook
 
+## Contexto rapido para retomar
+
+- Leer primero: `docs/SESSION_CONTEXT.md`
+- Contexto completo: `docs/AI_CONTEXT.md`
+
 ## Primeros pasos
 
 1. Instalar dependencias:

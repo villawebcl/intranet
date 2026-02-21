@@ -1,4 +1,32 @@
-const modules = ["Acceso y roles", "Trabajadores", "Documentos PDF", "Notificaciones", "Auditoria"];
+import Link from "next/link";
+
+const modules = [
+  {
+    name: "Acceso y roles",
+    description: "Login, sesion y permisos por rol",
+    href: "/dashboard",
+  },
+  {
+    name: "Trabajadores",
+    description: "CRUD base + activo/inactivo",
+    href: "/dashboard/workers",
+  },
+  {
+    name: "Documentos PDF",
+    description: "Pendiente de implementar",
+    href: "/dashboard",
+  },
+  {
+    name: "Notificaciones",
+    description: "Pendiente de implementar",
+    href: "/dashboard",
+  },
+  {
+    name: "Auditoria",
+    description: "Pendiente de implementar",
+    href: "/dashboard",
+  },
+];
 
 export default function DashboardPage() {
   return (
@@ -14,11 +42,14 @@ export default function DashboardPage() {
 
       <ul className="grid gap-3 sm:grid-cols-2">
         {modules.map((module) => (
-          <li
-            key={module}
-            className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800 shadow-sm"
-          >
-            {module}
+          <li key={module.name}>
+            <Link
+              href={module.href}
+              className="block rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow"
+            >
+              <p className="font-semibold text-slate-900">{module.name}</p>
+              <p className="mt-1 text-xs text-slate-600">{module.description}</p>
+            </Link>
           </li>
         ))}
       </ul>
