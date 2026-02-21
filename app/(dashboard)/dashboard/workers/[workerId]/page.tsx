@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { canManageWorkers } from "@/lib/auth/roles";
+import { canManageWorkers, canReviewDocuments, canUploadDocuments } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { toggleWorkerStatusAction } from "../actions";
@@ -46,6 +46,9 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
     .maybeSingle();
 
   const canManage = canManageWorkers(profile?.role);
+  const canReview = canReviewDocuments(profile?.role);
+  const canUpload = canUploadDocuments(profile?.role);
+  const canReadDocuments = canUpload || canReview;
 
   const { data: worker, error: workerError } = await supabase
     .from("workers")
@@ -151,6 +154,22 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 </form>
               </>
             ) : null}
+            {canUpload ? (
+              <Link
+                href={`/dashboard/workers/${worker.id}/documents/new`}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Subir documento
+              </Link>
+            ) : null}
+            {canReadDocuments ? (
+              <Link
+                href={`/dashboard/workers/${worker.id}/documents`}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Ver documentos
+              </Link>
+            ) : null}
           </div>
         </header>
 
@@ -198,6 +217,24 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 <p className="mt-1 text-xs text-slate-600">Pendientes: {summary.pendiente}</p>
                 <p className="mt-1 text-xs text-slate-600">Aprobados: {summary.aprobado}</p>
                 <p className="mt-1 text-xs text-slate-600">Rechazados: {summary.rechazado}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {canReadDocuments ? (
+                    <Link
+                      href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
+                      className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Ver documentos
+                    </Link>
+                  ) : null}
+                  {canUpload ? (
+                    <Link
+                      href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
+                      className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Subir PDF
+                    </Link>
+                  ) : null}
+                </div>
               </article>
             );
           })}

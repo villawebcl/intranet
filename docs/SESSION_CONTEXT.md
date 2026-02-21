@@ -23,7 +23,25 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Editar trabajador.
   - Activar/Desactivar trabajador.
   - Vista detalle de trabajador con las 12 carpetas fijas.
+- Modulo documental (base):
+  - Subida de PDF por trabajador y carpeta fija.
+  - Validacion backend: solo PDF y maximo 5MB.
+  - Estado inicial del documento: `pendiente`.
+  - Bloqueo de carga para trabajador inactivo.
+- Modulo documental (revision):
+  - Listado de documentos por trabajador (`/documents`) con filtros por carpeta/estado.
+  - Flujo de revision `pendiente -> aprobado/rechazado`.
+  - Rechazo con motivo obligatorio.
+  - Descarga mediante URL firmada.
+- Notificaciones:
+  - Registro interno en tabla `notifications` para eventos documentales.
+  - Panel `/dashboard/notifications` para ver eventos recientes.
+  - Envio de email via Resend en carga/aprobacion/rechazo (si ENV configurada).
+  - Plantillas de email centralizadas y trazabilidad `sent_at` por notificacion enviada.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
+- Registro de auditoria en carga de documento.
+- Registro de auditoria en aprobacion/rechazo/descarga de documento.
+- Panel `/dashboard/audit` para consultar trazabilidad (admin).
 
 ## Rutas clave
 
@@ -33,6 +51,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - `/dashboard/workers/new`
 - `/dashboard/workers/[workerId]`
 - `/dashboard/workers/[workerId]/edit`
+- `/dashboard/workers/[workerId]/documents`
+- `/dashboard/workers/[workerId]/documents/new`
+- `/dashboard/notifications`
+- `/dashboard/audit`
 
 ## Reglas vigentes importantes
 
@@ -49,11 +71,11 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Subida de PDF a Storage `documents` (solo PDF, max 5MB).
-2. Asociar documento a trabajador + carpeta fija + metadatos minimos.
-3. Estado inicial del documento en `pendiente`.
-4. Flujo de revision `pendiente -> aprobado/rechazado` (con motivo rechazo).
-5. Vista/listado de documentos por trabajador y carpeta.
+1. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
+2. Definir si limite 5MB se mantiene o se reduce por politica interna.
+3. Endurecer validaciones RLS/policies para escenarios finales.
+4. Evaluar registro de login/logout en `audit_logs`.
+5. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
 ## Checklist de arranque por sesion
 
