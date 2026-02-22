@@ -1,5 +1,7 @@
 # SESSION_CONTEXT.md — Estado rapido del proyecto
 
+> Nota (2026-02-22): este archivo se mantiene como historial operativo. Antes de cambios importantes, leer primero la memoria persistente en `docs/system-overview.md`, `docs/architecture.md`, `docs/decisions.md`, `docs/progress.md` y `docs/tasks.md`.
+
 ## Objetivo de este archivo
 
 Resumen operativo para retomar trabajo sin releer toda la documentacion.
@@ -41,7 +43,16 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
 - Registro de auditoria en carga de documento.
 - Registro de auditoria en aprobacion/rechazo/descarga de documento.
+- Registro de auditoria en autenticacion:
+  - `auth_login` al iniciar sesion.
+  - `auth_logout` al cerrar sesion manualmente.
+  - `auth_logout` al cierre por inactividad (`reason=timeout`).
 - Panel `/dashboard/audit` para consultar trazabilidad (admin).
+- Hardening de permisos por rol (UI + backend + RLS):
+  - `visitante`: sin acceso al modulo documental (ver/descargar/subir/revisar).
+  - `contabilidad`: lectura documental (ver/descargar), sin subir/revisar.
+  - `admin`/`rrhh`: gestion documental completa.
+  - Consulta de resumen documental en ficha de trabajador solo para roles con acceso documental.
 
 ## Rutas clave
 
@@ -59,49 +70,88 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 ## Reglas vigentes importantes
 
 - Roles con gestion de trabajadores: `admin`, `rrhh`.
-- Rol sin gestion: `contabilidad`, `visitante` (solo lectura o sin acceso de edicion).
+- Roles documentales:
+  - `admin`, `rrhh`: ver/subir/revisar/descargar.
+  - `contabilidad`: ver/descargar (sin subir/revisar).
+  - `visitante`: sin acceso documental.
 - Carpetas son fijas por enum (`folder_01` ... `folder_12`), no dinamicas.
 - Seguridad real por RLS (no confiar solo en frontend).
 
 ## Estado de infraestructura
 
 - Migracion base creada en `supabase/migrations/20260220_000001_init_schema.sql`.
+- Migracion de hardening creada en `supabase/migrations/20260221_000002_permissions_hardening.sql`.
 - Variables de entorno en `.env.local`.
 - Proyecto Supabase ya creado y usuario admin configurado en `profiles`.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Ajustar matriz de permisos final para rol `visitante` (descarga y vistas).
-2. Endurecer validaciones RLS/policies para escenarios finales.
+1. Cerrar/mergear PR de QA manual/evidencia (`feature/manual-qa-evidence`, PR `#2`).
+2. Iniciar smoke tests automatizados de permisos/auth (`feature/permissions-e2e-smoke`).
 3. Definir si limite 5MB se mantiene o se reduce por politica interna.
-4. Evaluar registro de login/logout en `audit_logs`.
-5. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
+4. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
 ## Proxima sesion (ticket ya definido)
 
-- Nombre sugerido de rama: `feature/permissions-hardening`
-- Objetivo: cerrar permisos finales por rol, especialmente `visitante`, en UI + backend + RLS.
+- Nombre sugerido de rama: `feature/permissions-e2e-smoke`
+- Objetivo: automatizar smoke tests de permisos criticos y auth para reducir regresiones del MVP.
+- Estado (2026-02-22): pendiente de inicio. Ticket anterior (`feature/manual-qa-evidence`) queda con PR `#2` abierto.
 - Alcance:
-  1. Definir matriz final para `visitante` (ver, descargar, revisar, subir).
-  2. Ajustar condiciones de acceso en pantallas y acciones server.
-  3. Ajustar policies SQL/documentacion en `supabase/policies`.
-  4. Registrar pruebas manuales por rol en este archivo.
+  1. Configurar framework de smoke e2e (Playwright o equivalente en el repo).
+  2. Cubrir login y redireccion a dashboard.
+  3. Cubrir permisos criticos por rol (admin/rrhh/contabilidad/visitante).
+  4. Documentar precondiciones de usuarios de prueba y comando de ejecucion.
 - Criterios de aceptacion:
-  1. Intentos no permitidos fallan con mensaje claro.
-  2. RLS impide bypass desde cliente.
-  3. `npm run lint`, `npm run typecheck`, `npm run build` en verde.
+  1. Smoke suite ejecuta localmente con comando documentado.
+  2. Casos criticos de auth/permisos pasan localmente.
+  3. Precondiciones de usuarios/seed documentadas.
   4. PR abierto y mergeable.
 
 ## Arranque 5 minutos (siguiente sesion)
 
-1. `git checkout main && git pull origin main`
-2. `git checkout -b feature/permissions-hardening`
-3. `npm run dev`
-4. Probar login admin y abrir:
-   - `/dashboard/workers`
-   - `/dashboard/workers/[workerId]/documents`
-   - `/dashboard/notifications`
-   - `/dashboard/audit`
+1. Mergear PR `#2` en GitHub (si aun no esta mergeado).
+2. `git checkout main && git pull origin main`
+3. `git checkout -b feature/permissions-e2e-smoke`
+4. Revisar `docs/tasks.md` + `docs/permissions-matrix.md` y preparar usuarios de prueba.
+
+## Pruebas manuales recientes (2026-02-21)
+
+> Actualizacion (2026-02-22): pruebas manuales reportadas OK. Evidencia visual base consolidada en `evidence/manual-qa/` y documentada en `docs/manual-qa-evidence.md`. Se detecto y corrigio bug de login (requeria recarga y no registraba `auth_login` consistentemente).
+
+- Permissions hardening:
+  - Precondicion: usar un trabajador activo existente y al menos 1 PDF de prueba (<5MB).
+  - [x] Admin
+    - [x] Puede crear trabajador desde `/dashboard/workers/new`.
+    - [x] Puede editar trabajador desde `/dashboard/workers/[workerId]/edit`.
+    - [x] Puede subir PDF en `/dashboard/workers/[workerId]/documents/new`.
+    - [x] Puede aprobar/rechazar en `/dashboard/workers/[workerId]/documents`.
+    - [x] Puede descargar PDF en `/dashboard/workers/[workerId]/documents`.
+    - [x] Puede ver auditoria en `/dashboard/audit`.
+  - [x] RRHH
+    - [x] Puede crear/editar trabajador.
+    - [x] Puede subir PDF.
+    - [x] Puede aprobar/rechazar documentos pendientes.
+    - [x] Puede descargar PDF.
+    - [x] No puede abrir `/dashboard/audit` (debe redirigir con error).
+  - [x] Contabilidad
+    - [x] Puede abrir `/dashboard/workers/[workerId]/documents` (lectura).
+    - [x] Puede descargar PDF.
+    - [x] No puede abrir `/dashboard/workers/[workerId]/documents/new` (mensaje de permisos).
+    - [x] No puede aprobar/rechazar documentos.
+    - [x] No puede crear/editar trabajador.
+  - [x] Visitante
+    - [x] Puede autenticarse y entrar al dashboard.
+    - [x] No puede abrir `/dashboard/workers/[workerId]/documents` (mensaje de permisos).
+    - [x] No puede abrir `/dashboard/workers/[workerId]/documents/new`.
+    - [x] No puede descargar documentos.
+    - [x] No puede crear/editar trabajador.
+  - Evidencia sugerida:
+    - [x] Captura por rol con al menos un caso permitido y uno bloqueado.
+    - [x] Captura de `/dashboard/audit` con eventos documentales visibles para admin.
+- Auditoria de autenticacion:
+  - [x] Login exitoso genera `auth_login` en `/dashboard/audit`.
+  - [x] Logout manual genera `auth_logout` con `metadata.reason = manual`.
+  - [x] Logout por inactividad genera `auth_logout` con `metadata.reason = timeout`.
 
 ## Checklist de arranque por sesion
 

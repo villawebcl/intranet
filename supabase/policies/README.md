@@ -8,7 +8,14 @@ Regla base del proyecto:
 - No confiar solo en validaciones de UI.
 - Cada tabla nueva requiere politicas explicitas.
 
-Pendiente por ticket:
+## Matriz de permisos vigente (MVP)
 
-- Matriz exacta de permisos por rol para workers/documents/notifications.
-- Restricciones finales del rol visitante.
+- `admin`: acceso total.
+- `rrhh`: gestiona trabajadores y documentos (subir/revisar/descargar).
+- `contabilidad`: solo lectura documental (ver/descargar), sin subir/revisar.
+- `visitante`: acceso limitado al modulo de trabajadores, sin acceso documental.
+
+## Migraciones relacionadas
+
+- `supabase/migrations/20260220_000001_init_schema.sql`: esquema base + RLS inicial.
+- `supabase/migrations/20260221_000002_permissions_hardening.sql`: endurecimiento de permisos por rol.

@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { canReviewDocuments, canUploadDocuments } from "@/lib/auth/roles";
+import {
+  canDownloadDocuments,
+  canReviewDocuments,
+  canUploadDocuments,
+  canViewDocuments,
+} from "@/lib/auth/roles";
 import { documentStatuses, folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -82,9 +87,10 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
 
   const canUpload = canUploadDocuments(profile?.role);
   const canReview = canReviewDocuments(profile?.role);
-  const canReadModule = canUpload || canReview;
+  const canView = canViewDocuments(profile?.role);
+  const canDownload = canDownloadDocuments(profile?.role);
 
-  if (!canReadModule) {
+  if (!canView) {
     redirect("/dashboard/workers?error=No+tienes+permisos+para+ver+documentos");
   }
 
@@ -273,17 +279,19 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                 <td className="px-4 py-3 text-slate-700">{formatDate(document.created_at)}</td>
                 <td className="px-4 py-3">
                   <div className="space-y-2">
-                    <form action={downloadDocumentAction}>
-                      <input type="hidden" name="workerId" value={worker.id} />
-                      <input type="hidden" name="documentId" value={document.id} />
-                      <input type="hidden" name="returnTo" value={currentPath} />
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        Descargar
-                      </button>
-                    </form>
+                    {canDownload ? (
+                      <form action={downloadDocumentAction}>
+                        <input type="hidden" name="workerId" value={worker.id} />
+                        <input type="hidden" name="documentId" value={document.id} />
+                        <input type="hidden" name="returnTo" value={currentPath} />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          Descargar
+                        </button>
+                      </form>
+                    ) : null}
 
                     {canReview && document.status === "pendiente" ? (
                       <>

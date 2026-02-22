@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef, useTransition } from "react";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
+import { signOutByTimeoutAction } from "@/app/(dashboard)/actions";
 
 type IdleSessionWatcherProps = {
   timeoutMinutes: number;
@@ -12,9 +11,9 @@ type IdleSessionWatcherProps = {
 const ACTIVITY_EVENTS: Array<keyof WindowEventMap> = ["click", "keydown", "scroll", "touchstart"];
 
 export function IdleSessionWatcher({ timeoutMinutes }: IdleSessionWatcherProps) {
-  const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasTimedOutRef = useRef(false);
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     const timeoutMs = Math.max(timeoutMinutes, 5) * 60 * 1000;
@@ -30,13 +29,14 @@ export function IdleSessionWatcher({ timeoutMinutes }: IdleSessionWatcherProps) 
     };
 
     const handleTimeout = async () => {
-      if (!active) {
+      if (!active || hasTimedOutRef.current) {
         return;
       }
 
-      await supabase.auth.signOut();
-      router.replace("/login?reason=timeout");
-      router.refresh();
+      hasTimedOutRef.current = true;
+      startTransition(() => {
+        void signOutByTimeoutAction();
+      });
     };
 
     const resetTimer = () => {
@@ -52,7 +52,7 @@ export function IdleSessionWatcher({ timeoutMinutes }: IdleSessionWatcherProps) 
       clearTimer();
       ACTIVITY_EVENTS.forEach((eventName) => window.removeEventListener(eventName, resetTimer));
     };
-  }, [router, supabase, timeoutMinutes]);
+  }, [startTransition, timeoutMinutes]);
 
   return null;
 }

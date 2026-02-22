@@ -5,15 +5,18 @@
 Checklist de validación para cierre del MVP.  
 Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
+> Actualizacion (2026-02-22): items de Acceso/Roles y Auditoria se marcaron segun pruebas manuales recientes reportadas como correctas. La evidencia visual base ya fue adjuntada; faltan datos de entrega.
+> Referencias: evidencia QA en `docs/manual-qa-evidence.md` y cierre operativo en `docs/delivery-checklist.md`.
+
 ---
 
 ## A) Acceso y roles (Obligatorio)
 
-- [ ] Login funcional (correo/RUT según implementación) + cierre de sesión
-- [ ] Sesión expira por inactividad (timeout)
-- [ ] Roles existentes: Admin / RRHH / Contabilidad / Visitante
-- [ ] Restricciones por rol verificadas (UI + backend/RLS)
-- [ ] Visitante no puede ver/descargar documentos fuera de lo permitido
+- [x] Login funcional (correo/RUT según implementación) + cierre de sesión
+- [x] Sesión expira por inactividad (timeout)
+- [x] Roles existentes: Admin / RRHH / Contabilidad / Visitante
+- [x] Restricciones por rol verificadas (UI + backend/RLS)
+- [x] Visitante no puede ver/descargar documentos fuera de lo permitido
 
 **Evidencia**: usuario de prueba por rol + video corto o capturas.
 
@@ -63,14 +66,14 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## E) Auditoría / Logs (Obligatorio)
 
-- [ ] Log de eventos críticos:
-  - [ ] login/logout (o al menos login)
-  - [ ] crear/editar trabajador
-  - [ ] activar/desactivar trabajador
-  - [ ] subir documento
-  - [ ] aprobar/rechazar documento
-  - [ ] descarga de documento (si es posible registrar)
-- [ ] Log incluye: usuario, rol, timestamp, acción, entidad afectada
+- [x] Log de eventos críticos:
+  - [x] login/logout (o al menos login)
+  - [x] crear/editar trabajador
+  - [x] activar/desactivar trabajador
+  - [x] subir documento
+  - [x] aprobar/rechazar documento
+  - [x] descarga de documento (si es posible registrar)
+- [x] Log incluye: usuario, rol, timestamp, acción, entidad afectada
 
 **Evidencia**: tabla/pantalla de logs o consulta en DB mostrando registros.
 
@@ -110,11 +113,17 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## Registro de aceptación
 
-- Fecha de entrega:
-- URL Staging / Producción:
+- Fecha de entrega: `PENDIENTE`
+- URL Staging / Producción: `PENDIENTE`
 - Usuarios de prueba:
-  - Admin:
-  - RRHH:
-  - Contabilidad:
-  - Visitante:
-- Aceptación cliente (firma / email / acta):
+  - Admin: `PENDIENTE` (definir/registrar por canal seguro)
+  - RRHH: `PENDIENTE`
+  - Contabilidad: `PENDIENTE`
+  - Visitante: `PENDIENTE`
+- Aceptación cliente (firma / email / acta): `PENDIENTE`
+
+## Estado documental (para cerrar sin imágenes temporalmente)
+
+- QA manual reportado: OK
+- Evidencia visual adjunta: si (set base en `evidence/manual-qa/` y referencias en `docs/manual-qa-evidence.md`)
+- Checklist listo para completar: si

@@ -1,5 +1,7 @@
 # DECISIONS.md — Registro de decisiones (ADR liviano)
 
+> Nota (2026-02-22): registro legacy. Nuevas decisiones y consolidacion actualizada se documentan en `docs/decisions.md`.
+
 ## Cómo usar este archivo
 
 Cada decisión importante se registra con:
@@ -118,7 +120,12 @@ Ejemplo: ADR-001, ADR-002…
 ## Backlog de decisiones pendientes
 
 - [ ] Campos exactos del trabajador (mínimo viable).
-- [ ] Qué ve exactamente el rol Visitante.
+- [x] Qué ve exactamente el rol Visitante.
 - [ ] Motivo de rechazo: obligatorio o opcional.
-- [ ] Descarga por Visitante: permitida o requiere solicitud.
+- [x] Descarga por Visitante: permitida o requiere solicitud.
 - [ ] Política exacta de “trabajador inactivo”.
+
+### Decisión aplicada (2026-02-21)
+
+- Visitante: sin acceso al módulo documental (no ver/no descargar/no subir/no revisar).
+- Contabilidad: solo lectura documental (ver y descargar), sin subir/revisar.
