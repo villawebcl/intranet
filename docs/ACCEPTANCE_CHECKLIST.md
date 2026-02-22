@@ -5,7 +5,7 @@
 Checklist de validación para cierre del MVP.  
 Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
-> Actualizacion (2026-02-22): items de Acceso/Roles y Auditoria se marcaron segun pruebas manuales recientes reportadas como correctas. La evidencia visual y datos de entrega siguen pendientes.
+> Actualizacion (2026-02-22): items de Acceso/Roles y Auditoria se marcaron segun pruebas manuales recientes reportadas como correctas. La evidencia visual base ya fue adjuntada; faltan datos de entrega.
 > Referencias: evidencia QA en `docs/manual-qa-evidence.md` y cierre operativo en `docs/delivery-checklist.md`.
 
 ---
@@ -125,5 +125,5 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## Estado documental (para cerrar sin imágenes temporalmente)
 
 - QA manual reportado: OK
-- Evidencia visual adjunta: pendiente
+- Evidencia visual adjunta: si (set base en `evidence/manual-qa/` y referencias en `docs/manual-qa-evidence.md`)
 - Checklist listo para completar: si

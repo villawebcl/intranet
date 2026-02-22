@@ -7,7 +7,8 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 ## Estado (2026-02-22)
 
 - Estructura lista.
-- Pendiente completar datos de entorno/entrega y adjuntar evidencia visual final.
+- Evidencia QA manual base adjuntada y documentada.
+- Pendiente completar datos de entorno/entrega y definiciones operativas finales.
 
 ## Referencias
 
@@ -33,10 +34,10 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 ## Repositorio y documentacion
 
 - [ ] Repo compartido al cliente (si aplica)
-- [ ] `README.md` actualizado con instalacion / ENV
-- [ ] `docs/ACCEPTANCE_CHECKLIST.md` actualizado
-- [ ] `docs/manual-qa-evidence.md` actualizado con capturas/rutas
-- [ ] `docs/permissions-matrix.md` revisado
+- [x] `README.md` actualizado con instalacion / ENV
+- [x] `docs/ACCEPTANCE_CHECKLIST.md` actualizado
+- [x] `docs/manual-qa-evidence.md` actualizado con capturas/rutas
+- [x] `docs/permissions-matrix.md` revisado
 
 ## Base de datos / operacion
 
@@ -61,5 +62,5 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 ## Cierre
 
 - Estado final: `PENDIENTE`
-- Bloqueadores:
-- Proximos pasos:
+- Bloqueadores: datos de entrega (URL, credenciales, backup/capacitacion) aun no cerrados
+- Proximos pasos: push de rama, PR, completar campos pendientes y coordinar entrega
