@@ -34,7 +34,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Backlog tecnico (MVP+)
 
 - [ ] Automatizar pruebas minimas (e2e o unitarias) para permisos criticos.
-- [ ] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional).
+- [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
 - [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
@@ -51,6 +51,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 - [x] QA manual por rol + verificacion de auditoria (reportado OK) (2026-02-22)
 - [x] Validacion local `lint` + `typecheck` + `build` (2026-02-22)
+- [x] Plantilla de evidencia QA manual y matriz de permisos documentada (2026-02-22)
 - [x] Hardening de permisos por rol (UI + backend + RLS) (2026-02-21)
 - [x] Auditoria de auth/workers/documentos + panel admin (2026-02-21)
 - [x] Notificaciones internas + email opcional via Resend (2026-02-21)

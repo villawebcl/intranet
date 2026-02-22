@@ -85,11 +85,14 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - `npm run build` OK
 - Se crea rama `feature/manual-qa-evidence` para cierre de QA/acceptance.
 - Usuario reporta pruebas manuales recientes OK para permisos por rol y flujo de auditoria (login/logout/documentos).
+- Se agrega plantilla `docs/manual-qa-evidence.md` para consolidar capturas/video.
+- Se documenta matriz de permisos en `docs/permissions-matrix.md` para QA y soporte.
 
 #### Falta / arrastrado
 
 - Mantener sincronizados los archivos legacy o definir fecha de deprecacion.
 - Registrar evidencia visual (capturas/video) de QA manual y completar datos de acceptance (usuarios de prueba/URL).
+- Definir/registrar credenciales de prueba por rol (pendiente documental y/o canal seguro).
 
 ## Proximo bloque recomendado
 
