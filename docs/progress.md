@@ -14,7 +14,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
-- Ticket `feature/permissions-e2e-smoke` en avance final: smoke suite auth/permisos ejecutada OK local (9 casos).
+- Ticket `feature/permissions-e2e-smoke` en avance final: smoke suite auth/permisos ejecutada OK local (10 casos).
 
 ## Progreso diario
 
@@ -103,11 +103,13 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se agrega smoke permitido de `contabilidad` en `/dashboard/workers/[workerId]/documents` (lectura + boton `Descargar` visible).
 - Se agrega soporte E2E para timeout rapido con override client-side de `IdleSessionWatcher` (`window.__E2E_IDLE_TIMEOUT_MS__`) usado por Playwright.
 - Se agrega smoke de timeout (redirect a `/login?reason=timeout`) y smoke de descarga real del fixture PDF (signed URL / respuesta PDF).
-- Se valida suite `npm run e2e:smoke` (OK, 9 tests):
+- Se agrega smoke de auditoria filtrada para `admin` (`auth_login` + `entity=auth`) validando resultados visibles.
+- Se valida suite `npm run e2e:smoke` (OK, 10 tests):
   - login -> dashboard
   - logout manual -> `/login`
   - logout por timeout -> `/login?reason=timeout`
   - admin puede ver auditoria
+  - admin puede filtrar auditoria y ver `auth_login`
   - rrhh no puede ver auditoria
   - contabilidad puede ver `/documents` (lectura)
   - contabilidad puede descargar fixture documental (PDF signed URL)
@@ -124,6 +126,6 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 ## Proximo bloque recomendado
 
 1. Abrir PR de `feature/permissions-e2e-smoke` (cobertura smoke MVP ya implementada y validada).
-2. Evaluar si se agrega una asercion de auditoria (`auth_login`/`auth_logout`) como smoke extra o se deja para un ticket aparte.
+2. (Opcional) Evaluar si se agrega asercion adicional de auditoria para `auth_logout` (ya hay cobertura `auth_login`).
 3. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
 4. Mantener sincronizada la memoria persistente al cerrar el PR.

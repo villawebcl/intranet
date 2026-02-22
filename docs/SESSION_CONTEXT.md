@@ -58,7 +58,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - `tests/e2e/global-setup.ts` que crea/actualiza usuarios por rol, trabajador smoke y fixture documental (PDF en storage + fila en `documents`).
   - Smokes validados localmente:
     - `tests/e2e/smoke-auth.spec.ts` (login -> dashboard, logout manual, logout por timeout)
-    - `tests/e2e/smoke-permissions.spec.ts` (permisos por rol MVP + lectura/descarga `contabilidad`)
+    - `tests/e2e/smoke-permissions.spec.ts` (permisos por rol MVP + lectura/descarga `contabilidad` + filtro auditoria `auth_login`)
 
 ## Rutas clave
 
@@ -94,7 +94,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 ## Proximo bloque recomendado (MVP)
 
 1. Abrir PR / preparar descripcion de PR para `feature/permissions-e2e-smoke` (suite smoke MVP ya verde).
-2. Evaluar si se agrega smoke extra para auditoria (`auth_login`/`auth_logout`) en este ticket o en uno aparte.
+2. (Opcional) Evaluar si se agrega smoke extra de auditoria para `auth_logout` (ya cubierto `auth_login`).
 3. Completar datos de entrega pendientes (credenciales/URLs/checklists).
 4. Definir si limite 5MB se mantiene o se reduce por politica interna.
 
@@ -102,10 +102,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 - Nombre sugerido de rama: `feature/permissions-e2e-smoke`
 - Objetivo: automatizar smoke tests de permisos criticos y auth para reducir regresiones del MVP.
-- Estado (2026-02-22): en curso avanzado / listo para PR. Base Playwright + smokes auth/permisos MVP (9 casos) implementados y validados.
+- Estado (2026-02-22): en curso avanzado / listo para PR. Base Playwright + smokes auth/permisos MVP (10 casos) implementados y validados.
 - Alcance:
   1. Extender cobertura a permisos criticos por rol (admin/rrhh/contabilidad/visitante).
-  2. Evaluar si se agrega smoke extra de auditoria en este ticket (opcional).
+  2. (Opcional) evaluar smoke extra de auditoria `auth_logout`.
   3. Preparar PR y checklist de merge.
   4. Mantener documentadas precondiciones y comando de ejecucion (`npm run e2e:smoke`).
 - Criterios de aceptacion:
@@ -116,9 +116,9 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Arranque 5 minutos (siguiente sesion)
 
-1. Ejecutar `npm run e2e:smoke` para confirmar baseline verde (actualmente 9 tests).
+1. Ejecutar `npm run e2e:smoke` para confirmar baseline verde (actualmente 10 tests).
 2. Preparar/abrir PR de `feature/permissions-e2e-smoke`.
-3. Si se decide, agregar smoke extra de auditoria.
+3. Si se decide, agregar smoke extra de auditoria `auth_logout`.
 4. Actualizar `docs/tasks.md`, `docs/progress.md` y este archivo al cerrar el siguiente avance.
 
 ## Pruebas manuales recientes (2026-02-21)

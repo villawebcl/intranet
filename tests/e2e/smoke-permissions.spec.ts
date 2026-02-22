@@ -13,6 +13,20 @@ test.describe("Permissions smoke", () => {
     await expect(page.getByRole("heading", { name: "Auditoria" })).toBeVisible();
   });
 
+  test("admin puede filtrar auditoria y ver eventos auth_login", async ({ page }) => {
+    await loginAsRole(page, "admin");
+
+    await page.goto("/dashboard/audit?action=auth_login&entity=auth");
+
+    await expect(page).toHaveURL(/\/dashboard\/audit\?.*action=auth_login.*entity=auth/);
+    await expect(page.getByRole("heading", { name: "Auditoria" })).toBeVisible();
+    await expect(page.getByText("No hay eventos para este filtro.")).toHaveCount(0);
+
+    const row = page.locator("tbody tr").filter({ hasText: "auth_login" }).first();
+    await expect(row).toBeVisible();
+    await expect(row).toContainText("auth");
+  });
+
   test("rrhh no puede abrir /dashboard/audit", async ({ page }) => {
     await loginAsRole(page, "rrhh");
 

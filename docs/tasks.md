@@ -47,6 +47,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
   - [x] Smoke permitido documental: `contabilidad` puede ver `/documents` en modo lectura y boton `Descargar`.
   - [x] Smoke de logout por timeout (redirect a `/login?reason=timeout` con mensaje visible).
   - [x] Asercion de descarga real del PDF fixture (`Descargar` -> signed URL PDF).
+  - [x] Smoke de auditoria filtrada: `admin` ve eventos `auth_login` en `/dashboard/audit` con filtros.
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
 - [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
@@ -67,6 +68,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Smoke E2E de logout manual ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Fixture documental E2E + smoke permitido de lectura `contabilidad` ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Smoke E2E de timeout + descarga real PDF fixture ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Smoke E2E de auditoria filtrada (`auth_login`) ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Base Playwright + smoke E2E login->dashboard ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] PR `#2` de cierre QA manual/evidencia mergeado en `main` (2026-02-22)
 - [x] Fix login: ingreso estable sin recarga + `auth_login` en auditoria (2026-02-22)
@@ -113,6 +115,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
   - [x] logout manual -> `/login`
   - [x] logout por timeout -> `/login?reason=timeout`
   - [x] `admin` -> `/dashboard/audit` (permitido)
+  - [x] `admin` -> `/dashboard/audit?action=auth_login&entity=auth` (filtro con resultados)
   - [x] `rrhh` -> `/dashboard/audit` (bloqueado)
   - [x] `contabilidad` -> `/documents` (permitido, lectura)
   - [x] `contabilidad` -> descarga fixture PDF (signed URL)
