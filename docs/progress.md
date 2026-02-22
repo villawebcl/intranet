@@ -87,6 +87,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Usuario reporta pruebas manuales recientes OK para permisos por rol y flujo de auditoria (login/logout/documentos).
 - Se agrega plantilla `docs/manual-qa-evidence.md` para consolidar capturas/video.
 - Se documenta matriz de permisos en `docs/permissions-matrix.md` para QA y soporte.
+- Se prepara `docs/delivery-checklist.md` para cerrar acceptance/entrega sin bloquear por falta temporal de imagenes.
 
 #### Falta / arrastrado
 

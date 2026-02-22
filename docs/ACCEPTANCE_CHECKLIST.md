@@ -6,6 +6,7 @@ Checklist de validación para cierre del MVP.
 Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 > Actualizacion (2026-02-22): items de Acceso/Roles y Auditoria se marcaron segun pruebas manuales recientes reportadas como correctas. La evidencia visual y datos de entrega siguen pendientes.
+> Referencias: evidencia QA en `docs/manual-qa-evidence.md` y cierre operativo en `docs/delivery-checklist.md`.
 
 ---
 
@@ -112,11 +113,17 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## Registro de aceptación
 
-- Fecha de entrega:
-- URL Staging / Producción:
+- Fecha de entrega: `PENDIENTE`
+- URL Staging / Producción: `PENDIENTE`
 - Usuarios de prueba:
-  - Admin:
-  - RRHH:
-  - Contabilidad:
-  - Visitante:
-- Aceptación cliente (firma / email / acta):
+  - Admin: `PENDIENTE` (definir/registrar por canal seguro)
+  - RRHH: `PENDIENTE`
+  - Contabilidad: `PENDIENTE`
+  - Visitante: `PENDIENTE`
+- Aceptación cliente (firma / email / acta): `PENDIENTE`
+
+## Estado documental (para cerrar sin imágenes temporalmente)
+
+- QA manual reportado: OK
+- Evidencia visual adjunta: pendiente
+- Checklist listo para completar: si

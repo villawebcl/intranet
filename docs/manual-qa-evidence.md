@@ -8,6 +8,13 @@ Consolidar evidencia de pruebas manuales del MVP (capturas/video) sin depender d
 
 - QA manual por rol y auditoria: validado manualmente (reportado OK).
 - Pendiente: adjuntar capturas/video y completar referencias a archivos.
+- Modo actual de registro: placeholders listos para completar sin bloquear cierre documental.
+
+## Referencias cruzadas
+
+- Checklist de acceptance: `docs/ACCEPTANCE_CHECKLIST.md`
+- Matriz de permisos: `docs/permissions-matrix.md`
+- Cierre de entrega: `docs/delivery-checklist.md`
 
 ## Convencion sugerida para archivos de evidencia
 
@@ -21,80 +28,80 @@ Consolidar evidencia de pruebas manuales del MVP (capturas/video) sin depender d
 ### Admin
 
 - Caso permitido: crear/editar trabajador
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Caso permitido: subir/aprobar/rechazar documento
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Caso permitido: ver `/dashboard/audit`
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 
 ### RRHH
 
 - Caso permitido: crear/editar trabajador
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Caso permitido: subir/revisar documento
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Caso bloqueado: acceso a `/dashboard/audit`
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: Bloqueo validado manualmente.
 
 ### Contabilidad
 
 - Caso permitido: ver/descargar documento
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Caso bloqueado: acceso a `/documents/new`
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: Bloqueo validado manualmente.
 - Caso bloqueado: aprobar/rechazar documento
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: Bloqueo validado manualmente.
 
 ### Visitante
 
 - Caso permitido: login + acceso dashboard
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Caso bloqueado: acceso a modulo documental
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: Bloqueo validado manualmente.
 - Caso bloqueado: crear/editar trabajador
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: Bloqueo validado manualmente.
 
 ## Evidencia de auditoria
 
 - `auth_login` visible en `/dashboard/audit`
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - `auth_logout` manual (`metadata.reason = manual`)
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - `auth_logout` timeout (`metadata.reason = timeout`)
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 - Eventos `document_*` visibles
-  - Archivo:
-  - Nota:
+  - Archivo: `PENDIENTE_IMG`
+  - Nota: OK manual reportado.
 
 ## Evidencia de acceptance complementaria (opcional)
 
 - Responsive mobile
-  - Archivo:
+  - Archivo: `PENDIENTE_IMG`
   - Nota:
 - Notificaciones / panel de notificaciones
-  - Archivo:
+  - Archivo: `PENDIENTE_IMG`
   - Nota:
 - Validacion PDF > 5MB / tipo no PDF
-  - Archivo:
+  - Archivo: `PENDIENTE_IMG`
   - Nota:
 
 ## Cierre
 
-- Fecha de consolidacion de evidencia:
-- Responsable:
-- Observaciones:
+- Fecha de consolidacion de evidencia: `PENDIENTE`
+- Responsable: `PENDIENTE`
+- Observaciones: Se puede cerrar documentalmente sin adjuntar imagenes en este momento; completar luego.
