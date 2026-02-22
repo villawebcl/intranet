@@ -14,6 +14,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
+- Ticket `feature/permissions-e2e-smoke` iniciado: Playwright base agregado y smoke `login -> dashboard` ejecutado OK local.
 
 ## Progreso diario
 
@@ -93,16 +94,22 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se adjuntan capturas de QA manual en `evidence/manual-qa/` y se referencian en `docs/manual-qa-evidence.md`.
 - Se abre y mergea PR `#2` para `feature/manual-qa-evidence`.
 - Se corrige flujo de login para evitar recarga manual post-auth y asegurar registro de `auth_login` en auditoria.
+- Se agrega base E2E con Playwright (`@playwright/test`) y configuracion `playwright.config.ts`.
+- Se implementa `global setup` para crear/actualizar usuario admin de smoke en Supabase usando `SUPABASE_SERVICE_ROLE_KEY`.
+- Se agrega smoke test `tests/e2e/smoke-auth.spec.ts` (login -> dashboard) y se valida localmente con `npm run e2e:smoke` (OK).
 
 #### Falta / arrastrado
 
 - Mantener sincronizados los archivos legacy o definir fecha de deprecacion.
 - Completar datos de acceptance/entrega (usuarios de prueba, URL, credenciales, backup, capacitacion).
 - Definir/registrar credenciales de prueba por rol (pendiente documental y/o canal seguro).
+- Preparar fixtures E2E para permisos por rol:
+  - usuarios `rrhh`, `contabilidad`, `visitante` (seed o credenciales estables)
+  - trabajador activo + documento PDF de referencia para casos de acceso documental
 
 ## Proximo bloque recomendado
 
-1. Iniciar ticket `feature/permissions-e2e-smoke` para automatizar smoke de login/permisos.
-2. Documentar precondiciones de usuarios de prueba para E2E (seed/credenciales por canal seguro).
-3. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
-4. Mantener sincronizada la memoria persistente al cerrar el siguiente bloque.
+1. Extender `feature/permissions-e2e-smoke` con smokes de permisos por rol (`admin`, `rrhh`, `contabilidad`, `visitante`).
+2. Definir/automatizar fixtures E2E (usuarios por rol + trabajador/documento de referencia).
+3. Agregar smoke de logout (manual o timeout) con asercion visible.
+4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).

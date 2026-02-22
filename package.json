@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "e2e:smoke": "playwright test tests/e2e/smoke-auth.spec.ts",
+    "e2e:smoke:headed": "playwright test tests/e2e/smoke-auth.spec.ts --headed",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -20,7 +22,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@playwright/test": "^1.57.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
