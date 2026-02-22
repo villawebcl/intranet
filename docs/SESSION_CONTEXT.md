@@ -86,39 +86,37 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Consolidar evidencia (capturas/video) del QA manual por rol y auditoria.
-2. Marcar/actualizar acceptance (`docs/ACCEPTANCE_CHECKLIST.md`) con resultados y datos faltantes.
+1. Cerrar/mergear PR de QA manual/evidencia (`feature/manual-qa-evidence`, PR `#2`).
+2. Iniciar smoke tests automatizados de permisos/auth (`feature/permissions-e2e-smoke`).
 3. Definir si limite 5MB se mantiene o se reduce por politica interna.
 4. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
 ## Proxima sesion (ticket ya definido)
 
-- Nombre sugerido de rama: `feature/manual-qa-evidence`
-- Objetivo: cerrar evidencia manual de permisos + autenticacion para acceptance MVP.
-- Estado (2026-02-22): en curso. Pruebas manuales por rol y auditoria reportadas OK; pendiente consolidar evidencia/capturas y documentacion final.
+- Nombre sugerido de rama: `feature/permissions-e2e-smoke`
+- Objetivo: automatizar smoke tests de permisos criticos y auth para reducir regresiones del MVP.
+- Estado (2026-02-22): pendiente de inicio. Ticket anterior (`feature/manual-qa-evidence`) queda con PR `#2` abierto.
 - Alcance:
-  1. Ejecutar matriz de pruebas por rol documentada en este archivo.
-  2. Registrar capturas/evidencia de casos permitidos y bloqueados.
-  3. Verificar trazas `auth_login`, `auth_logout`, `document_*` en `/dashboard/audit`.
-  4. Marcar checklist de acceptance relacionado a roles/auditoria.
+  1. Configurar framework de smoke e2e (Playwright o equivalente en el repo).
+  2. Cubrir login y redireccion a dashboard.
+  3. Cubrir permisos criticos por rol (admin/rrhh/contabilidad/visitante).
+  4. Documentar precondiciones de usuarios de prueba y comando de ejecucion.
 - Criterios de aceptacion:
-  1. Pruebas manuales por rol completas y documentadas.
-  2. Evidencia de logs de autenticacion y documentos visible para admin.
-  3. `npm run lint`, `npm run typecheck`, `npm run build` en verde.
+  1. Smoke suite ejecuta localmente con comando documentado.
+  2. Casos criticos de auth/permisos pasan localmente.
+  3. Precondiciones de usuarios/seed documentadas.
   4. PR abierto y mergeable.
 
 ## Arranque 5 minutos (siguiente sesion)
 
-1. `git checkout main && git pull origin main`
-2. `git checkout -b feature/manual-qa-evidence`
-3. `npm run dev`
-4. Probar login admin y abrir:
-   - `/dashboard/workers`
-   - `/dashboard/audit`
+1. Mergear PR `#2` en GitHub (si aun no esta mergeado).
+2. `git checkout main && git pull origin main`
+3. `git checkout -b feature/permissions-e2e-smoke`
+4. Revisar `docs/tasks.md` + `docs/permissions-matrix.md` y preparar usuarios de prueba.
 
 ## Pruebas manuales recientes (2026-02-21)
 
-> Actualizacion (2026-02-22): usuario reporta que las pruebas manuales recientes funcionan correctamente. Se marcan como validadas las pruebas de permisos por rol y auditoria; la evidencia visual (capturas/video) sigue pendiente de consolidacion.
+> Actualizacion (2026-02-22): pruebas manuales reportadas OK. Evidencia visual base consolidada en `evidence/manual-qa/` y documentada en `docs/manual-qa-evidence.md`. Se detecto y corrigio bug de login (requeria recarga y no registraba `auth_login` consistentemente).
 
 - Permissions hardening:
   - Precondicion: usar un trabajador activo existente y al menos 1 PDF de prueba (<5MB).
@@ -148,8 +146,8 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
     - [x] No puede descargar documentos.
     - [x] No puede crear/editar trabajador.
   - Evidencia sugerida:
-    - [ ] Captura por rol con al menos un caso permitido y uno bloqueado.
-    - [ ] Captura de `/dashboard/audit` con eventos documentales visibles para admin.
+    - [x] Captura por rol con al menos un caso permitido y uno bloqueado.
+    - [x] Captura de `/dashboard/audit` con eventos documentales visibles para admin.
 - Auditoria de autenticacion:
   - [x] Login exitoso genera `auth_login` en `/dashboard/audit`.
   - [x] Logout manual genera `auth_logout` con `metadata.reason = manual`.

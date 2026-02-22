@@ -12,7 +12,8 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 ## Estado actual (2026-02-22)
 
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
-- QA manual por rol y verificacion de auditoria reportados OK; falta consolidar evidencia/capturas de acceptance y definiciones operativas.
+- QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre abierto.
+- Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
 
 ## Progreso diario
 
@@ -89,16 +90,19 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se documenta matriz de permisos en `docs/permissions-matrix.md` para QA y soporte.
 - Se prepara `docs/delivery-checklist.md` para cerrar acceptance/entrega sin bloquear por falta temporal de imagenes.
 - Se agrega `docs/pr-manual-qa-evidence.md` como plantilla de PR para copiar/pegar al abrir el cierre de QA.
+- Se adjuntan capturas de QA manual en `evidence/manual-qa/` y se referencian en `docs/manual-qa-evidence.md`.
+- Se abre PR `#2` para `feature/manual-qa-evidence`.
+- Se corrige flujo de login para evitar recarga manual post-auth y asegurar registro de `auth_login` en auditoria.
 
 #### Falta / arrastrado
 
 - Mantener sincronizados los archivos legacy o definir fecha de deprecacion.
-- Registrar evidencia visual (capturas/video) de QA manual y completar datos de acceptance (usuarios de prueba/URL).
+- Completar datos de acceptance/entrega (usuarios de prueba, URL, credenciales, backup, capacitacion).
 - Definir/registrar credenciales de prueba por rol (pendiente documental y/o canal seguro).
 
 ## Proximo bloque recomendado
 
-1. Ejecutar QA manual por rol y registrar evidencia.
-2. Consolidar capturas/evidencia de casos permitidos y bloqueados por rol.
-3. Completar datos de `docs/ACCEPTANCE_CHECKLIST.md` (usuarios de prueba, URL, entrega).
-4. Definir/registrar credenciales de prueba por rol en documentacion de entrega.
+1. Cerrar/mergear PR `#2` (QA manual + evidencia + docs de acceptance).
+2. Iniciar ticket `feature/permissions-e2e-smoke` para automatizar smoke de login/permisos.
+3. Documentar precondiciones de usuarios de prueba para E2E (seed/credenciales por canal seguro).
+4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
