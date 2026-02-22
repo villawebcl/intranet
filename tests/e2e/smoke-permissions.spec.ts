@@ -41,6 +41,37 @@ test.describe("Permissions smoke", () => {
     await expect(row.getByRole("button", { name: "Aprobar" })).toHaveCount(0);
   });
 
+  test("contabilidad puede descargar fixture documental (signed URL PDF)", async ({ page }) => {
+    const fixtures = readSmokeRuntimeFixtures();
+
+    await loginAsRole(page, "contabilidad");
+    await page.goto(`/dashboard/workers/${fixtures.worker.id}/documents`);
+
+    const row = page.locator("tbody tr").filter({ hasText: fixtures.document.fileName }).first();
+    await expect(row).toBeVisible();
+
+    const downloadResponsePromise = page.waitForResponse((response) => {
+      return (
+        response.url().includes("/storage/v1/object/sign/documents/") &&
+        response.request().method() === "GET"
+      );
+    });
+
+    const downloadEventPromise = page.waitForEvent("download", { timeout: 10_000 }).catch(() => null);
+
+    await row.getByRole("button", { name: "Descargar" }).click();
+
+    const [downloadResponse, downloadEvent] = await Promise.all([downloadResponsePromise, downloadEventPromise]);
+
+    expect(downloadResponse.ok()).toBeTruthy();
+    expect(downloadResponse.headers()["content-type"] ?? "").toContain("application/pdf");
+    expect(downloadResponse.url()).toContain("/storage/v1/object/sign/documents/");
+
+    if (downloadEvent) {
+      expect(downloadEvent.suggestedFilename().toLowerCase()).toContain(".pdf");
+    }
+  });
+
   test("contabilidad no puede abrir /documents/new", async ({ page }) => {
     const fixtures = readSmokeRuntimeFixtures();
 

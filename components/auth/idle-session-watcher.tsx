@@ -8,6 +8,10 @@ type IdleSessionWatcherProps = {
   timeoutMinutes: number;
 };
 
+type E2EWindow = Window & {
+  __E2E_IDLE_TIMEOUT_MS__?: number;
+};
+
 const ACTIVITY_EVENTS: Array<keyof WindowEventMap> = ["click", "keydown", "scroll", "touchstart"];
 
 export function IdleSessionWatcher({ timeoutMinutes }: IdleSessionWatcherProps) {
@@ -16,7 +20,12 @@ export function IdleSessionWatcher({ timeoutMinutes }: IdleSessionWatcherProps) 
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    const timeoutMs = Math.max(timeoutMinutes, 5) * 60 * 1000;
+    const e2eOverrideMs =
+      typeof window !== "undefined" ? (window as E2EWindow).__E2E_IDLE_TIMEOUT_MS__ : undefined;
+    const timeoutMs =
+      typeof e2eOverrideMs === "number" && Number.isFinite(e2eOverrideMs) && e2eOverrideMs > 0
+        ? e2eOverrideMs
+        : Math.max(timeoutMinutes, 5) * 60 * 1000;
     let active = true;
 
     const clearTimer = () => {

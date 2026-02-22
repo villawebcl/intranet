@@ -14,7 +14,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
-- Ticket `feature/permissions-e2e-smoke` en avance: Playwright base + smokes auth/permisos por rol ejecutados OK local (7 casos).
+- Ticket `feature/permissions-e2e-smoke` en avance final: smoke suite auth/permisos ejecutada OK local (9 casos).
 
 ## Progreso diario
 
@@ -101,12 +101,16 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se agrega smoke de logout manual (`tests/e2e/smoke-auth.spec.ts`) con asercion de redireccion a `/login`.
 - Se agrega fixture documental E2E en `global setup` (PDF en storage + fila en `public.documents`).
 - Se agrega smoke permitido de `contabilidad` en `/dashboard/workers/[workerId]/documents` (lectura + boton `Descargar` visible).
-- Se valida suite `npm run e2e:smoke` (OK, 7 tests):
+- Se agrega soporte E2E para timeout rapido con override client-side de `IdleSessionWatcher` (`window.__E2E_IDLE_TIMEOUT_MS__`) usado por Playwright.
+- Se agrega smoke de timeout (redirect a `/login?reason=timeout`) y smoke de descarga real del fixture PDF (signed URL / respuesta PDF).
+- Se valida suite `npm run e2e:smoke` (OK, 9 tests):
   - login -> dashboard
   - logout manual -> `/login`
+  - logout por timeout -> `/login?reason=timeout`
   - admin puede ver auditoria
   - rrhh no puede ver auditoria
   - contabilidad puede ver `/documents` (lectura)
+  - contabilidad puede descargar fixture documental (PDF signed URL)
   - contabilidad no puede abrir `/documents/new`
   - visitante no puede acceder a `/documents`
 
@@ -115,11 +119,11 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Mantener sincronizados los archivos legacy o definir fecha de deprecacion.
 - Completar datos de acceptance/entrega (usuarios de prueba, URL, credenciales, backup, capacitacion).
 - Definir/registrar credenciales de prueba por rol (pendiente documental y/o canal seguro).
-- (Opcional) Agregar asercion de descarga real del PDF fixture (`Descargar` -> signed URL/archivo).
+- Revisar si se desea mantener el override E2E de timeout en `IdleSessionWatcher` (actualmente aislado a pruebas por `window.__E2E_IDLE_TIMEOUT_MS__`).
 
 ## Proximo bloque recomendado
 
-1. (Opcional) Agregar asercion de descarga real del PDF fixture (`Descargar` -> signed URL/archivo).
-2. (Opcional) Agregar smoke de logout por timeout si se quiere cubrir inactividad en E2E.
-3. Evaluar si el ticket se considera listo para PR con cobertura actual (auth + permisos criticos + logout manual + lectura contabilidad).
-4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
+1. Abrir PR de `feature/permissions-e2e-smoke` (cobertura smoke MVP ya implementada y validada).
+2. Evaluar si se agrega una asercion de auditoria (`auth_login`/`auth_logout`) como smoke extra o se deja para un ticket aparte.
+3. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
+4. Mantener sincronizada la memoria persistente al cerrar el PR.
