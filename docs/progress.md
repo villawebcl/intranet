@@ -12,7 +12,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 ## Estado actual (2026-02-22)
 
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
-- QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre abierto.
+- QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
 
 ## Progreso diario
@@ -91,7 +91,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se prepara `docs/delivery-checklist.md` para cerrar acceptance/entrega sin bloquear por falta temporal de imagenes.
 - Se agrega `docs/pr-manual-qa-evidence.md` como plantilla de PR para copiar/pegar al abrir el cierre de QA.
 - Se adjuntan capturas de QA manual en `evidence/manual-qa/` y se referencian en `docs/manual-qa-evidence.md`.
-- Se abre PR `#2` para `feature/manual-qa-evidence`.
+- Se abre y mergea PR `#2` para `feature/manual-qa-evidence`.
 - Se corrige flujo de login para evitar recarga manual post-auth y asegurar registro de `auth_login` en auditoria.
 
 #### Falta / arrastrado
@@ -102,7 +102,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Cerrar/mergear PR `#2` (QA manual + evidencia + docs de acceptance).
-2. Iniciar ticket `feature/permissions-e2e-smoke` para automatizar smoke de login/permisos.
-3. Documentar precondiciones de usuarios de prueba para E2E (seed/credenciales por canal seguro).
-4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
+1. Iniciar ticket `feature/permissions-e2e-smoke` para automatizar smoke de login/permisos.
+2. Documentar precondiciones de usuarios de prueba para E2E (seed/credenciales por canal seguro).
+3. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
+4. Mantener sincronizada la memoria persistente al cerrar el siguiente bloque.

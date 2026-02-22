@@ -86,8 +86,8 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Cerrar/mergear PR de QA manual/evidencia (`feature/manual-qa-evidence`, PR `#2`).
-2. Iniciar smoke tests automatizados de permisos/auth (`feature/permissions-e2e-smoke`).
+1. Iniciar smoke tests automatizados de permisos/auth (`feature/permissions-e2e-smoke`).
+2. Documentar precondiciones de usuarios de prueba para E2E (seed/credenciales por canal seguro).
 3. Definir si limite 5MB se mantiene o se reduce por politica interna.
 4. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
@@ -95,7 +95,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 - Nombre sugerido de rama: `feature/permissions-e2e-smoke`
 - Objetivo: automatizar smoke tests de permisos criticos y auth para reducir regresiones del MVP.
-- Estado (2026-02-22): pendiente de inicio. Ticket anterior (`feature/manual-qa-evidence`) queda con PR `#2` abierto.
+- Estado (2026-02-22): listo para iniciar. Ticket anterior (`feature/manual-qa-evidence`) ya mergeado via PR `#2`.
 - Alcance:
   1. Configurar framework de smoke e2e (Playwright o equivalente en el repo).
   2. Cubrir login y redireccion a dashboard.
@@ -109,10 +109,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Arranque 5 minutos (siguiente sesion)
 
-1. Mergear PR `#2` en GitHub (si aun no esta mergeado).
-2. `git checkout main && git pull origin main`
-3. `git checkout -b feature/permissions-e2e-smoke`
-4. Revisar `docs/tasks.md` + `docs/permissions-matrix.md` y preparar usuarios de prueba.
+1. `git checkout main && git pull origin main`
+2. `git checkout -b feature/permissions-e2e-smoke`
+3. Revisar `docs/tasks.md` + `docs/permissions-matrix.md`
+4. Preparar usuarios de prueba / precondiciones para E2E y definir comando inicial.
 
 ## Pruebas manuales recientes (2026-02-21)
 

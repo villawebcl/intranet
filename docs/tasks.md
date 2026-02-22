@@ -50,7 +50,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
-- [x] PR abierto para cierre QA manual/evidencia: `#2` (2026-02-22)
+- [x] PR `#2` de cierre QA manual/evidencia mergeado en `main` (2026-02-22)
 - [x] Fix login: ingreso estable sin recarga + `auth_login` en auditoria (2026-02-22)
 - [x] Evidencia visual QA manual adjunta en `evidence/manual-qa/` (2026-02-22)
 - [x] QA manual por rol + verificacion de auditoria (reportado OK) (2026-02-22)
