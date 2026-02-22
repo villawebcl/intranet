@@ -1,7 +1,16 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+
 import { loadEnvConfig } from "@next/env";
 import { createClient } from "@supabase/supabase-js";
 
-import { getSmokeAdminCredentials, SMOKE_ADMIN_FULL_NAME } from "./support/smoke-user";
+import {
+  getSmokeUsersSeed,
+  getSmokeWorkerSeed,
+  smokeFixturesFilePath,
+  type SmokeRole,
+  type SmokeRuntimeFixtures,
+} from "./support/smoke-fixtures";
 
 loadEnvConfig(process.cwd());
 
@@ -11,11 +20,12 @@ export default async function globalSetup() {
 
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error(
-      "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY para preparar el usuario E2E de smoke.",
+      "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY para preparar fixtures E2E de smoke.",
     );
   }
 
-  const { email, password } = getSmokeAdminCredentials();
+  const usersSeed = getSmokeUsersSeed();
+  const workerSeed = getSmokeWorkerSeed();
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
@@ -32,51 +42,128 @@ export default async function globalSetup() {
     throw new Error(`No se pudo listar usuarios para E2E smoke: ${listUsersError.message}`);
   }
 
-  const existingUser = usersPage.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+  const runtimeUsers = {} as SmokeRuntimeFixtures["users"];
 
-  let userId: string;
+  for (const role of Object.keys(usersSeed) as SmokeRole[]) {
+    const seed = usersSeed[role];
+    const existingUser = usersPage.users.find((user) => user.email?.toLowerCase() === seed.email.toLowerCase());
 
-  if (existingUser) {
-    const { data: updatedUser, error: updateUserError } = await supabase.auth.admin.updateUserById(existingUser.id, {
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: SMOKE_ADMIN_FULL_NAME,
-      },
-    });
+    let userId: string;
 
-    if (updateUserError) {
-      throw new Error(`No se pudo actualizar usuario E2E smoke (${email}): ${updateUserError.message}`);
+    if (existingUser) {
+      const { data: updatedUser, error: updateUserError } = await supabase.auth.admin.updateUserById(existingUser.id, {
+        password: seed.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: seed.fullName,
+        },
+      });
+
+      if (updateUserError) {
+        throw new Error(`No se pudo actualizar usuario E2E smoke (${seed.email}): ${updateUserError.message}`);
+      }
+
+      userId = updatedUser.user.id;
+    } else {
+      const { data: createdUser, error: createUserError } = await supabase.auth.admin.createUser({
+        email: seed.email,
+        password: seed.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: seed.fullName,
+        },
+      });
+
+      if (createUserError) {
+        throw new Error(`No se pudo crear usuario E2E smoke (${seed.email}): ${createUserError.message}`);
+      }
+
+      userId = createdUser.user.id;
     }
 
-    userId = updatedUser.user.id;
-  } else {
-    const { data: createdUser, error: createUserError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: SMOKE_ADMIN_FULL_NAME,
+    const { error: profileUpsertError } = await supabase.from("profiles").upsert(
+      {
+        id: userId,
+        role: seed.role,
+        full_name: seed.fullName,
       },
-    });
+      { onConflict: "id" },
+    );
 
-    if (createUserError) {
-      throw new Error(`No se pudo crear usuario E2E smoke (${email}): ${createUserError.message}`);
+    if (profileUpsertError) {
+      throw new Error(`No se pudo upsert de profile E2E smoke (${seed.email}): ${profileUpsertError.message}`);
     }
 
-    userId = createdUser.user.id;
-  }
-
-  const { error: profileUpsertError } = await supabase.from("profiles").upsert(
-    {
+    runtimeUsers[role] = {
       id: userId,
-      role: "admin",
-      full_name: SMOKE_ADMIN_FULL_NAME,
-    },
-    { onConflict: "id" },
-  );
-
-  if (profileUpsertError) {
-    throw new Error(`No se pudo upsert de profile E2E smoke (${email}): ${profileUpsertError.message}`);
+      email: seed.email,
+      password: seed.password,
+    };
   }
+
+  const { data: existingWorker, error: workerLookupError } = await supabase
+    .from("workers")
+    .select("id")
+    .eq("rut", workerSeed.rut)
+    .maybeSingle();
+
+  if (workerLookupError) {
+    throw new Error(`No se pudo buscar trabajador E2E smoke (${workerSeed.rut}): ${workerLookupError.message}`);
+  }
+
+  let workerId = existingWorker?.id ?? "";
+
+  if (workerId) {
+    const { error: workerUpdateError } = await supabase
+      .from("workers")
+      .update({
+        first_name: workerSeed.firstName,
+        last_name: workerSeed.lastName,
+        status: workerSeed.status,
+        area: workerSeed.area,
+        position: workerSeed.position,
+        email: workerSeed.email,
+        phone: workerSeed.phone,
+      })
+      .eq("id", workerId);
+
+    if (workerUpdateError) {
+      throw new Error(`No se pudo actualizar trabajador E2E smoke (${workerSeed.rut}): ${workerUpdateError.message}`);
+    }
+  } else {
+    const { data: insertedWorker, error: workerInsertError } = await supabase
+      .from("workers")
+      .insert({
+        rut: workerSeed.rut,
+        first_name: workerSeed.firstName,
+        last_name: workerSeed.lastName,
+        status: workerSeed.status,
+        area: workerSeed.area,
+        position: workerSeed.position,
+        email: workerSeed.email,
+        phone: workerSeed.phone,
+      })
+      .select("id")
+      .single();
+
+    if (workerInsertError) {
+      throw new Error(`No se pudo crear trabajador E2E smoke (${workerSeed.rut}): ${workerInsertError.message}`);
+    }
+
+    workerId = insertedWorker.id;
+  }
+
+  const runtimeFixtures: SmokeRuntimeFixtures = {
+    users: runtimeUsers,
+    worker: {
+      id: workerId,
+      rut: workerSeed.rut,
+      firstName: workerSeed.firstName,
+      lastName: workerSeed.lastName,
+      status: workerSeed.status,
+    },
+  };
+
+  await mkdir(path.dirname(smokeFixturesFilePath), { recursive: true });
+  await writeFile(smokeFixturesFilePath, JSON.stringify(runtimeFixtures, null, 2), "utf8");
 }

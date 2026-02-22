@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "e2e:smoke": "playwright test tests/e2e/smoke-auth.spec.ts",
-    "e2e:smoke:headed": "playwright test tests/e2e/smoke-auth.spec.ts --headed",
+    "e2e:smoke": "playwright test tests/e2e",
+    "e2e:smoke:headed": "playwright test tests/e2e --headed",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

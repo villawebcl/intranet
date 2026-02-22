@@ -34,9 +34,14 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Backlog tecnico (MVP+)
 
 - [ ] Automatizar pruebas minimas (e2e o unitarias) para permisos criticos.
-  - [x] Base E2E con Playwright + `global setup` (seed usuario admin de smoke) + comando `npm run e2e:smoke`. (2026-02-22)
+  - [x] Base E2E con Playwright + `global setup` + comando `npm run e2e:smoke`. (2026-02-22)
   - [x] Smoke inicial auth: login -> dashboard (`tests/e2e/smoke-auth.spec.ts`) ejecutado OK local. (2026-02-22)
-  - [ ] Siguientes smokes de permisos por rol (`rrhh`, `contabilidad`, `visitante`) y casos bloqueados.
+  - [x] Smokes de permisos por rol (casos criticos MVP):
+    - [x] `admin` puede ver `/dashboard/audit`
+    - [x] `rrhh` no puede ver `/dashboard/audit`
+    - [x] `contabilidad` no puede abrir `/documents/new`
+    - [x] `visitante` no puede acceder al modulo documental (`/documents`)
+  - [x] Seed automatizado de usuarios E2E (`admin`, `rrhh`, `contabilidad`, `visitante`) y trabajador smoke estable.
   - [ ] Smoke de logout (manual o timeout).
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
@@ -54,6 +59,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
+- [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Base Playwright + smoke E2E login->dashboard ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] PR `#2` de cierre QA manual/evidencia mergeado en `main` (2026-02-22)
 - [x] Fix login: ingreso estable sin recarga + `auth_login` en auditoria (2026-02-22)
@@ -91,13 +97,17 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ### Hecho
 
 - [x] Se agrego Playwright (`@playwright/test`) y configuracion base (`playwright.config.ts`).
-- [x] `global setup` crea/actualiza usuario admin de smoke en Supabase con `SUPABASE_SERVICE_ROLE_KEY`.
-- [x] Smoke test funcional `login -> dashboard` ejecutado OK con `npm run e2e:smoke`.
+- [x] `global setup` crea/actualiza usuarios E2E por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) en Supabase con `SUPABASE_SERVICE_ROLE_KEY`.
+- [x] `global setup` crea/actualiza trabajador smoke estable para rutas documentales con `workerId` reutilizable.
+- [x] Smoke tests funcionales ejecutados OK con `npm run e2e:smoke`:
+  - [x] login -> dashboard
+  - [x] `admin` -> `/dashboard/audit` (permitido)
+  - [x] `rrhh` -> `/dashboard/audit` (bloqueado)
+  - [x] `contabilidad` -> `/documents/new` (bloqueado)
+  - [x] `visitante` -> `/documents` (bloqueado)
 
 ### Precondiciones pendientes (exactas) para ampliar permisos por rol
 
-- [ ] Seed automatizado o credenciales estables para usuarios E2E de roles `rrhh`, `contabilidad`, `visitante` (actualmente solo se auto-prepara `admin`).
 - [ ] Fixture de datos para pruebas documentales:
-  - [ ] 1 trabajador activo estable para navegar a `/dashboard/workers/[workerId]/documents`.
   - [ ] 1 documento PDF existente asociado a ese trabajador para validar lectura/descarga (caso `contabilidad`) y bloqueos.
-- [ ] Definir si esos fixtures se crearan por script E2E (recomendado) o se mantendran manualmente en entorno local/staging.
+- [ ] Definir si el fixture documental (PDF + registro en `documents`/storage) se creara por script E2E (recomendado) o se mantendra manualmente en entorno local/staging.

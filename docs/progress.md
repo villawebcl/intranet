@@ -14,7 +14,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
-- Ticket `feature/permissions-e2e-smoke` iniciado: Playwright base agregado y smoke `login -> dashboard` ejecutado OK local.
+- Ticket `feature/permissions-e2e-smoke` en avance: Playwright base + smokes auth/permisos por rol ejecutados OK local (5 casos).
 
 ## Progreso diario
 
@@ -95,8 +95,15 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se abre y mergea PR `#2` para `feature/manual-qa-evidence`.
 - Se corrige flujo de login para evitar recarga manual post-auth y asegurar registro de `auth_login` en auditoria.
 - Se agrega base E2E con Playwright (`@playwright/test`) y configuracion `playwright.config.ts`.
-- Se implementa `global setup` para crear/actualizar usuario admin de smoke en Supabase usando `SUPABASE_SERVICE_ROLE_KEY`.
-- Se agrega smoke test `tests/e2e/smoke-auth.spec.ts` (login -> dashboard) y se valida localmente con `npm run e2e:smoke` (OK).
+- Se implementa `global setup` para crear/actualizar usuarios E2E por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) en Supabase usando `SUPABASE_SERVICE_ROLE_KEY`.
+- Se agrega fixture de trabajador smoke estable para rutas documentales y archivo runtime (`tests/e2e/.generated/smoke-fixtures.json`).
+- Se agrega helper de login con reintento corto para estabilizar auth E2E en entorno dev.
+- Se valida suite `npm run e2e:smoke` (OK, 5 tests):
+  - login -> dashboard
+  - admin puede ver auditoria
+  - rrhh no puede ver auditoria
+  - contabilidad no puede abrir `/documents/new`
+  - visitante no puede acceder a `/documents`
 
 #### Falta / arrastrado
 
@@ -104,12 +111,11 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Completar datos de acceptance/entrega (usuarios de prueba, URL, credenciales, backup, capacitacion).
 - Definir/registrar credenciales de prueba por rol (pendiente documental y/o canal seguro).
 - Preparar fixtures E2E para permisos por rol:
-  - usuarios `rrhh`, `contabilidad`, `visitante` (seed o credenciales estables)
-  - trabajador activo + documento PDF de referencia para casos de acceso documental
+  - documento PDF de referencia + registro en `documents`/storage para casos de lectura/descarga
 
 ## Proximo bloque recomendado
 
-1. Extender `feature/permissions-e2e-smoke` con smokes de permisos por rol (`admin`, `rrhh`, `contabilidad`, `visitante`).
-2. Definir/automatizar fixtures E2E (usuarios por rol + trabajador/documento de referencia).
-3. Agregar smoke de logout (manual o timeout) con asercion visible.
+1. Agregar smoke de logout (manual o timeout) con asercion visible.
+2. Definir/automatizar fixture documental E2E (PDF + registro + storage) para cubrir lectura/descarga.
+3. Extender smokes con casos permitidos adicionales (ej. `contabilidad` puede ver `/documents`).
 4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).

@@ -55,8 +55,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Consulta de resumen documental en ficha de trabajador solo para roles con acceso documental.
 - Base de smoke E2E con Playwright:
   - `playwright.config.ts` con `webServer` (`npm run dev`) y proyecto `chromium`.
-  - `tests/e2e/global-setup.ts` que crea/actualiza usuario admin de smoke en Supabase.
-  - Smoke `tests/e2e/smoke-auth.spec.ts` (login -> dashboard) validado localmente.
+  - `tests/e2e/global-setup.ts` que crea/actualiza usuarios por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) y un trabajador smoke.
+  - Smokes validados localmente:
+    - `tests/e2e/smoke-auth.spec.ts` (login -> dashboard)
+    - `tests/e2e/smoke-permissions.spec.ts` (permisos por rol MVP)
 
 ## Rutas clave
 
@@ -91,20 +93,20 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Extender smoke tests automatizados de permisos/auth (`feature/permissions-e2e-smoke`) a casos por rol.
-2. Automatizar o documentar fixtures E2E pendientes (usuarios `rrhh/contabilidad/visitante` + trabajador/documento de referencia).
-3. Agregar smoke de logout (manual o timeout).
+1. Agregar smoke de logout (manual o timeout).
+2. Automatizar o documentar fixture documental E2E pendiente (PDF + registro + storage) para pruebas de lectura/descarga.
+3. Extender cobertura con casos permitidos adicionales (ej. `contabilidad` puede ver `/documents`).
 4. Definir si limite 5MB se mantiene o se reduce por politica interna.
 
 ## Proxima sesion (ticket ya definido)
 
 - Nombre sugerido de rama: `feature/permissions-e2e-smoke`
 - Objetivo: automatizar smoke tests de permisos criticos y auth para reducir regresiones del MVP.
-- Estado (2026-02-22): en curso. Base Playwright y smoke `login -> dashboard` ya implementados y validados.
+- Estado (2026-02-22): en curso. Base Playwright + smokes auth/permisos MVP (5 casos) implementados y validados.
 - Alcance:
   1. Extender cobertura a permisos criticos por rol (admin/rrhh/contabilidad/visitante).
   2. Agregar smoke de logout (manual o timeout).
-  3. Automatizar fixtures/seed E2E faltantes (usuarios y datos documentales).
+  3. Automatizar fixture documental E2E faltante (PDF + registro + storage).
   4. Mantener documentadas precondiciones y comando de ejecucion (`npm run e2e:smoke`).
 - Criterios de aceptacion:
   1. Smoke suite ejecuta localmente con comando documentado.
@@ -114,9 +116,9 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Arranque 5 minutos (siguiente sesion)
 
-1. Ejecutar `npm run e2e:smoke` para confirmar baseline verde.
-2. Crear fixtures E2E faltantes (usuarios por rol + trabajador/documento de prueba).
-3. Implementar smokes de permisos (`/dashboard/audit`, `/documents`, `/documents/new`).
+1. Ejecutar `npm run e2e:smoke` para confirmar baseline verde (actualmente 5 tests).
+2. Implementar smoke de logout (manual o timeout).
+3. Crear fixture documental E2E (PDF + storage + fila `documents`) para lectura/descarga.
 4. Actualizar `docs/tasks.md`, `docs/progress.md` y este archivo al cerrar el siguiente avance.
 
 ## Pruebas manuales recientes (2026-02-21)
