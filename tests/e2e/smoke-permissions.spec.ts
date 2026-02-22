@@ -26,6 +26,21 @@ test.describe("Permissions smoke", () => {
     expect(url.searchParams.get("error")).toBe("No tienes permisos para ver auditoria");
   });
 
+  test("contabilidad puede ver /documents en modo lectura", async ({ page }) => {
+    const fixtures = readSmokeRuntimeFixtures();
+
+    await loginAsRole(page, "contabilidad");
+    await page.goto(`/dashboard/workers/${fixtures.worker.id}/documents`);
+
+    await expect(page).toHaveURL(new RegExp(`/dashboard/workers/${fixtures.worker.id}/documents(?:\\?.*)?$`));
+    await expect(page.getByRole("heading", { name: "Documentos del trabajador" })).toBeVisible();
+
+    const row = page.locator("tbody tr").filter({ hasText: fixtures.document.fileName }).first();
+    await expect(row).toBeVisible();
+    await expect(row.getByRole("button", { name: "Descargar" })).toBeVisible();
+    await expect(row.getByRole("button", { name: "Aprobar" })).toHaveCount(0);
+  });
+
   test("contabilidad no puede abrir /documents/new", async ({ page }) => {
     const fixtures = readSmokeRuntimeFixtures();
 

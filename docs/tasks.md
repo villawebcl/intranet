@@ -43,6 +43,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
     - [x] `visitante` no puede acceder al modulo documental (`/documents`)
   - [x] Seed automatizado de usuarios E2E (`admin`, `rrhh`, `contabilidad`, `visitante`) y trabajador smoke estable.
   - [x] Smoke de logout manual (cierre de sesion y redireccion a `/login`).
+  - [x] Fixture documental E2E (PDF en storage + fila en `documents`) para caso de lectura por `contabilidad`.
+  - [x] Smoke permitido documental: `contabilidad` puede ver `/documents` en modo lectura y boton `Descargar`.
   - [ ] Smoke de logout por timeout (opcional en este ticket si se quiere cubrir inactividad).
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
@@ -62,6 +64,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 - [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Smoke E2E de logout manual ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Fixture documental E2E + smoke permitido de lectura `contabilidad` ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Base Playwright + smoke E2E login->dashboard ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] PR `#2` de cierre QA manual/evidencia mergeado en `main` (2026-02-22)
 - [x] Fix login: ingreso estable sin recarga + `auth_login` en auditoria (2026-02-22)
@@ -101,16 +104,16 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Se agrego Playwright (`@playwright/test`) y configuracion base (`playwright.config.ts`).
 - [x] `global setup` crea/actualiza usuarios E2E por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) en Supabase con `SUPABASE_SERVICE_ROLE_KEY`.
 - [x] `global setup` crea/actualiza trabajador smoke estable para rutas documentales con `workerId` reutilizable.
+- [x] `global setup` crea/actualiza fixture documental (PDF en bucket `documents` + fila en `public.documents`).
 - [x] Smoke tests funcionales ejecutados OK con `npm run e2e:smoke`:
   - [x] login -> dashboard
   - [x] logout manual -> `/login`
   - [x] `admin` -> `/dashboard/audit` (permitido)
   - [x] `rrhh` -> `/dashboard/audit` (bloqueado)
+  - [x] `contabilidad` -> `/documents` (permitido, lectura)
   - [x] `contabilidad` -> `/documents/new` (bloqueado)
   - [x] `visitante` -> `/documents` (bloqueado)
 
 ### Precondiciones pendientes (exactas) para ampliar permisos por rol
 
-- [ ] Fixture de datos para pruebas documentales:
-  - [ ] 1 documento PDF existente asociado a ese trabajador para validar lectura/descarga (caso `contabilidad`) y bloqueos.
-- [ ] Definir si el fixture documental (PDF + registro en `documents`/storage) se creara por script E2E (recomendado) o se mantendra manualmente en entorno local/staging.
+- [ ] (Opcional) Asercion de descarga real del PDF fixture en E2E (click en `Descargar` -> signed URL/archivo), si se quiere cubrir descarga y no solo visibilidad de accion.

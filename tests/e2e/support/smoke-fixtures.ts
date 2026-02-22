@@ -21,6 +21,14 @@ type SmokeWorkerSeed = {
   phone: string;
 };
 
+type SmokeDocumentSeed = {
+  folderType: "folder_01";
+  fileName: string;
+  filePathSuffix: string;
+  mimeType: "application/pdf";
+  content: string;
+};
+
 export type SmokeRuntimeFixtures = {
   users: Record<SmokeRole, { id: string; email: string; password: string }>;
   worker: {
@@ -29,6 +37,12 @@ export type SmokeRuntimeFixtures = {
     firstName: string;
     lastName: string;
     status: "activo" | "inactivo";
+  };
+  document: {
+    id: string;
+    fileName: string;
+    filePath: string;
+    folderType: "folder_01";
   };
 };
 
@@ -73,6 +87,17 @@ export function getSmokeWorkerSeed(): SmokeWorkerSeed {
     position: "Tester E2E",
     email: "trabajador.smoke@anagami.local",
     phone: "+56900000000",
+  };
+}
+
+export function getSmokeDocumentSeed(): SmokeDocumentSeed {
+  return {
+    folderType: "folder_01",
+    fileName: process.env.E2E_SMOKE_DOCUMENT_FILE_NAME ?? "e2e-smoke-document.pdf",
+    filePathSuffix: process.env.E2E_SMOKE_DOCUMENT_PATH_SUFFIX ?? "e2e-smoke/e2e-smoke-document.pdf",
+    mimeType: "application/pdf",
+    // Minimal PDF payload sufficient for storage/download smoke fixtures.
+    content: "%PDF-1.1\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n",
   };
 }
 
