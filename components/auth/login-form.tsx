@@ -1,9 +1,6 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { registerAuthLoginAction } from "@/app/(auth)/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 type LoginFormProps = {
@@ -11,13 +8,47 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ nextPath }: LoginFormProps) {
-  const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function registerAuthLoginFromBrowser() {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const { error } = await supabase.from("audit_logs").insert({
+        actor_user_id: user.id,
+        actor_role: profile?.role ?? "visitante",
+        action: "auth_login",
+        entity_type: "auth",
+        metadata: {
+          method: "password",
+          source: "browser",
+        },
+      });
+
+      if (error) {
+        console.error("auth login audit insert failed (browser)", error);
+      }
+    } catch (auditError) {
+      console.error("auth login audit browser flow failed", auditError);
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,9 +66,9 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       return;
     }
 
-    await registerAuthLoginAction();
-    router.replace(nextPath);
-    router.refresh();
+    await registerAuthLoginFromBrowser();
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    window.location.assign(nextPath);
   }
 
   return (
