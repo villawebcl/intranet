@@ -11,19 +11,19 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Estado del backlog (2026-02-22)
 
-- Prioridad actual: cierre de QA manual/evidencia y acceptance MVP.
+- Prioridad actual: consolidar evidencia/capturas y cierre de acceptance MVP.
 
 ## Ahora (prioridad alta)
 
-- [ ] Ejecutar QA manual por rol (admin, rrhh, contabilidad, visitante).
+- [x] Ejecutar QA manual por rol (admin, rrhh, contabilidad, visitante).
 - [ ] Registrar evidencia (capturas o video) de casos permitidos/bloqueados por rol.
-- [ ] Verificar en `/dashboard/audit` eventos:
-  - [ ] `auth_login`
-  - [ ] `auth_logout` manual (`reason=manual`)
-  - [ ] `auth_logout` timeout (`reason=timeout`)
-  - [ ] eventos documentales (`document_*`)
-- [ ] Marcar items correspondientes en `docs/ACCEPTANCE_CHECKLIST.md`.
-- [ ] Ejecutar validacion local final del bloque: `npm run lint`, `npm run typecheck`, `npm run build`.
+- [x] Verificar en `/dashboard/audit` eventos:
+  - [x] `auth_login`
+  - [x] `auth_logout` manual (`reason=manual`)
+  - [x] `auth_logout` timeout (`reason=timeout`)
+  - [x] eventos documentales (`document_*`)
+- [x] Marcar items correspondientes en `docs/ACCEPTANCE_CHECKLIST.md`.
+- [x] Ejecutar validacion local final del bloque: `npm run lint`, `npm run typecheck`, `npm run build`.
 
 ## Proximas decisiones / definiciones (negocio + tecnica)
 
@@ -49,6 +49,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
+- [x] QA manual por rol + verificacion de auditoria (reportado OK) (2026-02-22)
+- [x] Validacion local `lint` + `typecheck` + `build` (2026-02-22)
 - [x] Hardening de permisos por rol (UI + backend + RLS) (2026-02-21)
 - [x] Auditoria de auth/workers/documentos + panel admin (2026-02-21)
 - [x] Notificaciones internas + email opcional via Resend (2026-02-21)

@@ -86,8 +86,8 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Ejecutar pruebas manuales por rol en Supabase (admin/rrhh/contabilidad/visitante) y registrar evidencia.
-2. Validar en `/dashboard/audit` eventos `auth_login` y `auth_logout`.
+1. Consolidar evidencia (capturas/video) del QA manual por rol y auditoria.
+2. Marcar/actualizar acceptance (`docs/ACCEPTANCE_CHECKLIST.md`) con resultados y datos faltantes.
 3. Definir si limite 5MB se mantiene o se reduce por politica interna.
 4. Opcional: destinatarios de email por area/unidad (cuando negocio lo defina).
 
@@ -95,6 +95,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 - Nombre sugerido de rama: `feature/manual-qa-evidence`
 - Objetivo: cerrar evidencia manual de permisos + autenticacion para acceptance MVP.
+- Estado (2026-02-22): en curso. Pruebas manuales por rol y auditoria reportadas OK; pendiente consolidar evidencia/capturas y documentacion final.
 - Alcance:
   1. Ejecutar matriz de pruebas por rol documentada en este archivo.
   2. Registrar capturas/evidencia de casos permitidos y bloqueados.
@@ -117,40 +118,42 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Pruebas manuales recientes (2026-02-21)
 
+> Actualizacion (2026-02-22): usuario reporta que las pruebas manuales recientes funcionan correctamente. Se marcan como validadas las pruebas de permisos por rol y auditoria; la evidencia visual (capturas/video) sigue pendiente de consolidacion.
+
 - Permissions hardening:
   - Precondicion: usar un trabajador activo existente y al menos 1 PDF de prueba (<5MB).
-  - [ ] Admin
-    - [ ] Puede crear trabajador desde `/dashboard/workers/new`.
-    - [ ] Puede editar trabajador desde `/dashboard/workers/[workerId]/edit`.
-    - [ ] Puede subir PDF en `/dashboard/workers/[workerId]/documents/new`.
-    - [ ] Puede aprobar/rechazar en `/dashboard/workers/[workerId]/documents`.
-    - [ ] Puede descargar PDF en `/dashboard/workers/[workerId]/documents`.
-    - [ ] Puede ver auditoria en `/dashboard/audit`.
-  - [ ] RRHH
-    - [ ] Puede crear/editar trabajador.
-    - [ ] Puede subir PDF.
-    - [ ] Puede aprobar/rechazar documentos pendientes.
-    - [ ] Puede descargar PDF.
-    - [ ] No puede abrir `/dashboard/audit` (debe redirigir con error).
-  - [ ] Contabilidad
-    - [ ] Puede abrir `/dashboard/workers/[workerId]/documents` (lectura).
-    - [ ] Puede descargar PDF.
-    - [ ] No puede abrir `/dashboard/workers/[workerId]/documents/new` (mensaje de permisos).
-    - [ ] No puede aprobar/rechazar documentos.
-    - [ ] No puede crear/editar trabajador.
-  - [ ] Visitante
-    - [ ] Puede autenticarse y entrar al dashboard.
-    - [ ] No puede abrir `/dashboard/workers/[workerId]/documents` (mensaje de permisos).
-    - [ ] No puede abrir `/dashboard/workers/[workerId]/documents/new`.
-    - [ ] No puede descargar documentos.
-    - [ ] No puede crear/editar trabajador.
+  - [x] Admin
+    - [x] Puede crear trabajador desde `/dashboard/workers/new`.
+    - [x] Puede editar trabajador desde `/dashboard/workers/[workerId]/edit`.
+    - [x] Puede subir PDF en `/dashboard/workers/[workerId]/documents/new`.
+    - [x] Puede aprobar/rechazar en `/dashboard/workers/[workerId]/documents`.
+    - [x] Puede descargar PDF en `/dashboard/workers/[workerId]/documents`.
+    - [x] Puede ver auditoria en `/dashboard/audit`.
+  - [x] RRHH
+    - [x] Puede crear/editar trabajador.
+    - [x] Puede subir PDF.
+    - [x] Puede aprobar/rechazar documentos pendientes.
+    - [x] Puede descargar PDF.
+    - [x] No puede abrir `/dashboard/audit` (debe redirigir con error).
+  - [x] Contabilidad
+    - [x] Puede abrir `/dashboard/workers/[workerId]/documents` (lectura).
+    - [x] Puede descargar PDF.
+    - [x] No puede abrir `/dashboard/workers/[workerId]/documents/new` (mensaje de permisos).
+    - [x] No puede aprobar/rechazar documentos.
+    - [x] No puede crear/editar trabajador.
+  - [x] Visitante
+    - [x] Puede autenticarse y entrar al dashboard.
+    - [x] No puede abrir `/dashboard/workers/[workerId]/documents` (mensaje de permisos).
+    - [x] No puede abrir `/dashboard/workers/[workerId]/documents/new`.
+    - [x] No puede descargar documentos.
+    - [x] No puede crear/editar trabajador.
   - Evidencia sugerida:
     - [ ] Captura por rol con al menos un caso permitido y uno bloqueado.
     - [ ] Captura de `/dashboard/audit` con eventos documentales visibles para admin.
 - Auditoria de autenticacion:
-  - [ ] Login exitoso genera `auth_login` en `/dashboard/audit`.
-  - [ ] Logout manual genera `auth_logout` con `metadata.reason = manual`.
-  - [ ] Logout por inactividad genera `auth_logout` con `metadata.reason = timeout`.
+  - [x] Login exitoso genera `auth_login` en `/dashboard/audit`.
+  - [x] Logout manual genera `auth_logout` con `metadata.reason = manual`.
+  - [x] Logout por inactividad genera `auth_logout` con `metadata.reason = timeout`.
 
 ## Checklist de arranque por sesion
 

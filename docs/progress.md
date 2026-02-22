@@ -12,7 +12,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 ## Estado actual (2026-02-22)
 
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
-- Falta principalmente cerrar QA manual por rol/evidencia de acceptance y algunas decisiones operativas.
+- QA manual por rol y verificacion de auditoria reportados OK; falta consolidar evidencia/capturas de acceptance y definiciones operativas.
 
 ## Progreso diario
 
@@ -79,15 +79,21 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - `system-overview.md`
 - Consolidacion de contenido desde archivos legacy (`AI_CONTEXT`, `SESSION_CONTEXT`, `DECISIONS`, `ACCEPTANCE_CHECKLIST`).
 - Se formaliza regla operativa: leer/actualizar docs de memoria antes/despues de cambios importantes.
+- Validacion local del bloque documental:
+  - `npm run lint` OK
+  - `npm run typecheck` OK
+  - `npm run build` OK
+- Se crea rama `feature/manual-qa-evidence` para cierre de QA/acceptance.
+- Usuario reporta pruebas manuales recientes OK para permisos por rol y flujo de auditoria (login/logout/documentos).
 
 #### Falta / arrastrado
 
 - Mantener sincronizados los archivos legacy o definir fecha de deprecacion.
-- Seguir con ticket sugerido: evidencia QA manual y cierre de acceptance MVP.
+- Registrar evidencia visual (capturas/video) de QA manual y completar datos de acceptance (usuarios de prueba/URL).
 
 ## Proximo bloque recomendado
 
 1. Ejecutar QA manual por rol y registrar evidencia.
-2. Validar eventos de autenticacion/documentos en `/dashboard/audit`.
-3. Actualizar `docs/tasks.md` y `docs/progress.md` con resultados.
-4. Marcar items en `docs/ACCEPTANCE_CHECKLIST.md`.
+2. Consolidar capturas/evidencia de casos permitidos y bloqueados por rol.
+3. Completar datos de `docs/ACCEPTANCE_CHECKLIST.md` (usuarios de prueba, URL, entrega).
+4. Definir/registrar credenciales de prueba por rol en documentacion de entrega.
