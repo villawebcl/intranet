@@ -14,7 +14,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
-- Ticket `feature/permissions-e2e-smoke` en avance: Playwright base + smokes auth/permisos por rol ejecutados OK local (5 casos).
+- Ticket `feature/permissions-e2e-smoke` en avance: Playwright base + smokes auth/permisos por rol ejecutados OK local (6 casos).
 
 ## Progreso diario
 
@@ -98,8 +98,10 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se implementa `global setup` para crear/actualizar usuarios E2E por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) en Supabase usando `SUPABASE_SERVICE_ROLE_KEY`.
 - Se agrega fixture de trabajador smoke estable para rutas documentales y archivo runtime (`tests/e2e/.generated/smoke-fixtures.json`).
 - Se agrega helper de login con reintento corto para estabilizar auth E2E en entorno dev.
-- Se valida suite `npm run e2e:smoke` (OK, 5 tests):
+- Se agrega smoke de logout manual (`tests/e2e/smoke-auth.spec.ts`) con asercion de redireccion a `/login`.
+- Se valida suite `npm run e2e:smoke` (OK, 6 tests):
   - login -> dashboard
+  - logout manual -> `/login`
   - admin puede ver auditoria
   - rrhh no puede ver auditoria
   - contabilidad no puede abrir `/documents/new`
@@ -115,7 +117,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Agregar smoke de logout (manual o timeout) con asercion visible.
-2. Definir/automatizar fixture documental E2E (PDF + registro + storage) para cubrir lectura/descarga.
-3. Extender smokes con casos permitidos adicionales (ej. `contabilidad` puede ver `/documents`).
+1. Definir/automatizar fixture documental E2E (PDF + registro + storage) para cubrir lectura/descarga.
+2. Extender smokes con casos permitidos adicionales (ej. `contabilidad` puede ver `/documents`).
+3. (Opcional) agregar smoke de logout por timeout si se quiere cubrir inactividad en E2E.
 4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).

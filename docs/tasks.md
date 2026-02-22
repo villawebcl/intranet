@@ -42,7 +42,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
     - [x] `contabilidad` no puede abrir `/documents/new`
     - [x] `visitante` no puede acceder al modulo documental (`/documents`)
   - [x] Seed automatizado de usuarios E2E (`admin`, `rrhh`, `contabilidad`, `visitante`) y trabajador smoke estable.
-  - [ ] Smoke de logout (manual o timeout).
+  - [x] Smoke de logout manual (cierre de sesion y redireccion a `/login`).
+  - [ ] Smoke de logout por timeout (opcional en este ticket si se quiere cubrir inactividad).
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
 - [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
@@ -60,6 +61,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Tareas completadas recientemente (referencia)
 
 - [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Smoke E2E de logout manual ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Base Playwright + smoke E2E login->dashboard ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] PR `#2` de cierre QA manual/evidencia mergeado en `main` (2026-02-22)
 - [x] Fix login: ingreso estable sin recarga + `auth_login` en auditoria (2026-02-22)
@@ -101,6 +103,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] `global setup` crea/actualiza trabajador smoke estable para rutas documentales con `workerId` reutilizable.
 - [x] Smoke tests funcionales ejecutados OK con `npm run e2e:smoke`:
   - [x] login -> dashboard
+  - [x] logout manual -> `/login`
   - [x] `admin` -> `/dashboard/audit` (permitido)
   - [x] `rrhh` -> `/dashboard/audit` (bloqueado)
   - [x] `contabilidad` -> `/documents/new` (bloqueado)
