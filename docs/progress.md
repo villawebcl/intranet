@@ -14,7 +14,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
-- Ticket `feature/permissions-e2e-smoke` en avance final: smoke suite auth/permisos ejecutada OK local (10 casos).
+- Ticket `feature/permissions-e2e-smoke` completado y mergeado en `main` via PR `#3` (suite smoke auth/permisos OK local, 10 casos).
 
 ## Progreso diario
 
@@ -115,6 +115,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - contabilidad puede descargar fixture documental (PDF signed URL)
   - contabilidad no puede abrir `/documents/new`
   - visitante no puede acceder a `/documents`
+- Se abre PR `#3` (`feature/permissions-e2e-smoke`), se documenta validacion local en comentario y se mergea en `main`.
 
 #### Falta / arrastrado
 
@@ -125,7 +126,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Abrir PR de `feature/permissions-e2e-smoke` (cobertura smoke MVP ya implementada y validada).
-2. (Opcional) Evaluar si se agrega asercion adicional de auditoria para `auth_logout` (ya hay cobertura `auth_login`).
-3. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
-4. Mantener sincronizada la memoria persistente al cerrar el PR.
+1. Iniciar ticket `feature/acceptance-delivery-closeout` para cerrar checklist de acceptance/entrega.
+2. Completar datos pendientes (credenciales por canal seguro, URL de entorno, backup/export, capacitacion).
+3. (Opcional) Evaluar un smoke extra de auditoria `auth_logout` en ticket separado si se considera necesario.
+4. Mantener sincronizada la memoria persistente al cierre de cada bloque.

@@ -11,7 +11,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Estado del backlog (2026-02-22)
 
-- Prioridad actual: preparar el siguiente bloque tecnico (smoke e2e de permisos/auth) y cerrar pendientes de entrega MVP.
+- Prioridad actual: cerrar pendientes de entrega/acceptance del MVP y definir el siguiente bloque tecnico de mejora (post-smoke E2E).
 
 ## Ahora (prioridad alta)
 
@@ -33,7 +33,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Backlog tecnico (MVP+)
 
-- [ ] Automatizar pruebas minimas (e2e o unitarias) para permisos criticos.
+- [x] Automatizar pruebas minimas (e2e o unitarias) para permisos criticos. (2026-02-22)
   - [x] Base E2E con Playwright + `global setup` + comando `npm run e2e:smoke`. (2026-02-22)
   - [x] Smoke inicial auth: login -> dashboard (`tests/e2e/smoke-auth.spec.ts`) ejecutado OK local. (2026-02-22)
   - [x] Smokes de permisos por rol (casos criticos MVP):
@@ -64,6 +64,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
+- [x] PR `#3` de smoke E2E auth/permisos mergeado en `main` (2026-02-22)
 - [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Smoke E2E de logout manual ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Fixture documental E2E + smoke permitido de lectura `contabilidad` ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
@@ -83,25 +84,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Notificaciones internas + email opcional via Resend (2026-02-21)
 - [x] Estructura de memoria persistente en `docs/` (2026-02-22)
 
-## Siguiente ticket recomendado (definido)
-
-- Nombre sugerido de rama: `feature/permissions-e2e-smoke`
-- Objetivo: agregar smoke tests automatizados para permisos criticos y flujo de login/logout para reducir regresiones como la detectada en QA manual.
-- Alcance propuesto:
-  1. Configurar base de pruebas E2E (Playwright o alternativa ya disponible) con guia de ejecucion local.
-  2. Cubrir login funcional y redireccion al dashboard (sin recarga manual).
-  3. Cubrir restricciones por rol:
-     - `admin` puede ver `/dashboard/audit`
-     - `rrhh` no puede ver `/dashboard/audit`
-     - `contabilidad` no puede abrir `/documents/new`
-     - `visitante` no puede acceder al modulo documental
-  4. Validar al menos un flujo de logout (manual o timeout) con asercion visible en UI.
-- Criterios de aceptacion:
-  1. Suite smoke ejecuta localmente con comando documentado.
-  2. Casos criticos de permisos/auth pasan en entorno local con usuarios de prueba.
-  3. Documentacion de precondiciones (usuarios de prueba/seed) queda registrada.
-
-## Ticket en curso: `feature/permissions-e2e-smoke` (2026-02-22)
+## Ticket cerrado: `feature/permissions-e2e-smoke` (2026-02-22)
 
 ### Hecho
 
@@ -121,7 +104,22 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
   - [x] `contabilidad` -> descarga fixture PDF (signed URL)
   - [x] `contabilidad` -> `/documents/new` (bloqueado)
   - [x] `visitante` -> `/documents` (bloqueado)
+- [x] PR `#3` abierto, comentado con validaciones y mergeado en `main`.
 
 ### Precondiciones pendientes (exactas) para ampliar permisos por rol
 
-- [ ] Ninguna critica para el smoke MVP actual (auth + permisos + logout + lectura/descarga documental basica) en entorno local con Supabase configurado.
+- [x] Ninguna critica para el smoke MVP actual (auth + permisos + logout + lectura/descarga documental basica) en entorno local con Supabase configurado.
+
+## Siguiente ticket recomendado (post-merge)
+
+- Nombre sugerido de rama: `feature/acceptance-delivery-closeout`
+- Objetivo: cerrar pendientes de acceptance/entrega y dejar la documentacion operativa lista para handoff.
+- Alcance propuesto:
+  1. Completar/normalizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-PR #3.
+  2. Documentar formato y ubicacion de credenciales de prueba por rol (sin exponer secretos en repo; referenciar canal seguro).
+  3. Registrar URL de entorno(s), plan de backup/export y estado de capacitacion/entrega.
+  4. Dejar checklist de cierre con responsables y pendientes externos (negocio/cliente).
+- Criterios de aceptacion:
+  1. Checklist de acceptance/entrega actualizado y consistente con estado real del MVP.
+  2. Pendientes tecnicos vs operativos quedan separados con responsables claros.
+  3. Memoria persistente (`tasks/progress/SESSION_CONTEXT`) queda sincronizada al cierre.

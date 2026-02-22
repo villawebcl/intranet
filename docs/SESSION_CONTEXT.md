@@ -59,6 +59,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Smokes validados localmente:
     - `tests/e2e/smoke-auth.spec.ts` (login -> dashboard, logout manual, logout por timeout)
     - `tests/e2e/smoke-permissions.spec.ts` (permisos por rol MVP + lectura/descarga `contabilidad` + filtro auditoria `auth_login`)
+- PR `#3` (`feature/permissions-e2e-smoke`) mergeado en `main` con suite smoke E2E validada (`npm run e2e:smoke`, 10 tests).
 
 ## Rutas clave
 
@@ -93,33 +94,32 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Abrir PR / preparar descripcion de PR para `feature/permissions-e2e-smoke` (suite smoke MVP ya verde).
-2. (Opcional) Evaluar si se agrega smoke extra de auditoria para `auth_logout` (ya cubierto `auth_login`).
-3. Completar datos de entrega pendientes (credenciales/URLs/checklists).
+1. Iniciar `feature/acceptance-delivery-closeout` para cerrar checklist de acceptance/entrega post-PR #3.
+2. Completar datos de entrega pendientes (credenciales por canal seguro, URLs, backup/export, capacitacion).
+3. (Opcional) Evaluar smoke extra de auditoria para `auth_logout` en un ticket separado.
 4. Definir si limite 5MB se mantiene o se reduce por politica interna.
 
-## Proxima sesion (ticket ya definido)
+## Proxima sesion (ticket sugerido)
 
-- Nombre sugerido de rama: `feature/permissions-e2e-smoke`
-- Objetivo: automatizar smoke tests de permisos criticos y auth para reducir regresiones del MVP.
-- Estado (2026-02-22): en curso avanzado / listo para PR. Base Playwright + smokes auth/permisos MVP (10 casos) implementados y validados.
+- Nombre sugerido de rama: `feature/acceptance-delivery-closeout`
+- Objetivo: cerrar pendientes de acceptance/entrega y dejar handoff del MVP listo para continuidad.
+- Estado (2026-02-22): listo para iniciar. Ticket `feature/permissions-e2e-smoke` ya mergeado via PR `#3`.
 - Alcance:
-  1. Extender cobertura a permisos criticos por rol (admin/rrhh/contabilidad/visitante).
-  2. (Opcional) evaluar smoke extra de auditoria `auth_logout`.
-  3. Preparar PR y checklist de merge.
-  4. Mantener documentadas precondiciones y comando de ejecucion (`npm run e2e:smoke`).
+  1. Actualizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-smoke E2E.
+  2. Definir/registrar referencia a credenciales de prueba por rol (canal seguro, sin secretos en repo).
+  3. Registrar URL(s) de entorno, backup/export y estado de capacitacion.
+  4. Separar claramente pendientes tecnicos vs operativos con responsables.
 - Criterios de aceptacion:
-  1. Smoke suite ejecuta localmente con comando documentado.
-  2. Casos criticos de auth/permisos pasan localmente.
-  3. Precondiciones de usuarios/seed documentadas.
-  4. PR abierto y mergeable.
+  1. Checklists de acceptance/entrega consistentes y actualizados.
+  2. Pendientes externos documentados con responsable/estado.
+  3. Memoria persistente sincronizada al cierre.
 
 ## Arranque 5 minutos (siguiente sesion)
 
-1. Ejecutar `npm run e2e:smoke` para confirmar baseline verde (actualmente 10 tests).
-2. Preparar/abrir PR de `feature/permissions-e2e-smoke`.
-3. Si se decide, agregar smoke extra de auditoria `auth_logout`.
-4. Actualizar `docs/tasks.md`, `docs/progress.md` y este archivo al cerrar el siguiente avance.
+1. `git checkout main && git pull origin main`
+2. `git checkout -b feature/acceptance-delivery-closeout`
+3. Revisar `docs/tasks.md`, `docs/progress.md`, `docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`
+4. Actualizar checklists y dejar pendientes externos con responsables/estado
 
 ## Pruebas manuales recientes (2026-02-21)
 
