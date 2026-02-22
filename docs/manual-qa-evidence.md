@@ -7,7 +7,8 @@ Consolidar evidencia de pruebas manuales del MVP (capturas/video) sin depender d
 ## Estado (2026-02-22)
 
 - QA manual por rol y auditoria: validado manualmente (reportado OK).
-- Pendiente: adjuntar capturas/video y completar referencias a archivos.
+- Capturas base cargadas en `evidence/manual-qa/`.
+- Pendiente: completar evidencia complementaria (si se requiere) y observaciones finales.
 - Modo actual de registro: placeholders listos para completar sin bloquear cierre documental.
 
 ## Referencias cruzadas
@@ -28,65 +29,65 @@ Consolidar evidencia de pruebas manuales del MVP (capturas/video) sin depender d
 ### Admin
 
 - Caso permitido: crear/editar trabajador
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-admin-workers-create-allowed.png`
+  - Nota: Caso permitido validado.
 - Caso permitido: subir/aprobar/rechazar documento
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `PENDIENTE_IMG` (opcional adicional)
+  - Nota: Flujo validado manualmente; falta captura especifica si se quiere evidencia de esta accion.
 - Caso permitido: ver `/dashboard/audit`
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-admin-audit-events-visible.png`
+  - Nota: Auditoria visible para admin.
 
 ### RRHH
 
 - Caso permitido: crear/editar trabajador
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `PENDIENTE_IMG` (opcional adicional)
+  - Nota: Validado manualmente; no se adjunto captura especifica de workers RRHH.
 - Caso permitido: subir/revisar documento
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-rrhh-documents-review-allowed.png`
+  - Nota: Caso permitido validado.
 - Caso bloqueado: acceso a `/dashboard/audit`
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: Bloqueo validado manualmente.
+  - Archivo: `evidence/manual-qa/20260222-rrhh-audit-access-blocked.png`
+  - Nota: Bloqueo validado.
 
 ### Contabilidad
 
 - Caso permitido: ver/descargar documento
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-contabilidad-documents-list-allowed.png`
+  - Nota: Lectura documental validada.
 - Caso bloqueado: acceso a `/documents/new`
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: Bloqueo validado manualmente.
+  - Archivo: `evidence/manual-qa/20260222-contabilidad-documents-new-blocked.png`
+  - Nota: Bloqueo validado.
 - Caso bloqueado: aprobar/rechazar documento
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: Bloqueo validado manualmente.
+  - Archivo: `PENDIENTE_IMG` (opcional adicional)
+  - Nota: Validado manualmente; no se adjunto captura especifica de intento de revision.
 
 ### Visitante
 
 - Caso permitido: login + acceso dashboard
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-visitante-dashboard-login-allowed.png`
+  - Nota: Login y acceso dashboard validado.
 - Caso bloqueado: acceso a modulo documental
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: Bloqueo validado manualmente.
+  - Archivo: `evidence/manual-qa/20260222-visitante-documents-access-blocked.png`
+  - Nota: Bloqueo documental validado.
 - Caso bloqueado: crear/editar trabajador
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: Bloqueo validado manualmente.
+  - Archivo: `PENDIENTE_IMG` (opcional adicional)
+  - Nota: Validado manualmente; no se adjunto captura especifica de workers.
 
 ## Evidencia de auditoria
 
 - `auth_login` visible en `/dashboard/audit`
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-admin-audit-auth-login.png`
+  - Nota: Evento `auth_login` visible.
 - `auth_logout` manual (`metadata.reason = manual`)
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `PENDIENTE_IMG` (opcional adicional)
+  - Nota: Validado manualmente; no se adjunto captura especifica de logout manual.
 - `auth_logout` timeout (`metadata.reason = timeout`)
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-admin-audit-auth-logout-timeout.png.png`
+  - Nota: Evento `auth_logout` por timeout visible.
 - Eventos `document_*` visibles
-  - Archivo: `PENDIENTE_IMG`
-  - Nota: OK manual reportado.
+  - Archivo: `evidence/manual-qa/20260222-admin-audit-events-visible.png`
+  - Nota: Se observan eventos documentales en auditoria.
 
 ## Evidencia de acceptance complementaria (opcional)
 
@@ -102,6 +103,6 @@ Consolidar evidencia de pruebas manuales del MVP (capturas/video) sin depender d
 
 ## Cierre
 
-- Fecha de consolidacion de evidencia: `PENDIENTE`
+- Fecha de consolidacion de evidencia: `2026-02-22`
 - Responsable: `PENDIENTE`
-- Observaciones: Se puede cerrar documentalmente sin adjuntar imagenes en este momento; completar luego.
+- Observaciones: Se adjunto set minimo de capturas por rol/auditoria. Algunos casos quedaron marcados como opcionales adicionales.
