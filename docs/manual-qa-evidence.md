@@ -83,7 +83,7 @@ Consolidar evidencia de pruebas manuales del MVP (capturas/video) sin depender d
   - Archivo: `PENDIENTE_IMG` (opcional adicional)
   - Nota: Validado manualmente; no se adjunto captura especifica de logout manual.
 - `auth_logout` timeout (`metadata.reason = timeout`)
-  - Archivo: `evidence/manual-qa/20260222-admin-audit-auth-logout-timeout.png.png`
+  - Archivo: `evidence/manual-qa/20260222-admin-audit-auth-logout-timeout.png`
   - Nota: Evento `auth_logout` por timeout visible.
 - Eventos `document_*` visibles
   - Archivo: `evidence/manual-qa/20260222-admin-audit-events-visible.png`
