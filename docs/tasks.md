@@ -42,6 +42,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Backlog de entrega / operacion (acceptance)
 
 - [ ] Preparar manual con capturas para cliente. (plantilla base lista en `docs/manual-qa-evidence.md`)
+- [ ] Preparar descripcion de PR/entrega para cierre QA. (plantilla base en `docs/pr-manual-qa-evidence.md`)
 - [ ] Definir/registrar credenciales de prueba por rol.
 - [ ] Confirmar URL de staging/produccion y registro de entrega.
 - [ ] Revisar backup/export inicial de DB (segun acuerdo).
@@ -53,6 +54,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Validacion local `lint` + `typecheck` + `build` (2026-02-22)
 - [x] Plantilla de evidencia QA manual y matriz de permisos documentada (2026-02-22)
 - [x] Checklist de entrega base (`docs/delivery-checklist.md`) preparado (2026-02-22)
+- [x] Plantilla de PR para `feature/manual-qa-evidence` preparada (2026-02-22)
 - [x] Hardening de permisos por rol (UI + backend + RLS) (2026-02-21)
 - [x] Auditoria de auth/workers/documentos + panel admin (2026-02-21)
 - [x] Notificaciones internas + email opcional via Resend (2026-02-21)

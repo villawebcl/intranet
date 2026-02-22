@@ -88,6 +88,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se agrega plantilla `docs/manual-qa-evidence.md` para consolidar capturas/video.
 - Se documenta matriz de permisos en `docs/permissions-matrix.md` para QA y soporte.
 - Se prepara `docs/delivery-checklist.md` para cerrar acceptance/entrega sin bloquear por falta temporal de imagenes.
+- Se agrega `docs/pr-manual-qa-evidence.md` como plantilla de PR para copiar/pegar al abrir el cierre de QA.
 
 #### Falta / arrastrado
 
