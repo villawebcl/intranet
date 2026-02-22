@@ -1,5 +1,7 @@
 # AI_CONTEXT.md — Intranet Anagami (Gestión Documental)
 
+> Nota (2026-02-22): este archivo queda como contexto de referencia/legacy. La memoria persistente operativa se mantiene en `docs/system-overview.md`, `docs/architecture.md`, `docs/decisions.md`, `docs/progress.md` y `docs/tasks.md`.
+
 > Archivo de contexto para usar con VSCode (Gemini Code) y Codex (CLI/VSCode).  
 > Objetivo: mantener consistencia técnica, respeto estricto al alcance, y calidad profesional.
 

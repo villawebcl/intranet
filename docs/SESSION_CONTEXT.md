@@ -1,5 +1,7 @@
 # SESSION_CONTEXT.md — Estado rapido del proyecto
 
+> Nota (2026-02-22): este archivo se mantiene como historial operativo. Antes de cambios importantes, leer primero la memoria persistente en `docs/system-overview.md`, `docs/architecture.md`, `docs/decisions.md`, `docs/progress.md` y `docs/tasks.md`.
+
 ## Objetivo de este archivo
 
 Resumen operativo para retomar trabajo sin releer toda la documentacion.

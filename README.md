@@ -18,10 +18,26 @@ Base inicial del MVP de gestion documental para Anagami Seguridad.
 - `supabase/seed/`: scripts de datos iniciales
 - `docs/`: contexto funcional, decisiones y runbook
 
+## Memoria persistente (obligatorio)
+
+Antes de cambios importantes, leer:
+
+- `docs/system-overview.md`
+- `docs/architecture.md`
+- `docs/decisions.md`
+- `docs/progress.md`
+- `docs/tasks.md`
+
+Despues de cambios importantes, actualizar estos archivos (al menos progreso/tareas/decisiones segun corresponda).
+
 ## Contexto rapido para retomar
 
-- Leer primero: `docs/SESSION_CONTEXT.md`
-- Contexto completo: `docs/AI_CONTEXT.md`
+- Leer primero: `docs/system-overview.md`
+- Arquitectura y patrones: `docs/architecture.md`
+- Estado actual: `docs/progress.md`
+- Backlog: `docs/tasks.md`
+- Contexto legacy detallado: `docs/SESSION_CONTEXT.md`
+- Contexto completo legacy: `docs/AI_CONTEXT.md`
 
 ## Flujo de trabajo obligatorio
 

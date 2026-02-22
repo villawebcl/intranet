@@ -1,5 +1,7 @@
 # DECISIONS.md — Registro de decisiones (ADR liviano)
 
+> Nota (2026-02-22): registro legacy. Nuevas decisiones y consolidacion actualizada se documentan en `docs/decisions.md`.
+
 ## Cómo usar este archivo
 
 Cada decisión importante se registra con:
