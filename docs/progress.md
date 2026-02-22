@@ -12,8 +12,9 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 ## Estado actual (2026-02-22)
 
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
-- QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre abierto.
+- QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
+- Ticket `feature/permissions-e2e-smoke` en avance final: smoke suite auth/permisos ejecutada OK local (10 casos).
 
 ## Progreso diario
 
@@ -91,18 +92,40 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se prepara `docs/delivery-checklist.md` para cerrar acceptance/entrega sin bloquear por falta temporal de imagenes.
 - Se agrega `docs/pr-manual-qa-evidence.md` como plantilla de PR para copiar/pegar al abrir el cierre de QA.
 - Se adjuntan capturas de QA manual en `evidence/manual-qa/` y se referencian en `docs/manual-qa-evidence.md`.
-- Se abre PR `#2` para `feature/manual-qa-evidence`.
+- Se abre y mergea PR `#2` para `feature/manual-qa-evidence`.
 - Se corrige flujo de login para evitar recarga manual post-auth y asegurar registro de `auth_login` en auditoria.
+- Se agrega base E2E con Playwright (`@playwright/test`) y configuracion `playwright.config.ts`.
+- Se implementa `global setup` para crear/actualizar usuarios E2E por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) en Supabase usando `SUPABASE_SERVICE_ROLE_KEY`.
+- Se agrega fixture de trabajador smoke estable para rutas documentales y archivo runtime (`tests/e2e/.generated/smoke-fixtures.json`).
+- Se agrega helper de login con reintento corto para estabilizar auth E2E en entorno dev.
+- Se agrega smoke de logout manual (`tests/e2e/smoke-auth.spec.ts`) con asercion de redireccion a `/login`.
+- Se agrega fixture documental E2E en `global setup` (PDF en storage + fila en `public.documents`).
+- Se agrega smoke permitido de `contabilidad` en `/dashboard/workers/[workerId]/documents` (lectura + boton `Descargar` visible).
+- Se agrega soporte E2E para timeout rapido con override client-side de `IdleSessionWatcher` (`window.__E2E_IDLE_TIMEOUT_MS__`) usado por Playwright.
+- Se agrega smoke de timeout (redirect a `/login?reason=timeout`) y smoke de descarga real del fixture PDF (signed URL / respuesta PDF).
+- Se agrega smoke de auditoria filtrada para `admin` (`auth_login` + `entity=auth`) validando resultados visibles.
+- Se valida suite `npm run e2e:smoke` (OK, 10 tests):
+  - login -> dashboard
+  - logout manual -> `/login`
+  - logout por timeout -> `/login?reason=timeout`
+  - admin puede ver auditoria
+  - admin puede filtrar auditoria y ver `auth_login`
+  - rrhh no puede ver auditoria
+  - contabilidad puede ver `/documents` (lectura)
+  - contabilidad puede descargar fixture documental (PDF signed URL)
+  - contabilidad no puede abrir `/documents/new`
+  - visitante no puede acceder a `/documents`
 
 #### Falta / arrastrado
 
 - Mantener sincronizados los archivos legacy o definir fecha de deprecacion.
 - Completar datos de acceptance/entrega (usuarios de prueba, URL, credenciales, backup, capacitacion).
 - Definir/registrar credenciales de prueba por rol (pendiente documental y/o canal seguro).
+- Revisar si se desea mantener el override E2E de timeout en `IdleSessionWatcher` (actualmente aislado a pruebas por `window.__E2E_IDLE_TIMEOUT_MS__`).
 
 ## Proximo bloque recomendado
 
-1. Cerrar/mergear PR `#2` (QA manual + evidencia + docs de acceptance).
-2. Iniciar ticket `feature/permissions-e2e-smoke` para automatizar smoke de login/permisos.
-3. Documentar precondiciones de usuarios de prueba para E2E (seed/credenciales por canal seguro).
-4. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
+1. Abrir PR de `feature/permissions-e2e-smoke` (cobertura smoke MVP ya implementada y validada).
+2. (Opcional) Evaluar si se agrega asercion adicional de auditoria para `auth_logout` (ya hay cobertura `auth_login`).
+3. Completar datos de entrega pendientes (`docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`).
+4. Mantener sincronizada la memoria persistente al cerrar el PR.

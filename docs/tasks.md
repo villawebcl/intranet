@@ -34,6 +34,20 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Backlog tecnico (MVP+)
 
 - [ ] Automatizar pruebas minimas (e2e o unitarias) para permisos criticos.
+  - [x] Base E2E con Playwright + `global setup` + comando `npm run e2e:smoke`. (2026-02-22)
+  - [x] Smoke inicial auth: login -> dashboard (`tests/e2e/smoke-auth.spec.ts`) ejecutado OK local. (2026-02-22)
+  - [x] Smokes de permisos por rol (casos criticos MVP):
+    - [x] `admin` puede ver `/dashboard/audit`
+    - [x] `rrhh` no puede ver `/dashboard/audit`
+    - [x] `contabilidad` no puede abrir `/documents/new`
+    - [x] `visitante` no puede acceder al modulo documental (`/documents`)
+  - [x] Seed automatizado de usuarios E2E (`admin`, `rrhh`, `contabilidad`, `visitante`) y trabajador smoke estable.
+  - [x] Smoke de logout manual (cierre de sesion y redireccion a `/login`).
+  - [x] Fixture documental E2E (PDF en storage + fila en `documents`) para caso de lectura por `contabilidad`.
+  - [x] Smoke permitido documental: `contabilidad` puede ver `/documents` en modo lectura y boton `Descargar`.
+  - [x] Smoke de logout por timeout (redirect a `/login?reason=timeout` con mensaje visible).
+  - [x] Asercion de descarga real del PDF fixture (`Descargar` -> signed URL PDF).
+  - [x] Smoke de auditoria filtrada: `admin` ve eventos `auth_login` en `/dashboard/audit` con filtros.
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
 - [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
@@ -50,7 +64,13 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
-- [x] PR abierto para cierre QA manual/evidencia: `#2` (2026-02-22)
+- [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Smoke E2E de logout manual ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Fixture documental E2E + smoke permitido de lectura `contabilidad` ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Smoke E2E de timeout + descarga real PDF fixture ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Smoke E2E de auditoria filtrada (`auth_login`) ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] Base Playwright + smoke E2E login->dashboard ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
+- [x] PR `#2` de cierre QA manual/evidencia mergeado en `main` (2026-02-22)
 - [x] Fix login: ingreso estable sin recarga + `auth_login` en auditoria (2026-02-22)
 - [x] Evidencia visual QA manual adjunta en `evidence/manual-qa/` (2026-02-22)
 - [x] QA manual por rol + verificacion de auditoria (reportado OK) (2026-02-22)
@@ -80,3 +100,28 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
   1. Suite smoke ejecuta localmente con comando documentado.
   2. Casos criticos de permisos/auth pasan en entorno local con usuarios de prueba.
   3. Documentacion de precondiciones (usuarios de prueba/seed) queda registrada.
+
+## Ticket en curso: `feature/permissions-e2e-smoke` (2026-02-22)
+
+### Hecho
+
+- [x] Se agrego Playwright (`@playwright/test`) y configuracion base (`playwright.config.ts`).
+- [x] `global setup` crea/actualiza usuarios E2E por rol (`admin`, `rrhh`, `contabilidad`, `visitante`) en Supabase con `SUPABASE_SERVICE_ROLE_KEY`.
+- [x] `global setup` crea/actualiza trabajador smoke estable para rutas documentales con `workerId` reutilizable.
+- [x] `global setup` crea/actualiza fixture documental (PDF en bucket `documents` + fila en `public.documents`).
+- [x] Soporte E2E para timeout rapido mediante override de `IdleSessionWatcher` (`window.__E2E_IDLE_TIMEOUT_MS__`) usado solo por Playwright.
+- [x] Smoke tests funcionales ejecutados OK con `npm run e2e:smoke`:
+  - [x] login -> dashboard
+  - [x] logout manual -> `/login`
+  - [x] logout por timeout -> `/login?reason=timeout`
+  - [x] `admin` -> `/dashboard/audit` (permitido)
+  - [x] `admin` -> `/dashboard/audit?action=auth_login&entity=auth` (filtro con resultados)
+  - [x] `rrhh` -> `/dashboard/audit` (bloqueado)
+  - [x] `contabilidad` -> `/documents` (permitido, lectura)
+  - [x] `contabilidad` -> descarga fixture PDF (signed URL)
+  - [x] `contabilidad` -> `/documents/new` (bloqueado)
+  - [x] `visitante` -> `/documents` (bloqueado)
+
+### Precondiciones pendientes (exactas) para ampliar permisos por rol
+
+- [ ] Ninguna critica para el smoke MVP actual (auth + permisos + logout + lectura/descarga documental basica) en entorno local con Supabase configurado.
