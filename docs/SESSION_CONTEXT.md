@@ -18,6 +18,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Auth con Supabase (login por email/password) en `/login`.
 - Proteccion de rutas privadas con `proxy.ts` para `/dashboard`.
 - Dashboard protegido en server y boton de cierre de sesion.
+- Dashboard operativo pulido (2026-02-23):
+  - reemplaza grilla de accesos repetidos por metricas y actividad reciente
+  - muestra cola de revision documental, notificaciones y auditoria segun permisos del rol
+  - mantiene acciones sugeridas contextuales (sin duplicar barra lateral)
 - Navegacion dashboard mejorada (2026-02-23):
   - sidebar en desktop + navegacion compacta en movil
   - logo `Intranet Anagami` clickeable a `/dashboard`
@@ -111,7 +115,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Revisar manualmente en `staging` el polish UX reciente (`workers` / `documents` en movil y escritorio).
+1. Revisar manualmente en `staging` el polish UX reciente (`dashboard`, `workers` / `documents` en movil y escritorio).
 2. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URL de produccion, responsable cliente, fechas, credenciales).
 3. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
 4. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).

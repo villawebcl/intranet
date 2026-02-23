@@ -54,6 +54,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Vista de carpetas del trabajador con selector `Lista` / `Cuadricula` (default `Lista`). (2026-02-23)
 - [x] Unificacion UX de feedback/loading en pantallas clave (`login`, workers, detalle worker, documentos, upload, notificaciones, logout) con componentes reutilizables `AlertBanner`, `FlashMessages`, `FormSubmitButton`. (2026-02-23)
 - [x] Pulido de estados vacios y consistencia visual final en `workers` / `documents` (headers con contadores, empty states accionables, tarjetas movil + tabla desktop). (2026-02-23)
+- [x] Rehacer `/dashboard` como resumen operativo (metricas, pendientes y actividad reciente por rol) en lugar de duplicar accesos del menu lateral. (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
 
 ## Backlog de entrega / operacion (acceptance)
@@ -90,6 +91,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Pulido UI/UX de `Auditoria` (`/dashboard/audit`): resumen claro por evento + metadata resumida + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
 - [x] UX de feedback/loading unificada con componentes reutilizables (`AlertBanner`, `FlashMessages`, `FormSubmitButton`) y acciones con estado pendiente visible en `login`, `workers`, `documents`, `notifications` y `logout`. (2026-02-23)
 - [x] Estados vacios accionables y consistencia visual `workers`/`documents` (mismo estilo de headers/filtros + cards movil / tabla escritorio). (2026-02-23)
+- [x] Dashboard operativo (`/dashboard`) con metricas, cola de revision y actividad reciente por rol (sin duplicar sidebar). (2026-02-23)
 - [x] Navegacion dashboard con sidebar + logo clickeable y pagina `Acceso y roles` funcional (`/dashboard/access`). (2026-02-23)
 - [x] Carpeta de trabajador (`/dashboard/workers/[workerId]`) con vista `Lista` / `Cuadricula` para resumen de 12 carpetas (default `Lista`). (2026-02-23)
 - [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)

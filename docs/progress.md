@@ -88,6 +88,14 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Validaciones del bloque consistencia/empty states:
   - `npm run lint` OK
   - `npm run typecheck` OK
+- Se rehace `/dashboard` como vista operativa por rol (ya no duplicado del sidebar):
+  - metricas de trabajadores/documentos/notificaciones
+  - cola de revision documental para `admin`/`rrhh`
+  - actividad reciente (documentos, notificaciones y auditoria segun permisos)
+  - acciones sugeridas contextuales
+- Validaciones del bloque dashboard:
+  - `npm run lint` OK
+  - `npm run typecheck` OK
 
 #### Falta / arrastrado
 
@@ -96,7 +104,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Registrar backup/export inicial y estado de migraciones del entorno de entrega.
 - Confirmar politicas pendientes (`worker inactivo`, tamano PDF) y destinatarios de email (si aplica).
 - Agendar/registrar capacitacion + ventana de observaciones y obtener aceptacion formal cliente.
-- (Opcional UX) Revisión visual manual en `staging` de tarjetas móviles y tablas desktop en `workers` / `documents`.
+- (Opcional UX) Revisión visual manual en `staging` del dashboard nuevo y de tarjetas móviles/tablas desktop en `workers` / `documents`.
 
 ### 2026-02-20
 
@@ -206,7 +214,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Revisión manual rápida en `staging` del polish UX reciente (sidebar, audit/notificaciones, workers/documents móvil+desktop).
+1. Revisión manual rápida en `staging` del polish UX reciente (dashboard, sidebar, audit/notificaciones, workers/documents móvil+desktop).
 2. Completar datos pendientes de handoff/cliente en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md`.
 3. Registrar credenciales por canal seguro (sin secretos), URLs, backup/export y capacitacion.
 4. Obtener aceptacion formal cliente y cerrar estado final del MVP.
