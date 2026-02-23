@@ -18,13 +18,27 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Auth con Supabase (login por email/password) en `/login`.
 - Proteccion de rutas privadas con `proxy.ts` para `/dashboard`.
 - Dashboard protegido en server y boton de cierre de sesion.
+- Dashboard operativo pulido (2026-02-23):
+  - reemplaza grilla de accesos repetidos por metricas y actividad reciente
+  - muestra cola de revision documental, notificaciones y auditoria segun permisos del rol
+  - mantiene acciones sugeridas contextuales (sin duplicar barra lateral)
+- Navegacion dashboard mejorada (2026-02-23):
+  - sidebar en desktop + navegacion compacta en movil
+  - logo `Intranet Anagami` clickeable a `/dashboard`
+  - pagina `/dashboard/access` para resumen de acceso y roles
+- UX de feedback/loading unificada (2026-02-23):
+  - `AlertBanner` / `FlashMessages` para mensajes consistentes (error/exito/aviso)
+  - `FormSubmitButton` con estado pendiente visible (`Procesando...`, `Guardando...`, etc.)
+  - aplicado a `login`, `logout`, workers, detalle worker, documentos, upload y notificaciones
 - Timeout por inactividad en cliente (`INACTIVITY_TIMEOUT_MINUTES`).
 - Modulo de trabajadores:
   - Listado + busqueda por RUT/nombre.
+  - UI de listado pulida (2026-02-23): header con contador, estado vacio accionable y vista responsive (cards movil + tabla escritorio).
   - Crear trabajador.
   - Editar trabajador.
   - Activar/Desactivar trabajador.
   - Vista detalle de trabajador con las 12 carpetas fijas.
+  - Resumen de carpetas con selector de vista `Lista` / `Cuadricula` (default `Lista`) para mejor lectura operativa.
 - Modulo documental (base):
   - Subida de PDF por trabajador y carpeta fija.
   - Validacion backend: solo PDF y maximo 5MB.
@@ -32,12 +46,14 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Bloqueo de carga para trabajador inactivo.
 - Modulo documental (revision):
   - Listado de documentos por trabajador (`/documents`) con filtros por carpeta/estado.
+  - UI de listado pulida (2026-02-23): contador de documentos, estado vacio accionable, cards movil + tabla escritorio y labels de estado legibles.
   - Flujo de revision `pendiente -> aprobado/rechazado`.
   - Rechazo con motivo obligatorio.
   - Descarga mediante URL firmada.
 - Notificaciones:
   - Registro interno en tabla `notifications` para eventos documentales.
   - Panel `/dashboard/notifications` para ver eventos recientes.
+  - UI/UX de `notifications` pulida (2026-02-23): resumen de payload legible, JSON colapsable, badges de email, mejor legibilidad de IDs y layout responsive movil/escritorio.
   - Envio de email via Resend en carga/aprobacion/rechazo (si ENV configurada).
   - Plantillas de email centralizadas y trazabilidad `sent_at` por notificacion enviada.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.
@@ -48,6 +64,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - `auth_logout` al cerrar sesion manualmente.
   - `auth_logout` al cierre por inactividad (`reason=timeout`).
 - Panel `/dashboard/audit` para consultar trazabilidad (admin).
+- UI/UX de `audit` pulida (2026-02-23): resumen en lenguaje claro por evento, metadata resumida, JSON colapsable, badges de accion, mejor legibilidad de IDs y layout responsive movil/escritorio.
 - Hardening de permisos por rol (UI + backend + RLS):
   - `visitante`: sin acceso al modulo documental (ver/descargar/subir/revisar).
   - `contabilidad`: lectura documental (ver/descargar), sin subir/revisar.
@@ -60,6 +77,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
     - `tests/e2e/smoke-auth.spec.ts` (login -> dashboard, logout manual, logout por timeout)
     - `tests/e2e/smoke-permissions.spec.ts` (permisos por rol MVP + lectura/descarga `contabilidad` + filtro auditoria `auth_login`)
 - PR `#3` (`feature/permissions-e2e-smoke`) mergeado en `main` con suite smoke E2E validada (`npm run e2e:smoke`, 10 tests).
+- Documentacion de acceptance/entrega normalizada post-PR `#3`:
+  - `docs/ACCEPTANCE_CHECKLIST.md` actualizado con estado de cierre y resumen de pendientes clasificados.
+  - `docs/delivery-checklist.md` actualizado con pendientes por tipo (`tecnico`, `operativo`, `externo/cliente`), estado, responsable y propuesta minima de cierre.
+  - `staging` Vercel desplegado y registrado (`https://intranet-lovat-delta.vercel.app`) con ENV minimas cargadas y verificacion `/login` = HTTP 200; pendiente URL de produccion y demas datos de handoff (credenciales, backup/export, capacitacion, aceptacion cliente).
 
 ## Rutas clave
 
@@ -94,32 +115,33 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Iniciar `feature/acceptance-delivery-closeout` para cerrar checklist de acceptance/entrega post-PR #3.
-2. Completar datos de entrega pendientes (credenciales por canal seguro, URLs, backup/export, capacitacion).
-3. (Opcional) Evaluar smoke extra de auditoria para `auth_logout` en un ticket separado.
-4. Definir si limite 5MB se mantiene o se reduce por politica interna.
+1. Revisar manualmente en `staging` el polish UX reciente (`dashboard`, `workers` / `documents` en movil y escritorio).
+2. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URL de produccion, responsable cliente, fechas, credenciales).
+3. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
+4. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).
+5. Agendar/registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
 
 ## Proxima sesion (ticket sugerido)
 
-- Nombre sugerido de rama: `feature/acceptance-delivery-closeout`
-- Objetivo: cerrar pendientes de acceptance/entrega y dejar handoff del MVP listo para continuidad.
-- Estado (2026-02-22): listo para iniciar. Ticket `feature/permissions-e2e-smoke` ya mergeado via PR `#3`.
+- Nombre sugerido de rama: `ops/handoff-data-completion` (o continuar rama actual si aun no se hizo PR)
+- Objetivo: completar datos reales de handoff y cerrar acceptance formal del MVP.
+- Estado (2026-02-23): documentacion operativa lista + `staging` Vercel desplegado + bloque UX/UI MVP avanzado (sidebar, audit/notificaciones legibles, feedback/loading consistente); faltan datos/confirmaciones externas para cierre final.
 - Alcance:
-  1. Actualizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-smoke E2E.
-  2. Definir/registrar referencia a credenciales de prueba por rol (canal seguro, sin secretos en repo).
-  3. Registrar URL(s) de entorno, backup/export y estado de capacitacion.
-  4. Separar claramente pendientes tecnicos vs operativos con responsables.
+  1. Completar campos `PENDIENTE` en datos de entrega/registro de aceptacion.
+  2. Registrar entrega de credenciales por canal seguro (sin secretos) y canal/acuse.
+  3. Registrar URLs, backup/export, migraciones y estado final de correo (`activo`/`n/a`).
+  4. Registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
 - Criterios de aceptacion:
-  1. Checklists de acceptance/entrega consistentes y actualizados.
-  2. Pendientes externos documentados con responsable/estado.
-  3. Memoria persistente sincronizada al cierre.
+  1. `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` completos para handoff (sin pendientes criticos no justificados).
+  2. Pendientes restantes marcados `n/a` o escalados explicitamente con responsable/fecha.
+  3. Aceptacion formal cliente registrada.
 
 ## Arranque 5 minutos (siguiente sesion)
 
 1. `git checkout main && git pull origin main`
-2. `git checkout -b feature/acceptance-delivery-closeout`
-3. Revisar `docs/tasks.md`, `docs/progress.md`, `docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`
-4. Actualizar checklists y dejar pendientes externos con responsables/estado
+2. `git checkout -b ops/handoff-data-completion` (o retomar rama abierta)
+3. Revisar `docs/delivery-checklist.md` (pendientes clasificados) y `docs/ACCEPTANCE_CHECKLIST.md` (registro de aceptacion)
+4. Completar datos reales con cliente/operaciones y marcar estados/acuse
 
 ## Pruebas manuales recientes (2026-02-21)
 

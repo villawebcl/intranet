@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { AlertBanner } from "@/components/ui/alert-banner";
+import { EmptyStateCard } from "@/components/ui/empty-state-card";
+import { FlashMessages } from "@/components/ui/flash-messages";
 import { canManageWorkers } from "@/lib/auth/roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -24,6 +28,10 @@ function getStatusPillClass(status: string) {
   }
 
   return "bg-slate-200 text-slate-700";
+}
+
+function getStatusLabel(status: string) {
+  return status === "activo" ? "Activo" : "Inactivo";
 }
 
 export default async function WorkersPage({ searchParams }: WorkersPageProps) {
@@ -63,41 +71,43 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
   }
 
   const { data: workers, error } = await workersQuery;
+  const workersCount = workers?.length ?? 0;
+  const hasFilters = query.length > 0;
 
   return (
     <section className="space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Trabajadores</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Listado con busqueda basica y estado activo/inactivo.
-          </p>
-        </div>
+      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Trabajadores</h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Listado con busqueda basica y estado activo/inactivo.
+            </p>
+            {!error ? (
+              <p className="mt-3">
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                  {workersCount} {workersCount === 1 ? "registro" : "registros"}
+                </span>
+              </p>
+            ) : null}
+          </div>
 
-        {canManage ? (
-          <Link
-            href="/dashboard/workers/new"
-            className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            Nuevo trabajador
-          </Link>
-        ) : null}
+          {canManage ? (
+            <Link
+              href="/dashboard/workers/new"
+              className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              Nuevo trabajador
+            </Link>
+          ) : null}
+        </div>
       </header>
 
-      {successMessage ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {successMessage}
-        </p>
-      ) : null}
-
-      {errorMessage ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {errorMessage}
-        </p>
-      ) : null}
+      <FlashMessages error={errorMessage} success={successMessage} />
 
       <form className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" method="get">
-        <label htmlFor="q" className="text-sm font-medium text-slate-800">
+        <p className="text-sm font-medium text-slate-900">Busqueda</p>
+        <label htmlFor="q" className="mt-3 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
           Buscar por RUT o nombre
         </label>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -114,7 +124,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
           >
             Buscar
           </button>
-          {query ? (
+          {hasFilters ? (
             <Link
               href="/dashboard/workers"
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -125,90 +135,167 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
         </div>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Trabajador</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">RUT</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Area / Cargo</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Estado</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {error ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-4 text-red-700">
-                  No se pudo cargar el listado: {error.message}
-                </td>
-              </tr>
-            ) : null}
+      {error ? (
+        <AlertBanner variant="error">
+          No se pudo cargar el listado de trabajadores: {error.message}
+        </AlertBanner>
+      ) : null}
 
-            {!error && !workers?.length ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                  No hay trabajadores para mostrar.
-                </td>
-              </tr>
-            ) : null}
+      {!error && !workersCount ? (
+        <EmptyStateCard
+          title={hasFilters ? "No hay resultados para tu busqueda" : "Aun no hay trabajadores registrados"}
+          description={
+            hasFilters
+              ? "Prueba con otro RUT o nombre, o limpia el filtro para ver todos los registros."
+              : "Cuando registres trabajadores apareceran aqui con su estado y accesos al detalle."
+          }
+          actions={[
+            ...(hasFilters ? [{ href: "/dashboard/workers", label: "Limpiar filtro", variant: "secondary" as const }] : []),
+            ...(canManage ? [{ href: "/dashboard/workers/new", label: "Nuevo trabajador", variant: "primary" as const }] : []),
+          ]}
+        />
+      ) : null}
 
+      {!error && workersCount ? (
+        <>
+          <div className="grid gap-3 md:hidden">
             {workers?.map((worker) => (
-              <tr key={worker.id} className="align-top">
-                <td className="px-4 py-3">
-                  <p className="font-medium text-slate-900">
-                    {worker.first_name} {worker.last_name}
-                  </p>
-                  <p className="text-xs text-slate-500">{worker.email ?? "Sin correo"}</p>
-                </td>
-                <td className="px-4 py-3 text-slate-700">{worker.rut}</td>
-                <td className="px-4 py-3 text-slate-700">
-                  {worker.area ?? "Sin area"} / {worker.position ?? "Sin cargo"}
-                </td>
-                <td className="px-4 py-3">
+              <article
+                key={worker.id}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      {worker.first_name} {worker.last_name}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">{worker.rut}</p>
+                  </div>
                   <span
                     className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusPillClass(worker.status)}`}
                   >
-                    {worker.status}
+                    {getStatusLabel(worker.status)}
                   </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    <Link
-                      href={`/dashboard/workers/${worker.id}`}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Ver
-                    </Link>
+                </div>
 
-                    {canManage ? (
-                      <>
+                <dl className="mt-3 grid gap-2 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-slate-500">Area / Cargo</dt>
+                    <dd className="text-right text-slate-700">
+                      {worker.area ?? "Sin area"} / {worker.position ?? "Sin cargo"}
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-slate-500">Correo</dt>
+                    <dd className="truncate text-right text-slate-700" title={worker.email ?? undefined}>
+                      {worker.email ?? "Sin correo"}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    href={`/dashboard/workers/${worker.id}`}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Ver
+                  </Link>
+                  {canManage ? (
+                    <>
+                      <Link
+                        href={`/dashboard/workers/${worker.id}/edit`}
+                        className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                      >
+                        Editar
+                      </Link>
+                      <form action={toggleWorkerStatusAction}>
+                        <input type="hidden" name="workerId" value={worker.id} />
+                        <input type="hidden" name="currentStatus" value={worker.status} />
+                        <input type="hidden" name="returnTo" value={currentPath} />
+                        <FormSubmitButton
+                          pendingLabel={worker.status === "activo" ? "Desactivando..." : "Activando..."}
+                          className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          {worker.status === "activo" ? "Desactivar" : "Activar"}
+                        </FormSubmitButton>
+                      </form>
+                    </>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm md:block">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Trabajador</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">RUT</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Area / Cargo</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Estado</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {workers?.map((worker) => (
+                  <tr key={worker.id} className="align-top">
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-slate-900">
+                        {worker.first_name} {worker.last_name}
+                      </p>
+                      <p className="text-xs text-slate-500">{worker.email ?? "Sin correo"}</p>
+                    </td>
+                    <td className="px-4 py-3 text-slate-700">{worker.rut}</td>
+                    <td className="px-4 py-3 text-slate-700">
+                      {worker.area ?? "Sin area"} / {worker.position ?? "Sin cargo"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusPillClass(worker.status)}`}
+                      >
+                        {getStatusLabel(worker.status)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
                         <Link
-                          href={`/dashboard/workers/${worker.id}/edit`}
+                          href={`/dashboard/workers/${worker.id}`}
                           className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
-                          Editar
+                          Ver
                         </Link>
-                        <form action={toggleWorkerStatusAction}>
-                          <input type="hidden" name="workerId" value={worker.id} />
-                          <input type="hidden" name="currentStatus" value={worker.status} />
-                          <input type="hidden" name="returnTo" value={currentPath} />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                          >
-                            {worker.status === "activo" ? "Desactivar" : "Activar"}
-                          </button>
-                        </form>
-                      </>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
+                        {canManage ? (
+                          <>
+                            <Link
+                              href={`/dashboard/workers/${worker.id}/edit`}
+                              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            >
+                              Editar
+                            </Link>
+                            <form action={toggleWorkerStatusAction}>
+                              <input type="hidden" name="workerId" value={worker.id} />
+                              <input type="hidden" name="currentStatus" value={worker.status} />
+                              <input type="hidden" name="returnTo" value={currentPath} />
+                              <FormSubmitButton
+                                pendingLabel={worker.status === "activo" ? "Desactivando..." : "Activando..."}
+                                className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                              >
+                                {worker.status === "activo" ? "Desactivar" : "Activar"}
+                              </FormSubmitButton>
+                            </form>
+                          </>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }

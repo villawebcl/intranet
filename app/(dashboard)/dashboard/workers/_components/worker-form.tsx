@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { FlashMessages } from "@/components/ui/flash-messages";
+
 type WorkerFormValues = {
   rut: string;
   firstName: string;
@@ -32,17 +35,11 @@ export function WorkerForm(props: WorkerFormProps) {
         <p className="mt-1 text-sm text-slate-600">{props.description}</p>
       </header>
 
-      {props.errorMessage ? (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {props.errorMessage}
-        </p>
-      ) : null}
-
-      {props.successMessage ? (
-        <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {props.successMessage}
-        </p>
-      ) : null}
+      <FlashMessages
+        className="mt-4"
+        error={props.errorMessage ?? null}
+        success={props.successMessage ?? null}
+      />
 
       <form action={props.action} className="mt-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -145,12 +142,12 @@ export function WorkerForm(props: WorkerFormProps) {
         </div>
 
         <div className="flex items-center gap-3 pt-2">
-          <button
-            type="submit"
-            className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          <FormSubmitButton
+            pendingLabel="Guardando..."
+            className="bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
           >
             {props.submitLabel}
-          </button>
+          </FormSubmitButton>
           <Link
             href="/dashboard/workers"
             className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"

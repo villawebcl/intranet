@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+
+import { AlertBanner } from "@/components/ui/alert-banner";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 
 type LoginFormProps = {
@@ -85,6 +87,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
+          disabled={isSubmitting}
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2"
           placeholder="usuario@anagami.cl"
         />
@@ -102,15 +105,14 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
+          disabled={isSubmitting}
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2"
           placeholder="********"
         />
       </div>
 
       {error ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
+        <AlertBanner variant="error">{error}</AlertBanner>
       ) : null}
 
       <button

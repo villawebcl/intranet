@@ -117,7 +117,7 @@ Beneficio: separa layouts/flujo sin afectar URLs finales.
 
 - Sin suite de tests automatizados aun (dependencia alta en QA manual).
 - Mensajeria por `redirect` + query params es simple pero limitada para UX compleja.
-- Politica de 5MB y reglas de trabajador inactivo deben confirmarse formalmente en acceptance/decision log.
+- Politica documental MVP ya definida y registrada en `docs/decisions.md`: maximo `5MB` para PDF y bloqueo de carga para trabajador `inactivo` (lectura/descarga segun rol).
 
 ## Referencias clave
 

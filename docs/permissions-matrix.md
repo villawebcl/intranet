@@ -21,54 +21,61 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 | Modulo / Accion | admin | rrhh | contabilidad | visitante |
 | --- | --- | --- | --- | --- |
 | Login / acceso dashboard | Si | Si | Si | Si |
+| Gestion de usuarios (crear/asignar rol/reset password) | Si | No | No | No |
 | Ver listado trabajadores | Si | Si | Si (lectura) | Limitado* |
 | Crear trabajador | Si | Si | No | No |
 | Editar trabajador | Si | Si | No | No |
 | Activar/Desactivar trabajador | Si | Si | No | No |
 | Ver detalle trabajador | Si | Si | Si (lectura) | Limitado* |
 | Ver resumen documental en ficha trabajador | Si | Si | Si | No |
-| Ver listado documentos por trabajador | Si | Si | Si | No |
-| Subir documento PDF | Si | Si | No | No |
+| Ver listado documentos por trabajador | Si | Si | Si | Si (restringido) |
+| Subir documento PDF | Si | Si | Si (solo `Liquidaciones`) | No |
 | Aprobar/Rechazar documento | Si | Si | No | No |
-| Descargar documento | Si | Si | Si | No |
-| Ver panel notificaciones | Si | Si | Segun configuracion actual** | Segun configuracion actual** |
+| Descargar documento | Si | Si | Si | No (solo solicitud) |
+| Solicitar descarga de documento | No | No | No | Si |
+| Ver panel notificaciones (`/dashboard/notifications`) | Si | No | No | No |
 | Ver panel auditoria (`/dashboard/audit`) | Si | No | No | No |
 
 \* `visitante` en workers: el alcance documentado indica acceso limitado al modulo de trabajadores; confirmar exactamente que vistas quedan expuestas en UI final.
 
-\** El alcance MVP exige panel de notificaciones para "admin o roles definidos"; validar politica final y documentarla en acceptance.
+\** Ajustado para alineacion con alcance: panel de notificaciones visible en panel admin.
 
 ## Detalle operativo por rol
 
 ### `admin`
 
+- Gestion de usuarios (crear usuarios, asignar roles, resetear contrasenas).
 - Gestion completa de trabajadores.
 - Gestion documental completa (ver/subir/revisar/descargar).
 - Acceso a panel de auditoria.
-- Acceso a notificaciones.
+- Acceso a panel de notificaciones.
 
 ### `rrhh`
 
 - Gestion completa de trabajadores.
 - Gestion documental completa (ver/subir/revisar/descargar).
 - Sin acceso a panel de auditoria.
-- Acceso a notificaciones.
+- Sin acceso a panel de notificaciones (panel admin).
 
 ### `contabilidad`
 
 - Sin gestion de trabajadores (crear/editar/activar/desactivar).
 - Puede requerir acceso de lectura a trabajadores para navegar al modulo documental.
 - Documentos en modo lectura: ver y descargar.
-- Sin subir ni revisar documentos.
+- Puede subir documentos solo en carpeta `Liquidaciones`.
+- Sin revisar (aprobar/rechazar) documentos.
 - Sin acceso a auditoria.
+- Sin acceso a panel de notificaciones (panel admin).
 
 ### `visitante`
 
 - Acceso a dashboard autenticado.
 - Acceso al modulo de trabajadores: limitado (sin gestion).
-- Sin acceso al modulo documental.
+- Acceso documental restringido: visualiza metadata/listado sin descarga directa.
+- Puede solicitar descarga de documentos al equipo administrador.
 - Sin gestion de trabajadores.
 - Sin acceso a auditoria.
+- Sin acceso a panel de notificaciones.
 
 ## Validacion y enforcement
 

@@ -73,12 +73,12 @@ Registro de decisiones tecnicas importantes (ADR liviano) con fecha, motivo e im
 - Fecha: 2026-02-21
 - Estado: aplicada
 - Decision:
-  - `visitante`: sin acceso al modulo documental (no ver/no descargar/no subir/no revisar)
-  - `contabilidad`: solo lectura documental (ver/descargar), sin subir/revisar
+  - `visitante`: visualizacion documental restringida (metadata/listado), sin descarga directa; puede solicitar descarga
+  - `contabilidad`: lectura documental (ver/descargar) y carga restringida solo a `Liquidaciones`; sin revisar
   - `admin` y `rrhh`: gestion documental completa
   - `audit`: visible solo para `admin`
 - Motivo: Cerrar ambiguedad de permisos y alinear UI + backend + RLS con una matriz clara.
-- Impacto: Reduce riesgos de acceso indebido; obliga a QA manual por rol y evidencia en acceptance.
+- Impacto: Reduce riesgos de acceso indebido manteniendo una excepcion controlada para `contabilidad` en `Liquidaciones`; obliga a QA manual por rol y evidencia en acceptance.
 
 ### ADR-008 — Motivo de rechazo obligatorio en revision documental
 
@@ -101,20 +101,23 @@ Registro de decisiones tecnicas importantes (ADR liviano) con fecha, motivo e im
 - Motivo: Evitar saturacion del contexto conversacional y facilitar continuidad de desarrollo en sesiones largas.
 - Impacto: Mejora continuidad y handoff; agrega disciplina de mantenimiento documental antes/despues de cambios importantes.
 
+### ADR-010 — Politica MVP de trabajador inactivo en modulo documental
+
+- Fecha: 2026-02-23
+- Estado: aplicada
+- Decision: Si el trabajador esta `inactivo`, se bloquea la carga de nuevos documentos; la lectura/descarga sigue dependiendo del rol del usuario (sin bloqueo total adicional).
+- Motivo: Mantener trazabilidad y consulta historica sin romper operacion de roles lectores (`contabilidad`) y reducir complejidad/riesgo de cambios en permisos/RLS.
+- Impacto: La UI muestra warning y deshabilita carga; backend rechaza la subida en server action; acceptance B puede documentar regla clara.
+
+### ADR-011 — Politica MVP de tamano maximo PDF en 5MB
+
+- Fecha: 2026-02-23
+- Estado: aplicada
+- Decision: Mantener limite maximo de carga en `5MB` para PDFs en MVP (validacion frontend + backend), con posibilidad de ajuste posterior por requerimiento del cliente.
+- Motivo: Ya esta implementado de forma consistente y reduce riesgo operativo/costos de storage en el cierre del MVP.
+- Impacto: Constante centralizada de politica documental; mensajes UI/backend y checklist de acceptance quedan alineados con `5MB`.
+
 ## Pendientes de decision (registrar al resolver)
 
-### ADR-P001 — Politica final para trabajador inactivo
-
-- Fecha: pendiente
-- Estado: pendiente
-- Decision: Definir si se bloquea solo la subida de documentos o se restringe lectura/otras acciones.
-- Motivo: El comportamiento impacta UX, permisos y acceptance.
-- Impacto: Cambios en server actions, mensajes UI, pruebas manuales y posiblemente RLS.
-
-### ADR-P002 — Politica final de tamano maximo PDF
-
-- Fecha: pendiente
-- Estado: pendiente
-- Decision: Confirmar si se mantiene 5MB o se ajusta por politica interna.
-- Motivo: Requisito operativo aun no confirmado por negocio.
-- Impacto: Cambia validaciones, mensajes UI y documentacion de runbook/acceptance.
+- Sin pendientes tecnicos criticos en politica documental MVP.
+- Pendiente operativo/cliente relacionado: confirmar destinatarios de email por area/unidad (si se habilita correo externo).

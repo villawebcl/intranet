@@ -9,26 +9,23 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - Leer este archivo antes de iniciar cambios importantes para elegir trabajo vigente.
 - Actualizar este archivo despues de completar, crear o descartar tareas.
 
-## Estado del backlog (2026-02-22)
+## Estado del backlog (2026-02-23)
 
-- Prioridad actual: cerrar pendientes de entrega/acceptance del MVP y definir el siguiente bloque tecnico de mejora (post-smoke E2E).
+- Prioridad actual: cerrar handoff del MVP (datos de entrega + acceptance final) usando checklists/documentacion operativa ya normalizada.
+- Estado tecnico/funcional consolidado en `docs/closeout-status-fase1.md` para separar implementacion vs pendientes operativos.
 
 ## Ahora (prioridad alta)
 
-- [x] Ejecutar QA manual por rol (admin, rrhh, contabilidad, visitante).
-- [x] Registrar evidencia (capturas o video) de casos permitidos/bloqueados por rol.
-- [x] Verificar en `/dashboard/audit` eventos:
-  - [x] `auth_login`
-  - [x] `auth_logout` manual (`reason=manual`)
-  - [x] `auth_logout` timeout (`reason=timeout`)
-  - [x] eventos documentales (`document_*`)
-- [x] Marcar items correspondientes en `docs/ACCEPTANCE_CHECKLIST.md`.
-- [x] Ejecutar validacion local final del bloque: `npm run lint`, `npm run typecheck`, `npm run build`.
+- [x] Crear ticket `feature/acceptance-delivery-closeout` desde `main` y revisar memoria persistente. (2026-02-23)
+- [x] Normalizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-PR `#3`. (2026-02-23)
+- [x] Separar pendientes de cierre por tipo (tecnico / operativo / externo-cliente) con estado y responsable sugerido. (2026-02-23)
+- [x] Dejar propuesta minima de cierre (checklist + proximos pasos) para handoff. (2026-02-23)
+- [ ] Completar datos reales de entrega (URL de produccion, responsable cliente, credenciales, fechas) y cerrar acceptance formal con cliente. (`staging` Vercel ya desplegado)
 
 ## Proximas decisiones / definiciones (negocio + tecnica)
 
-- [ ] Definir politica exacta para trabajador `inactivo` (solo bloquear subida vs restriccion mayor).
-- [ ] Confirmar politica final de tamano maximo PDF (mantener 5MB o ajustar).
+- [x] Definir politica exacta para trabajador `inactivo` (MVP: bloquear subida; lectura/descarga segun rol) y registrarla en ADR/checklists. (2026-02-23)
+- [x] Confirmar politica final de tamano maximo PDF (MVP: 5MB) y reflejarla en ADR/checklists. (2026-02-23)
 - [ ] Definir destinatarios de email por area/unidad (si cambia del esquema actual por roles).
 
 ## Backlog tecnico (MVP+)
@@ -49,21 +46,69 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
   - [x] Asercion de descarga real del PDF fixture (`Descargar` -> signed URL PDF).
   - [x] Smoke de auditoria filtrada: `admin` ve eventos `auth_login` en `/dashboard/audit` con filtros.
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
-- [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
-- [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
+- [x] Revisar UX de mensajes/errores en pantallas clave y unificar banners reutilizables (`AlertBanner`, `FlashMessages`). (2026-02-23)
+- [x] Agregar estados de carga visibles en acciones criticas de formularios/acciones server (`FormSubmitButton`) en pantallas clave. (2026-02-23)
+- [x] Pulido UI/UX de `Notificaciones` (resumen legible de payload, badges de email, truncado de IDs, responsive movil/escritorio). (2026-02-23)
+- [x] Navegacion dashboard mejorada (sidebar desktop + nav compacta movil + logo clickeable a `/dashboard`). (2026-02-23)
+- [x] Vista `Acceso y roles` (`/dashboard/access`) agregada y enlazada desde dashboard. (2026-02-23)
+- [x] Pulido UI/UX de `Auditoria` (metadata resumida, resumen en lenguaje claro por evento, JSON colapsable, badges y responsive movil/escritorio). (2026-02-23)
+- [x] Vista de carpetas del trabajador con selector `Lista` / `Cuadricula` (default `Lista`). (2026-02-23)
+- [x] Unificacion UX de feedback/loading en pantallas clave (`login`, workers, detalle worker, documentos, upload, notificaciones, logout) con componentes reutilizables `AlertBanner`, `FlashMessages`, `FormSubmitButton`. (2026-02-23)
+- [x] Pulido de estados vacios y consistencia visual final en `workers` / `documents` (headers con contadores, empty states accionables, tarjetas movil + tabla desktop). (2026-02-23)
+- [x] Rehacer `/dashboard` como resumen operativo (metricas, pendientes y actividad reciente por rol) en lugar de duplicar accesos del menu lateral. (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
+- [x] Alinear nombres de las 12 carpetas del MVP con el documento de alcance (labels de negocio en UI). (2026-02-23)
+- [x] Ajustar panel de `Notificaciones` para visibilidad en `admin` (menu, dashboard y ruta). (2026-02-23)
+- [x] Habilitar a `contabilidad` subida de documentos solo en carpeta `Liquidaciones` (UI + backend + RLS). (2026-02-23)
+- [x] Habilitar flujo de `visitante` con visualizacion documental restringida + solicitud de descarga (UI + backend + RLS). (2026-02-23)
+- [x] Implementar modulo admin de `Usuarios` (listar, crear, asignar rol, resetear contrasena). (2026-02-23)
+- [x] Corregir parseo de ENV opcionales vacias para no bloquear modulo `Usuarios` (`RESEND_*` vacio -> `undefined`). (2026-02-23)
+- [x] Simplificar `Auditoria` para lectura operativa concisa (sin resumen narrativo/JSON; metadata en chips). (2026-02-23)
+- [x] Simplificar/reordenar dashboard de inicio (menos saturacion, foco en acciones y actividad esencial). (2026-02-23)
+- [x] Crear documento de cierre funcional/operativo de Fase 1 (`docs/closeout-status-fase1.md`). (2026-02-23)
 
 ## Backlog de entrega / operacion (acceptance)
 
-- [ ] Preparar manual con capturas para cliente. (plantilla base lista en `docs/manual-qa-evidence.md`)
-- [x] Preparar descripcion de PR/entrega para cierre QA. (plantilla base en `docs/pr-manual-qa-evidence.md`)
-- [ ] Definir/registrar credenciales de prueba por rol.
-- [ ] Confirmar URL de staging/produccion y registro de entrega.
-- [ ] Revisar backup/export inicial de DB (segun acuerdo).
-- [ ] Agendar/registrar capacitacion remota y ventana de observaciones.
+### Tecnico
+
+- [x] Confirmar politica exacta para trabajador `inactivo` y registrarla en acceptance/entrega. (Responsable: Producto + Tech Lead; 2026-02-23)
+- [x] Confirmar politica final de tamano maximo PDF (5MB o ajuste) y reflejarla en acceptance/manual. (Responsable: Producto + Tech Lead; 2026-02-23)
+- [ ] Registrar estado de migraciones del entorno de entrega (aplicadas/pendientes). (Responsable: Dev/Infra)
+- [ ] Ejecutar/registrar backup-export inicial DB segun acuerdo (o marcar `n/a`). (Responsable: Dev/Infra)
+- [ ] Confirmar evidencia tecnica de seguridad en entorno de entrega (Storage privado/reglas). (Responsable: Dev/Infra)
+- [ ] Confirmar estado final de correo/notificaciones (`activo` o `n/a`) tras revisar `RESEND_*` y destinatarios. (Responsable: Dev/Infra)
+
+### Operativo
+
+- [ ] Preparar manual con capturas para cliente (version final de entrega). (Responsable: Operaciones/QA; borrador base en `docs/manual-usuario-mvp.md`, evidencias en `docs/manual-qa-evidence.md`)
+- [ ] Completar `docs/closeout-status-fase1.md` con datos finales de entorno si se desea usar como acta tecnica de entrega (URLs definitivas / migraciones / correo activo o `n/a`). (Responsable: Tech/Operaciones)
+- [x] Preparar descripcion de PR/entrega para cierre QA. (Responsable: Tech; plantilla base en `docs/pr-manual-qa-evidence.md`)
+- [ ] Definir/registrar credenciales de prueba por rol por canal seguro (sin secretos en repo). (Responsable: Operaciones/PM)
+- [ ] Entregar credencial `admin` por canal seguro y registrar acuse. (Responsable: Operaciones/PM)
+- [ ] Confirmar URL de produccion y registrar datos finales de entrega. (Responsable: Operaciones + Tech; `staging` Vercel ya registrado)
+- [ ] Agendar/registrar capacitacion remota y ventana de observaciones. (Responsable: PM/Operaciones)
+- [ ] Definir canal de soporte/incidencias para post-entrega. (Responsable: PM/Operaciones)
+
+### Externo / cliente
+
+- [ ] Confirmar responsables cliente (tecnico/operativo/aprobador). (Responsable: Cliente)
+- [ ] Confirmar destinatarios de email por area/unidad (si aplica). (Responsable: Cliente)
+- [ ] Confirmar hosting/URL final de entorno(s). (Responsable: Cliente + Infra)
+- [ ] Confirmar si repo privado se comparte y con quienes. (Responsable: Cliente + PM)
+- [ ] Emitir aceptacion formal (email/acta/firma). (Responsable: Cliente)
 
 ## Tareas completadas recientemente (referencia)
 
+- [x] Pulido UI/UX de `Auditoria` (`/dashboard/audit`): resumen claro por evento + metadata resumida + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
+- [x] UX de feedback/loading unificada con componentes reutilizables (`AlertBanner`, `FlashMessages`, `FormSubmitButton`) y acciones con estado pendiente visible en `login`, `workers`, `documents`, `notifications` y `logout`. (2026-02-23)
+- [x] Estados vacios accionables y consistencia visual `workers`/`documents` (mismo estilo de headers/filtros + cards movil / tabla escritorio). (2026-02-23)
+- [x] Dashboard operativo (`/dashboard`) con metricas, cola de revision y actividad reciente por rol (sin duplicar sidebar). (2026-02-23)
+- [x] Navegacion dashboard con sidebar + logo clickeable y pagina `Acceso y roles` funcional (`/dashboard/access`). (2026-02-23)
+- [x] Carpeta de trabajador (`/dashboard/workers/[workerId]`) con vista `Lista` / `Cuadricula` para resumen de 12 carpetas (default `Lista`). (2026-02-23)
+- [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
+- [x] Deploy `staging` en Vercel realizado y URL temporal registrada en checklists (`https://intranet-lovat-delta.vercel.app`). (2026-02-23)
+- [x] Correccion de `staging` Vercel post-deploy: carga de ENV minimas + redeploy, `/login` responde HTTP 200. (2026-02-23)
+- [x] Ticket `feature/acceptance-delivery-closeout`: checklists de acceptance/entrega normalizados con pendientes clasificados por tipo/responsable + propuesta de cierre. (2026-02-23)
 - [x] PR `#3` de smoke E2E auth/permisos mergeado en `main` (2026-02-22)
 - [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
 - [x] Smoke E2E de logout manual ejecutado OK (`npm run e2e:smoke`). (2026-02-22)
@@ -112,14 +157,14 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Siguiente ticket recomendado (post-merge)
 
-- Nombre sugerido de rama: `feature/acceptance-delivery-closeout`
-- Objetivo: cerrar pendientes de acceptance/entrega y dejar la documentacion operativa lista para handoff.
+- Nombre sugerido de rama: `ops/handoff-data-completion` (o equivalente)
+- Objetivo: completar datos reales de entrega/cliente en checklists y cerrar acceptance formal del MVP.
 - Alcance propuesto:
-  1. Completar/normalizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-PR #3.
-  2. Documentar formato y ubicacion de credenciales de prueba por rol (sin exponer secretos en repo; referenciar canal seguro).
-  3. Registrar URL de entorno(s), plan de backup/export y estado de capacitacion/entrega.
-  4. Dejar checklist de cierre con responsables y pendientes externos (negocio/cliente).
+  1. Completar campos `PENDIENTE` de entrega (fechas, URLs, responsables, canal seguro).
+  2. Registrar credenciales entregadas por canal seguro (sin secretos) y acuses.
+  3. Registrar backup/export, migraciones y estado final de notificaciones (`activo`/`n/a`).
+  4. Documentar capacitacion, ventana de observaciones y aceptacion formal cliente.
 - Criterios de aceptacion:
-  1. Checklist de acceptance/entrega actualizado y consistente con estado real del MVP.
-  2. Pendientes tecnicos vs operativos quedan separados con responsables claros.
-  3. Memoria persistente (`tasks/progress/SESSION_CONTEXT`) queda sincronizada al cierre.
+  1. `docs/ACCEPTANCE_CHECKLIST.md` sin campos criticos `PENDIENTE` para handoff.
+  2. `docs/delivery-checklist.md` con pendientes cerrados o marcados `n/a` con justificacion.
+  3. Aceptacion formal cliente registrada.
