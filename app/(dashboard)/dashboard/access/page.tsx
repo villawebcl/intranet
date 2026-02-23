@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FlashMessages } from "@/components/ui/flash-messages";
 import {
   canManageUsers,
   canManageWorkers,
@@ -9,6 +10,18 @@ import {
 } from "@/lib/auth/roles";
 import { appRoles } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+
+type AccessRolesPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function getStringParam(value: string | string[] | undefined) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim();
+}
 
 function roleLabel(role: (typeof appRoles)[number]) {
   if (role === "admin") return "Admin";
@@ -21,7 +34,8 @@ function yesNo(value: boolean) {
   return value ? "Si" : "No";
 }
 
-export default async function AccessRolesPage() {
+export default async function AccessRolesPage({ searchParams }: AccessRolesPageProps) {
+  const params = await searchParams;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -38,6 +52,8 @@ export default async function AccessRolesPage() {
     .maybeSingle();
 
   const currentRole = profile?.role ?? "visitante";
+  const successMessage = getStringParam(params.success);
+  const errorMessage = getStringParam(params.error);
 
   const matrix = appRoles.map((role) => ({
     role,
@@ -52,12 +68,14 @@ export default async function AccessRolesPage() {
 
   return (
     <section className="space-y-5">
+      <FlashMessages error={errorMessage} success={successMessage} />
+
       <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Acceso y roles</h1>
             <p className="mt-1 text-sm text-slate-600">
-              Resumen operativo de permisos del MVP por rol.
+              Resumen operativo de permisos por rol.
             </p>
           </div>
           <Link
@@ -72,15 +90,24 @@ export default async function AccessRolesPage() {
         </div>
       </header>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-900">Reglas clave</h2>
-        <ul className="mt-3 space-y-2 text-sm text-slate-700">
-          <li>`admin` gestiona usuarios, workers, documentos, notificaciones y auditoria.</li>
-          <li>`rrhh` gestiona trabajadores y documentos (sin auditoria).</li>
-          <li>`contabilidad` ve/descarga documentos y puede subir solo `Liquidaciones`.</li>
-          <li>`visitante` puede ver listado documental y solicitar descarga (sin descarga directa).</li>
-          <li>Auditoria solo disponible para `admin`.</li>
-        </ul>
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-950">Uso recomendado</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Esta vista muestra la politica de permisos por rol. La asignacion de roles y la
+              gestion de cuentas se realiza en Usuarios.
+            </p>
+          </div>
+          {currentRole === "admin" ? (
+            <Link
+              href="/dashboard/users"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Ir a Usuarios
+            </Link>
+          ) : null}
+        </div>
       </section>
 
       <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm md:block">

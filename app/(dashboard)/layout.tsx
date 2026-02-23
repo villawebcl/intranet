@@ -33,7 +33,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
     {
       href: "/dashboard",
       label: "Inicio",
-      description: "Resumen del MVP y accesos rapidos",
+      description: "Resumen general y accesos rapidos",
     },
     {
       href: "/dashboard/access",
@@ -77,23 +77,40 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="dashboard-shell min-h-screen">
+      <header className="dashboard-shell-header sticky top-0 z-20 border-b border-white/70 bg-white/80 backdrop-blur-md">
         <div className="mx-auto w-full max-w-7xl px-4 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link href="/dashboard" className="text-sm font-semibold text-slate-900 hover:text-slate-700">
-              Intranet Anagami
+            <Link
+              href="/dashboard"
+              className="dashboard-shell-brand inline-flex items-center gap-3 rounded-xl px-1 py-1 hover:bg-white/70"
+            >
+              <span className="dashboard-shell-logo inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-sm">
+                A
+              </span>
+              <span>
+                <span className="dashboard-shell-brand-title block text-sm font-semibold text-slate-900">
+                  Intranet Anagami
+                </span>
+                <span className="dashboard-shell-brand-subtitle block text-xs text-slate-500">
+                  Gestion documental interna
+                </span>
+              </span>
             </Link>
 
             <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-xs font-medium uppercase tracking-[0.08em] text-slate-500">{role}</p>
-                <p className="max-w-52 truncate text-sm text-slate-700">{displayName}</p>
+              <div className="dashboard-shell-usercard rounded-xl border border-slate-200/80 bg-white/90 px-3 py-2 text-right shadow-sm">
+                <p className="dashboard-shell-userrole text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {role}
+                </p>
+                <p className="dashboard-shell-username max-w-52 truncate text-sm text-slate-700">
+                  {displayName}
+                </p>
               </div>
               <form action={signOutAction}>
                 <FormSubmitButton
                   pendingLabel="Cerrando..."
-                  className="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="dashboard-shell-signout border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                 >
                   Cerrar sesion
                 </FormSubmitButton>
@@ -102,18 +119,25 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           </div>
 
           <div className="mt-3 md:hidden">
-            <SidebarNav items={navItems} compact />
+            <div className="dashboard-shell-mobile-nav rounded-2xl border border-slate-200/80 bg-white/90 p-2 shadow-sm">
+              <SidebarNav items={navItems} compact />
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:grid-cols-[272px_minmax(0,1fr)]">
         <aside className="hidden md:block">
-          <div className="sticky top-6 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+          <div className="dashboard-shell-sidebar sticky top-24 rounded-3xl border border-white/80 bg-white/75 p-3 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+            <div className="mb-2 px-2 pt-1">
+              <p className="dashboard-shell-navtitle text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                Navegacion
+              </p>
+            </div>
             <SidebarNav items={navItems} />
           </div>
         </aside>
-        <main className="min-w-0">{children}</main>
+        <main className="dashboard-content min-w-0 pb-8">{children}</main>
       </div>
 
       <IdleSessionWatcher timeoutMinutes={env.INACTIVITY_TIMEOUT_MINUTES} />

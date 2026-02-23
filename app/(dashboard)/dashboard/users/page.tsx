@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import {
   createUserAdminAction,
+  deleteUserAdminAction,
   resetUserPasswordAdminAction,
   updateUserAdminAction,
 } from "./actions";
@@ -123,8 +124,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   } catch (error) {
     loadError =
       error instanceof Error
-        ? `Modulo de usuarios no disponible: ${error.message}`
-        : "Modulo de usuarios no disponible";
+        ? `No se pudo abrir la gestion de usuarios: ${error.message}`
+        : "No se pudo abrir la gestion de usuarios";
   }
 
   const successMessage = getStringParam(params.success);
@@ -162,7 +163,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-950">Crear usuario</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Crea el acceso en Supabase Auth y registra su rol/perfil en la intranet.
+          Crea un usuario y asigna su rol de acceso en la intranet.
         </p>
 
         <form action={createUserAdminAction} className="mt-4 grid gap-4 lg:grid-cols-4">
@@ -251,127 +252,184 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
           {!users.length ? (
             <AlertBanner className="mt-4" variant="warning">
-              No se encontraron usuarios en Supabase Auth.
+              No se encontraron usuarios registrados.
             </AlertBanner>
           ) : (
             <>
-              <div className="mt-4 space-y-3 md:hidden">
-                {users.map((row) => (
-                  <article key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-slate-900">{row.email}</p>
-                        <p className="mt-1 text-xs text-slate-500">{row.fullName || "Sin nombre"}</p>
-                      </div>
-                      <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
-                        {roleLabel(row.role)}
-                      </span>
-                    </div>
+              <div className="mt-4 space-y-3 xl:hidden">
+                {users.map((row) => {
+                  const isCurrentUser = row.id === user.id;
+                  const isProtectedAdmin = row.role === "admin";
 
-                    <dl className="mt-3 grid gap-2 text-xs text-slate-600">
+                  return (
+                    <article key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <div className="flex items-start justify-between gap-3">
-                        <dt>Confirmado</dt>
-                        <dd>{row.emailConfirmed ? "Si" : "No"}</dd>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-slate-900">{row.email}</p>
+                          <p className="mt-1 text-xs text-slate-500">{row.fullName || "Sin nombre"}</p>
+                        </div>
+                        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                          {roleLabel(row.role)}
+                        </span>
                       </div>
-                      <div className="flex items-start justify-between gap-3">
-                        <dt>Ultimo acceso</dt>
-                        <dd className="text-right">{formatDate(row.lastSignInAt)}</dd>
-                      </div>
-                      <div className="flex items-start justify-between gap-3">
-                        <dt>Creado</dt>
-                        <dd className="text-right">{formatDate(row.createdAt)}</dd>
-                      </div>
-                    </dl>
 
-                    <form action={updateUserAdminAction} className="mt-4 space-y-3">
-                      <input type="hidden" name="userId" value={row.id} />
-                      <input type="hidden" name="returnTo" value="/dashboard/users" />
-                      <div className="space-y-1.5">
-                        <label htmlFor={`fullName-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
-                          Nombre
+                      <dl className="mt-3 grid gap-2 text-xs text-slate-600">
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Confirmado</dt>
+                          <dd>{row.emailConfirmed ? "Si" : "No"}</dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Ultimo acceso</dt>
+                          <dd className="text-right">{formatDate(row.lastSignInAt)}</dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Creado</dt>
+                          <dd className="text-right">{formatDate(row.createdAt)}</dd>
+                        </div>
+                      </dl>
+
+                      <form action={updateUserAdminAction} className="mt-4 space-y-3">
+                        <input type="hidden" name="userId" value={row.id} />
+                        <input type="hidden" name="returnTo" value="/dashboard/users" />
+                        <div className="space-y-1.5">
+                          <label htmlFor={`fullName-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
+                            Nombre
+                          </label>
+                          <input
+                            id={`fullName-mobile-${row.id}`}
+                            name="fullName"
+                            defaultValue={row.fullName}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label htmlFor={`role-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
+                            Rol
+                          </label>
+                          <select
+                            id={`role-mobile-${row.id}`}
+                            name="role"
+                            defaultValue={row.role}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                          >
+                            {appRoles.map((role) => (
+                              <option key={role} value={role}>
+                                {roleLabel(role)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <FormSubmitButton
+                          pendingLabel="Guardando..."
+                          className="w-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+                        >
+                          Guardar cambios
+                        </FormSubmitButton>
+                      </form>
+
+                      <form action={resetUserPasswordAdminAction} className="mt-3 space-y-2">
+                        <input type="hidden" name="userId" value={row.id} />
+                        <input type="hidden" name="returnTo" value="/dashboard/users" />
+                        <label htmlFor={`password-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
+                          Nueva contrasena
                         </label>
                         <input
-                          id={`fullName-mobile-${row.id}`}
-                          name="fullName"
-                          defaultValue={row.fullName}
+                          id={`password-mobile-${row.id}`}
+                          name="password"
+                          type="password"
+                          minLength={8}
+                          required
                           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                          placeholder="Minimo 8 caracteres"
                         />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label htmlFor={`role-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
-                          Rol
-                        </label>
-                        <select
-                          id={`role-mobile-${row.id}`}
-                          name="role"
-                          defaultValue={row.role}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        <FormSubmitButton
+                          pendingLabel="Actualizando..."
+                          className="w-full border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50"
                         >
-                          {appRoles.map((role) => (
-                            <option key={role} value={role}>
-                              {roleLabel(role)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <FormSubmitButton
-                        pendingLabel="Guardando..."
-                        className="w-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
-                      >
-                        Guardar cambios
-                      </FormSubmitButton>
-                    </form>
+                          Resetear contrasena
+                        </FormSubmitButton>
+                      </form>
 
-                    <form action={resetUserPasswordAdminAction} className="mt-3 space-y-2">
-                      <input type="hidden" name="userId" value={row.id} />
-                      <input type="hidden" name="returnTo" value="/dashboard/users" />
-                      <label htmlFor={`password-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
-                        Nueva contrasena
-                      </label>
-                      <input
-                        id={`password-mobile-${row.id}`}
-                        name="password"
-                        type="password"
-                        minLength={8}
-                        required
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                        placeholder="Minimo 8 caracteres"
-                      />
-                      <FormSubmitButton
-                        pendingLabel="Actualizando..."
-                        className="w-full border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50"
-                      >
-                        Resetear contrasena
-                      </FormSubmitButton>
-                    </form>
-                  </article>
-                ))}
+                      {isProtectedAdmin ? (
+                        <AlertBanner className="mt-3" variant="info">
+                          {isCurrentUser
+                            ? "Tu cuenta admin esta protegida y no se puede eliminar desde esta pantalla."
+                            : "Las cuentas admin estan protegidas y no se pueden eliminar."}
+                        </AlertBanner>
+                      ) : (
+                        <details className="mt-3 rounded-lg border border-red-200 bg-red-50">
+                          <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
+                            Eliminar usuario
+                          </summary>
+                          <form action={deleteUserAdminAction} className="space-y-3 border-t border-red-200 px-3 py-3">
+                            <input type="hidden" name="userId" value={row.id} />
+                            <input type="hidden" name="returnTo" value="/dashboard/users" />
+                            <p className="text-xs text-red-800">
+                              Eliminar el acceso de {row.email}. Esta accion no se puede deshacer.
+                            </p>
+                            <label className="flex items-start gap-2 text-xs text-red-900">
+                              <input
+                                type="checkbox"
+                                name="confirmDelete"
+                                value="yes"
+                                required
+                                className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                              />
+                              Confirmo que quiero eliminar este usuario
+                            </label>
+                            <FormSubmitButton
+                              pendingLabel="Eliminando..."
+                              className="w-full border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+                            >
+                              Eliminar usuario
+                            </FormSubmitButton>
+                          </form>
+                        </details>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
 
-              <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 xl:block">
+                <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+                  <colgroup>
+                    <col className="w-[20%]" />
+                    <col className="w-[13%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[25%]" />
+                    <col className="w-[30%]" />
+                  </colgroup>
                   <thead className="bg-slate-50">
                     <tr>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Usuario</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Estado</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Ultimo acceso</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Editar perfil / rol</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Reset contrasena</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Usuario</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Estado</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Ultimo acceso</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Perfil / rol</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">
+                        Clave / baja
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {users.map((row) => (
+                    {users.map((row) => {
+                      const isCurrentUser = row.id === user.id;
+                      const isProtectedAdmin = row.role === "admin";
+
+                      return (
                       <tr key={row.id} className="align-top">
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-slate-900">{row.email}</p>
-                          <p className="mt-1 text-xs text-slate-500" title={row.id}>
+                        <td className="px-3 py-3 align-top">
+                          <p className="truncate font-medium text-slate-900" title={row.email}>
+                            {row.email}
+                          </p>
+                          <p className="mt-1 truncate text-xs text-slate-500" title={row.id}>
                             {row.id}
                           </p>
                           <p className="mt-1 text-xs text-slate-600">
                             Creado: {formatDate(row.createdAt)}
                           </p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3 align-top">
                           <div className="space-y-2">
                             <span
                               className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -382,11 +440,17 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                             >
                               {row.emailConfirmed ? "Confirmado" : "Sin confirmar"}
                             </span>
-                            <p className="text-xs text-slate-600">Rol actual: {roleLabel(row.role)}</p>
+                            <p className="break-words text-xs text-slate-600">
+                              Rol: {roleLabel(row.role)}
+                            </p>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-slate-700">{formatDate(row.lastSignInAt)}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3 align-top text-slate-700">
+                          <p className="break-words text-xs leading-5 md:text-sm">
+                            {formatDate(row.lastSignInAt)}
+                          </p>
+                        </td>
+                        <td className="px-3 py-3 align-top">
                           <form action={updateUserAdminAction} className="space-y-2">
                             <input type="hidden" name="userId" value={row.id} />
                             <input type="hidden" name="returnTo" value="/dashboard/users" />
@@ -397,18 +461,18 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               id={`fullName-${row.id}`}
                               name="fullName"
                               defaultValue={row.fullName}
-                              className="w-56 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                               placeholder="Nombre completo"
                             />
                             <label htmlFor={`role-${row.id}`} className="sr-only">
                               Rol
                             </label>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="grid gap-2">
                               <select
                                 id={`role-${row.id}`}
                                 name="role"
                                 defaultValue={row.role}
-                                className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                               >
                                 {appRoles.map((role) => (
                                   <option key={role} value={role}>
@@ -418,15 +482,15 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               </select>
                               <FormSubmitButton
                                 pendingLabel="Guardando..."
-                                className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                className="w-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                               >
                                 Guardar
                               </FormSubmitButton>
                             </div>
                           </form>
                         </td>
-                        <td className="px-4 py-3">
-                          <form action={resetUserPasswordAdminAction} className="flex flex-wrap items-center gap-2">
+                        <td className="px-3 py-3 align-top">
+                          <form action={resetUserPasswordAdminAction} className="grid gap-2">
                             <input type="hidden" name="userId" value={row.id} />
                             <input type="hidden" name="returnTo" value="/dashboard/users" />
                             <label htmlFor={`password-${row.id}`} className="sr-only">
@@ -438,19 +502,60 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               type="password"
                               minLength={8}
                               required
-                              className="w-44 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                              placeholder="Nueva contrasena"
+                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              placeholder="Nueva clave"
                             />
                             <FormSubmitButton
                               pendingLabel="Actualizando..."
-                              className="border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50"
+                              className="w-full border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50"
                             >
                               Resetear
                             </FormSubmitButton>
                           </form>
+                          {isProtectedAdmin ? (
+                            <div className="mt-2 space-y-1">
+                              <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                Protegido
+                              </span>
+                              <p className="text-xs text-slate-600">
+                                {isCurrentUser ? "Cuenta actual admin" : "Cuenta admin"}
+                              </p>
+                            </div>
+                          ) : (
+                            <details className="mt-2 rounded-lg border border-red-200 bg-red-50">
+                              <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-semibold text-red-700">
+                                Eliminar
+                              </summary>
+                              <form
+                                action={deleteUserAdminAction}
+                                className="space-y-2 border-t border-red-200 px-3 py-2"
+                              >
+                                <input type="hidden" name="userId" value={row.id} />
+                                <input type="hidden" name="returnTo" value="/dashboard/users" />
+                                <p className="break-all text-xs text-red-800">{row.email}</p>
+                                <label className="flex items-start gap-2 text-xs text-red-900">
+                                  <input
+                                    type="checkbox"
+                                    name="confirmDelete"
+                                    value="yes"
+                                    required
+                                    className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                                  />
+                                  Confirmar eliminacion
+                                </label>
+                                <FormSubmitButton
+                                  pendingLabel="Eliminando..."
+                                  className="w-full border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                                >
+                                  Eliminar
+                                </FormSubmitButton>
+                              </form>
+                            </details>
+                          )}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

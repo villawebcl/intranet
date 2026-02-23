@@ -39,4 +39,10 @@ export const toggleWorkerStatusSchema = z.object({
   returnTo: z.string().trim().optional(),
 });
 
+export const deleteWorkerSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  confirmDelete: z.literal("yes", "Debes confirmar la eliminacion"),
+  returnTo: z.string().trim().optional(),
+});
+
 export type WorkerFormInput = z.infer<typeof workerFormSchema>;

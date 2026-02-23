@@ -22,10 +22,12 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 | --- | --- | --- | --- | --- |
 | Login / acceso dashboard | Si | Si | Si | Si |
 | Gestion de usuarios (crear/asignar rol/reset password) | Si | No | No | No |
+| Eliminar usuario (con confirmacion) | Si* | No | No | No |
 | Ver listado trabajadores | Si | Si | Si (lectura) | Limitado* |
 | Crear trabajador | Si | Si | No | No |
 | Editar trabajador | Si | Si | No | No |
 | Activar/Desactivar trabajador | Si | Si | No | No |
+| Eliminar trabajador (con confirmacion) | Si | No | No | No |
 | Ver detalle trabajador | Si | Si | Si (lectura) | Limitado* |
 | Ver resumen documental en ficha trabajador | Si | Si | Si | No |
 | Ver listado documentos por trabajador | Si | Si | Si | Si (restringido) |
@@ -36,23 +38,28 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 | Ver panel notificaciones (`/dashboard/notifications`) | Si | No | No | No |
 | Ver panel auditoria (`/dashboard/audit`) | Si | No | No | No |
 
-\* `visitante` en workers: el alcance documentado indica acceso limitado al modulo de trabajadores; confirmar exactamente que vistas quedan expuestas en UI final.
+\* En eliminacion de usuarios: las cuentas `admin` estan protegidas (no se pueden eliminar, incluida la cuenta admin actual).
 
-\** Ajustado para alineacion con alcance: panel de notificaciones visible en panel admin.
+\** `visitante` en workers: el alcance documentado indica acceso limitado al modulo de trabajadores; confirmar exactamente que vistas quedan expuestas en UI final.
+
+\*** Ajustado para alineacion con alcance: panel de notificaciones visible en panel admin.
 
 ## Detalle operativo por rol
 
 ### `admin`
 
-- Gestion de usuarios (crear usuarios, asignar roles, resetear contrasenas).
-- Gestion completa de trabajadores.
+- Gestion de usuarios (crear usuarios, asignar roles, resetear contrasenas, eliminar con confirmacion).
+- Puede ajustar roles desde `Usuarios` y desde `Acceso y roles`.
+- Cuentas admin protegidas: no puede autoeliminarse ni eliminar otras cuentas con rol `admin`.
+- Gestion de trabajadores (crear/editar/activar/desactivar).
+- Eliminacion de trabajadores con confirmacion previa.
 - Gestion documental completa (ver/subir/revisar/descargar).
 - Acceso a panel de auditoria.
 - Acceso a panel de notificaciones.
 
 ### `rrhh`
 
-- Gestion completa de trabajadores.
+- Gestion de trabajadores (crear/editar/activar/desactivar), sin eliminar.
 - Gestion documental completa (ver/subir/revisar/descargar).
 - Sin acceso a panel de auditoria.
 - Sin acceso a panel de notificaciones (panel admin).
@@ -81,6 +88,7 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 
 - UI: oculta acciones y muestra mensajes de permiso.
 - Backend (Server Actions): valida rol antes de mutar datos.
+- Acciones destructivas: requieren confirmacion explicita y registran auditoria.
 - Supabase RLS: control definitivo de acceso a tablas y storage.
 
 ## Referencias

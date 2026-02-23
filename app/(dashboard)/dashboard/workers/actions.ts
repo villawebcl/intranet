@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { canManageWorkers } from "@/lib/auth/roles";
 import { type AppRole } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { toggleWorkerStatusSchema, workerFormSchema } from "@/lib/validators/workers";
+import { deleteWorkerSchema, toggleWorkerStatusSchema, workerFormSchema } from "@/lib/validators/workers";
 
 const WORKERS_BASE_PATH = "/dashboard/workers";
 
@@ -252,4 +252,69 @@ export async function toggleWorkerStatusAction(formData: FormData) {
   });
 
   redirect(withMessage(returnPath, { success: "Estado actualizado" }));
+}
+
+export async function deleteWorkerAction(formData: FormData) {
+  const parsed = deleteWorkerSchema.safeParse({
+    workerId: formData.get("workerId"),
+    confirmDelete: formData.get("confirmDelete"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Debes confirmar la eliminacion del trabajador" }));
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (context.role !== "admin") {
+    redirect(withMessage(returnPath, { error: "Solo admin puede eliminar trabajadores" }));
+  }
+
+  const { data: worker, error: workerError } = await context.supabase
+    .from("workers")
+    .select("id, rut, first_name, last_name")
+    .eq("id", parsed.data.workerId)
+    .maybeSingle();
+
+  if (workerError) {
+    redirect(withMessage(returnPath, { error: "No se pudo validar el trabajador" }));
+  }
+
+  if (!worker) {
+    redirect(withMessage(returnPath, { error: "El trabajador no existe o ya fue eliminado" }));
+  }
+
+  const { error: deleteError } = await context.supabase
+    .from("workers")
+    .delete()
+    .eq("id", parsed.data.workerId);
+
+  if (deleteError) {
+    const message =
+      deleteError.code === "23503"
+        ? "No se puede eliminar: el trabajador tiene documentos u otros registros asociados"
+        : "No se pudo eliminar el trabajador";
+    redirect(withMessage(returnPath, { error: message }));
+  }
+
+  await insertAuditLog({
+    action: "worker_deleted",
+    actorUserId: context.user.id,
+    actorRole: context.role,
+    entityId: parsed.data.workerId,
+    metadata: {
+      rut: worker.rut,
+      workerName: `${worker.first_name} ${worker.last_name}`.trim(),
+    },
+  });
+
+  redirect(withMessage(returnPath, { success: "Trabajador eliminado" }));
 }

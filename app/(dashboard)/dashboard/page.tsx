@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
 import {
-  canManageUsers,
   canManageWorkers,
   canReviewDocuments,
   canViewAudit,
@@ -208,7 +207,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const role = (profile?.role as AppRole | null | undefined) ?? "visitante";
   const canManage = canManageWorkers(role);
-  const canManageUserAccounts = canManageUsers(role);
   const canSeeDocuments = canViewDocuments(role);
   const canReview = canReviewDocuments(role);
   const canSeeAudit = canViewAudit(role);
@@ -337,39 +335,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     recentAuditResult?.error ?? null,
   ].filter(Boolean);
 
-  const quickActions = [
-    {
-      href: "/dashboard/workers",
-      label: "Trabajadores",
-      variant: "secondary" as const,
-    },
-    canManageUserAccounts
-      ? {
-          href: "/dashboard/users",
-          label: "Gestionar usuarios",
-          variant: "secondary" as const,
-        }
-      : null,
-    canReview && documentsPending > 0
-      ? {
-          href: "/dashboard/workers",
-          label: "Revisar pendientes",
-          variant: "primary" as const,
-        }
-      : null,
-    canSeeNotificationsPanel
-      ? { href: "/dashboard/notifications", label: "Notificaciones", variant: "secondary" as const }
-      : null,
-    canSeeAudit ? { href: "/dashboard/audit", label: "Revisar auditoria", variant: "secondary" as const } : null,
-    canManage && !canReview
-      ? {
-          href: "/dashboard/workers/new",
-          label: "Registrar trabajador",
-          variant: "primary" as const,
-        }
-      : null,
-  ].filter(Boolean) as Array<{ href: string; label: string; variant: "primary" | "secondary" }>;
-
   return (
     <section className="space-y-5">
       <FlashMessages error={errorMessage} success={successMessage} />
@@ -377,7 +342,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Dashboard</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Inicio</h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Resumen ejecutivo del estado operativo y actividad reciente.
+            </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
                 Rol: {formatRole(role)}
@@ -389,24 +357,23 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               ) : null}
             </div>
           </div>
-
-          {quickActions.length ? (
-            <div className="flex max-w-full flex-wrap gap-2">
-              {quickActions.map((action) => (
-                <Link
-                  key={action.label}
-                  href={action.href}
-                  className={`inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                    action.variant === "primary"
-                      ? "bg-slate-900 text-white hover:bg-slate-800"
-                      : "border border-slate-300 text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  {action.label}
-                </Link>
-              ))}
+          <div className="min-w-[220px] rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              Estado actual
+            </p>
+            <div className="mt-2 space-y-1.5 text-sm text-slate-700">
+              <p>
+                {workersActive} trabajadores activos
+                {canManage ? ` • ${workersInactive} inactivos` : ""}
+              </p>
+              {canSeeDocuments ? (
+                <p>
+                  {canReview ? `${documentsPending} documentos pendientes` : `${documentsTotal} documentos visibles`}
+                </p>
+              ) : null}
+              {canSeeNotificationsPanel ? <p>{notificationsPendingEmail} emails pendientes</p> : null}
             </div>
-          ) : null}
+          </div>
         </div>
       </header>
 
@@ -448,11 +415,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       <div className="grid gap-5 xl:grid-cols-2">
         {canReview ? (
-          <SectionCard
-            title="Cola de revision"
-            actionHref="/dashboard/workers"
-            actionLabel="Ir a trabajadores"
-          >
+          <SectionCard title="Cola de revision" description="Documentos pendientes que requieren atencion.">
             {!pendingDocumentsList.length ? (
               <EmptyList message="No hay documentos pendientes de revision." />
             ) : (
@@ -483,11 +446,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         ) : null}
 
         {canSeeDocuments ? (
-          <SectionCard
-            title="Documentos recientes"
-            actionHref="/dashboard/workers"
-            actionLabel="Ver modulo documental"
-          >
+          <SectionCard title="Documentos recientes" description="Ultimos movimientos visibles segun tu rol.">
             {!recentDocuments.length ? (
               <EmptyList message="Aun no hay documentos registrados." />
             ) : (
@@ -521,19 +480,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </SectionCard>
         ) : (
-          <SectionCard title="Modulo documental">
-            <EmptyList message="Sin acceso a documentos para este rol." />
+          <SectionCard title="Documentos">
+            <EmptyList message="Tu rol no tiene acceso a documentos." />
           </SectionCard>
         )}
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         {canSeeAudit ? (
-          <SectionCard
-            title="Auditoria reciente"
-            actionHref="/dashboard/audit"
-            actionLabel="Ver auditoria"
-          >
+          <SectionCard title="Auditoria reciente" description="Eventos criticos recientes del sistema.">
             {!recentAudit.length ? (
               <EmptyList message="No hay eventos de auditoria recientes." />
             ) : (
@@ -567,8 +522,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         {canSeeNotificationsPanel ? (
           <SectionCard
             title="Notificaciones recientes"
-            actionHref="/dashboard/notifications"
-            actionLabel="Ver notificaciones"
+            description="Estado reciente de eventos documentales y envios de email."
           >
             {!recentNotifications.length ? (
               <EmptyList message="No hay notificaciones recientes." />
@@ -596,11 +550,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </SectionCard>
         ) : !canSeeAudit ? (
-          <SectionCard
-            title="Acceso y permisos"
-            actionHref="/dashboard/access"
-            actionLabel="Ver acceso y roles"
-          >
+          <SectionCard title="Acceso y permisos" description="Resumen rapido de capacidades de tu rol.">
             <div className="grid gap-2 sm:grid-cols-2">
               {[
                 { label: "Gestion de trabajadores", enabled: canManage },

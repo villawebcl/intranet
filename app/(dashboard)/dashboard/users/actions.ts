@@ -6,19 +6,21 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import {
   createUserAdminSchema,
+  deleteUserAdminSchema,
   resetUserPasswordAdminSchema,
   updateUserAdminSchema,
 } from "@/lib/validators/users";
 import { type AppRole } from "@/lib/constants/domain";
 
 const USERS_BASE_PATH = "/dashboard/users";
+const ACCESS_BASE_PATH = "/dashboard/access";
 
 function getSafePath(path: string | undefined, fallback: string) {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
     return fallback;
   }
 
-  if (!path.startsWith(USERS_BASE_PATH)) {
+  if (!path.startsWith(USERS_BASE_PATH) && !path.startsWith(ACCESS_BASE_PATH)) {
     return fallback;
   }
 
@@ -111,7 +113,7 @@ export async function createUserAdminAction(formData: FormData) {
   } catch {
     redirect(
       withMessage(USERS_BASE_PATH, {
-        error: "Falta SUPABASE_SERVICE_ROLE_KEY para gestionar usuarios",
+        error: "Falta configuracion de servicio para gestionar usuarios",
       }),
     );
   }
@@ -255,7 +257,7 @@ export async function resetUserPasswordAdminAction(formData: FormData) {
   } catch {
     redirect(
       withMessage(returnPath, {
-        error: "Falta SUPABASE_SERVICE_ROLE_KEY para resetear contrasenas",
+        error: "Falta configuracion de servicio para resetear contrasenas",
       }),
     );
   }
@@ -276,4 +278,76 @@ export async function resetUserPasswordAdminAction(formData: FormData) {
   });
 
   redirect(withMessage(returnPath, { success: "Contrasena actualizada" }));
+}
+
+export async function deleteUserAdminAction(formData: FormData) {
+  const parsed = deleteUserAdminSchema.safeParse({
+    userId: formData.get("userId"),
+    confirmDelete: formData.get("confirmDelete"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const returnPath = getSafePath(parsed.data?.returnTo, USERS_BASE_PATH);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Debes confirmar la eliminacion del usuario" }));
+  }
+
+  const context = await getAdminContext();
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+  ensureAdminOrRedirect(context.role, returnPath);
+
+  if (parsed.data.userId === context.user.id) {
+    redirect(withMessage(returnPath, { error: "No puedes eliminar tu propia cuenta admin" }));
+  }
+
+  const { data: targetProfile, error: profileError } = await context.supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", parsed.data.userId)
+    .maybeSingle();
+
+  if (profileError) {
+    redirect(withMessage(returnPath, { error: "No se pudo validar el usuario a eliminar" }));
+  }
+
+  if (targetProfile?.role === "admin") {
+    redirect(withMessage(returnPath, { error: "Las cuentas admin estan protegidas y no se pueden eliminar" }));
+  }
+
+  let adminClient;
+  try {
+    adminClient = createSupabaseAdminClient();
+  } catch {
+    redirect(
+      withMessage(returnPath, {
+        error: "Falta configuracion de servicio para eliminar usuarios",
+      }),
+    );
+  }
+
+  const { data: authUserResult } = await adminClient.auth.admin.getUserById(parsed.data.userId);
+  const targetEmail = authUserResult?.user?.email ?? null;
+
+  const { error: deleteError } = await adminClient.auth.admin.deleteUser(parsed.data.userId);
+
+  if (deleteError) {
+    redirect(withMessage(returnPath, { error: "No se pudo eliminar el usuario" }));
+  }
+
+  await insertAuditLog({
+    action: "user_deleted",
+    actorUserId: context.user.id,
+    actorRole: context.role,
+    entityId: parsed.data.userId,
+    metadata: {
+      email: targetEmail,
+      role: targetProfile?.role ?? "visitante",
+      fullName: targetProfile?.full_name ?? null,
+    },
+  });
+
+  redirect(withMessage(returnPath, { success: "Usuario eliminado" }));
 }

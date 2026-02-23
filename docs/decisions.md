@@ -117,6 +117,21 @@ Registro de decisiones tecnicas importantes (ADR liviano) con fecha, motivo e im
 - Motivo: Ya esta implementado de forma consistente y reduce riesgo operativo/costos de storage en el cierre del MVP.
 - Impacto: Constante centralizada de politica documental; mensajes UI/backend y checklist de acceptance quedan alineados con `5MB`.
 
+### ADR-012 — Sistema visual dashboard: shell oscuro + contenido claro (dark mode suave)
+
+- Fecha: 2026-02-23
+- Estado: aplicada
+- Decision:
+  - Mantener navegacion principal (header + sidebar) como `shell` visual del dashboard.
+  - En modo oscuro usar enfoque "oscuro suave" profesional con `shell` navy y area de contenido clara para preservar legibilidad de tablas/cards.
+  - Mantener el dashboard `Inicio` como resumen ejecutivo (estado/metricas/actividad) y evitar duplicar navegacion en botones internos.
+  - Reservar acciones operativas en las vistas del modulo correspondiente (ej. `Usuarios`) y dejar vistas de referencia (`Acceso y roles`) como politica/matriz.
+- Motivo: Mejorar legibilidad, jerarquia visual y consistencia UX en una intranet empresarial (seguridad/compliance), evitando saturacion de informacion y duplicidad funcional.
+- Impacto:
+  - Se introduce toggle de tema con persistencia local y transicion suave.
+  - Se estandariza un patron de tablas: resumen compacto + detalle bajo demanda (modal) cuando la metadata/payload satura la vista.
+  - Se reduce deuda UX al separar "navegacion" de "accion" y "referencia" de "gestion".
+
 ## Pendientes de decision (registrar al resolver)
 
 - Sin pendientes tecnicos criticos en politica documental MVP.

@@ -76,7 +76,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-900" htmlFor="email">
+        <label className="text-sm font-medium text-slate-800" htmlFor="email">
           Correo
         </label>
         <input
@@ -88,13 +88,13 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           disabled={isSubmitting}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
           placeholder="usuario@anagami.cl"
         />
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-slate-900" htmlFor="password">
+        <label className="text-sm font-medium text-slate-800" htmlFor="password">
           Contrasena
         </label>
         <input
@@ -106,7 +106,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           disabled={isSubmitting}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
           placeholder="********"
         />
       </div>
@@ -118,7 +118,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.8)] hover:-translate-y-0.5 hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
       >
         {isSubmitting ? "Entrando..." : "Iniciar sesion"}
       </button>

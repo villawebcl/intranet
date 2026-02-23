@@ -27,18 +27,19 @@ export function SidebarNav({ items, compact = false }: SidebarNavProps) {
 
   if (compact) {
     return (
-      <nav aria-label="Navegacion del dashboard" className="flex gap-2 overflow-x-auto pb-1">
+      <nav aria-label="Navegacion del dashboard" className="dashboard-sidebar-nav flex gap-2 overflow-x-auto pb-1">
         {items.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={[
-                "whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-semibold transition",
+                "dashboard-nav-link dashboard-nav-link-compact whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition",
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50",
+                  ? "dashboard-nav-link-active border-blue-200 bg-blue-50 text-blue-800"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
               ].join(" ")}
             >
               {item.label}
@@ -50,28 +51,38 @@ export function SidebarNav({ items, compact = false }: SidebarNavProps) {
   }
 
   return (
-    <nav aria-label="Navegacion del dashboard" className="space-y-1">
+    <nav aria-label="Navegacion del dashboard" className="dashboard-sidebar-nav space-y-1">
       {items.map((item) => {
         const active = isActive(pathname, item.href);
         return (
           <Link
             key={item.href}
             href={item.href}
+            aria-current={active ? "page" : undefined}
             className={[
-              "block rounded-xl border px-3 py-3 transition",
+              "dashboard-nav-link block rounded-2xl border px-3.5 py-3 transition",
               active
-                ? "border-slate-900 bg-slate-900 text-white shadow-sm"
-                : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-white",
+                ? "dashboard-nav-link-active border-slate-200 bg-white text-slate-900 shadow-sm"
+                : "border-transparent text-slate-700 hover:border-slate-200/80 hover:bg-white/80",
             ].join(" ")}
           >
-            <p className={["text-sm font-semibold", active ? "text-white" : "text-slate-900"].join(" ")}>
-              {item.label}
-            </p>
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className={[
+                  "dashboard-nav-link-dot inline-block h-2 w-2 rounded-full",
+                  active ? "bg-blue-500" : "bg-slate-300",
+                ].join(" ")}
+              />
+              <p className={["text-sm font-semibold", active ? "text-slate-900" : "text-slate-900"].join(" ")}>
+                {item.label}
+              </p>
+            </div>
             {item.description ? (
               <p
                 className={[
                   "mt-1 text-xs leading-relaxed",
-                  active ? "text-slate-200" : "text-slate-500",
+                  active ? "text-slate-600" : "text-slate-500",
                 ].join(" ")}
               >
                 {item.description}

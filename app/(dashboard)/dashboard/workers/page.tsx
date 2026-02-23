@@ -8,7 +8,7 @@ import { FlashMessages } from "@/components/ui/flash-messages";
 import { canManageWorkers } from "@/lib/auth/roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
-import { toggleWorkerStatusAction } from "./actions";
+import { deleteWorkerAction, toggleWorkerStatusAction } from "./actions";
 
 type WorkersPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -58,6 +58,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
     .eq("id", user.id)
     .maybeSingle();
   const canManage = canManageWorkers(profile?.role);
+  const isAdmin = profile?.role === "admin";
 
   let workersQuery = supabase
     .from("workers")
@@ -222,6 +223,37 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                     </>
                   ) : null}
                 </div>
+
+                {isAdmin ? (
+                  <details className="mt-3 rounded-lg border border-red-200 bg-red-50">
+                    <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
+                      Confirmar eliminacion
+                    </summary>
+                    <form action={deleteWorkerAction} className="space-y-3 border-t border-red-200 px-3 py-3">
+                      <input type="hidden" name="workerId" value={worker.id} />
+                      <input type="hidden" name="returnTo" value={currentPath} />
+                      <p className="text-xs text-red-800">
+                        Eliminar a {worker.first_name} {worker.last_name}. Esta accion no se puede deshacer.
+                      </p>
+                      <label className="flex items-start gap-2 text-xs text-red-900">
+                        <input
+                          type="checkbox"
+                          name="confirmDelete"
+                          value="yes"
+                          required
+                          className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                        />
+                        Confirmo que quiero eliminar este trabajador
+                      </label>
+                      <FormSubmitButton
+                        pendingLabel="Eliminando..."
+                        className="w-full border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                      >
+                        Eliminar trabajador
+                      </FormSubmitButton>
+                    </form>
+                  </details>
+                ) : null}
               </article>
             ))}
           </div>
@@ -285,6 +317,39 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                                 {worker.status === "activo" ? "Desactivar" : "Activar"}
                               </FormSubmitButton>
                             </form>
+                            {isAdmin ? (
+                              <details className="rounded-lg border border-red-200 bg-red-50">
+                                <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-semibold text-red-700">
+                                  Eliminar
+                                </summary>
+                                <form
+                                  action={deleteWorkerAction}
+                                  className="space-y-2 border-t border-red-200 px-3 py-2"
+                                >
+                                  <input type="hidden" name="workerId" value={worker.id} />
+                                  <input type="hidden" name="returnTo" value={currentPath} />
+                                  <p className="max-w-56 text-xs text-red-800">
+                                    Eliminar a {worker.first_name} {worker.last_name}.
+                                  </p>
+                                  <label className="flex items-start gap-2 text-xs text-red-900">
+                                    <input
+                                      type="checkbox"
+                                      name="confirmDelete"
+                                      value="yes"
+                                      required
+                                      className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                                    />
+                                    Confirmar
+                                  </label>
+                                  <FormSubmitButton
+                                    pendingLabel="Eliminando..."
+                                    className="border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                                  >
+                                    Eliminar
+                                  </FormSubmitButton>
+                                </form>
+                              </details>
+                            ) : null}
                           </>
                         ) : null}
                       </div>

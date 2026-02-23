@@ -26,7 +26,8 @@ Permite:
 
 - Login con Supabase Auth
 - Roles: `admin`, `rrhh`, `contabilidad`, `visitante`
-- CRUD base de trabajadores + activar/desactivar
+- Gestion de usuarios (crear, editar, resetear contrasena, eliminar con confirmacion)
+- Gestion de trabajadores (crear, editar, activar/desactivar; eliminacion solo admin con confirmacion)
 - 12 carpetas fijas por trabajador (enum)
 - Subida de PDF (solo PDF, max 5MB)
 - Flujo documental `pendiente -> aprobado/rechazado`
@@ -44,30 +45,37 @@ Permite:
 2. Dashboard
    - Home del panel y navegacion principal
 
-3. Trabajadores
+3. Usuarios y accesos (admin)
+   - Listado y administracion de usuarios
+   - Crear usuario, editar perfil/rol, resetear contrasena
+   - Eliminar usuario con confirmacion
+   - Proteccion de cuentas admin (sin autoeliminacion ni eliminacion de otros admin)
+
+4. Trabajadores
    - Listado, busqueda, alta, edicion, activacion/desactivacion
+   - Eliminacion de trabajador (solo admin) con confirmacion previa
    - Ficha de trabajador con resumen y acceso documental
 
-4. Documentos
+5. Documentos
    - Listado por trabajador
    - Filtros por carpeta/estado
    - Subida de PDF
    - Revision (aprobar/rechazar con motivo en rechazo)
    - Descarga controlada por permisos
 
-5. Notificaciones
+6. Notificaciones
    - Registro interno en tabla `notifications`
    - Panel `/dashboard/notifications`
    - Envio email (si `RESEND_API_KEY` y `NOTIFICATIONS_FROM_EMAIL` estan configuradas)
 
-6. Auditoria
+7. Auditoria
    - Registro en `audit_logs`
    - Panel `/dashboard/audit` (solo admin)
 
 ## Resumen de permisos vigente (MVP)
 
-- `admin`: gestion de trabajadores + documentos + auditoria + notificaciones
-- `rrhh`: gestion de trabajadores + documentos (sin panel de auditoria)
+- `admin`: gestion de usuarios + trabajadores + documentos + auditoria + notificaciones
+- `rrhh`: gestion de trabajadores (sin eliminar) + documentos (sin panel de auditoria)
 - `contabilidad`: lectura documental (ver/descargar), sin crear/editar/subir/revisar
 - `visitante`: acceso al dashboard, sin acceso documental
 

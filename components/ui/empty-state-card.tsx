@@ -15,17 +15,17 @@ type EmptyStateCardProps = {
 
 function getActionClassName(variant: EmptyStateAction["variant"]) {
   if (variant === "primary") {
-    return "bg-slate-900 text-white hover:bg-slate-800";
+    return "bg-slate-900 text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.75)] hover:bg-slate-800";
   }
 
-  return "border border-slate-300 text-slate-700 hover:bg-slate-50";
+  return "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
 }
 
 export function EmptyStateCard({ title, description, actions, className }: EmptyStateCardProps) {
   return (
     <div
       className={[
-        "rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center shadow-sm",
+        "rounded-2xl border border-dashed border-slate-300/90 bg-white/90 px-5 py-8 text-center shadow-sm",
         className ?? "",
       ].join(" ")}
     >

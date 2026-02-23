@@ -156,6 +156,19 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Validaciones finales del bloque (antes de cierre de rama):
   - `npm run lint` OK
   - `npm run typecheck` OK
+- Se ejecuta ronda de pulido UI/UX transversal (sin cambios de logica de negocio):
+  - login y shell del dashboard con estilo mas minimalista/corporativo
+  - sidebar y header refinados (jerarquia visual y navegacion clara)
+  - `Inicio` simplificado como resumen ejecutivo (sin botones duplicados del sidebar)
+  - `Usuarios`, `Auditoria` y `Notificaciones` con tablas mas estables (sin desbordes)
+  - `Notificaciones` reorganizada con resumen compacto + detalle en modal + filtros (evento/email)
+  - `Acceso y roles` simplificada a matriz/politica de permisos (sin duplicar gestion de usuarios)
+- Se incorpora sistema de tema visual con toggle global:
+  - `modo claro`
+  - `modo oscuro suave` con persistencia (`localStorage`) y transicion de cambio de tema
+  - enfoque visual final en dark mode: `shell` oscuro (header/sidebar) + contenido claro para mejor legibilidad
+- Validaciones del bloque visual/tema:
+  - `npm run typecheck` OK
 
 #### Falta / arrastrado
 
@@ -167,6 +180,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - (Opcional documental) Completar `docs/closeout-status-fase1.md` con datos finales de entrega para usarlo como acta tecnica de cierre.
 - Agendar/registrar capacitacion + ventana de observaciones y obtener aceptacion formal cliente.
 - (Opcional UX) Revisión visual manual en `staging` del dashboard nuevo y de tarjetas móviles/tablas desktop en `workers` / `documents`.
+- (Opcional UX) Calibrar paleta corporativa definitiva (accent/badges/estados) si se desea estandarizacion visual formal para entrega.
 
 ### 2026-02-20
 
