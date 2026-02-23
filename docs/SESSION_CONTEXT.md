@@ -54,7 +54,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - `auth_logout` al cerrar sesion manualmente.
   - `auth_logout` al cierre por inactividad (`reason=timeout`).
 - Panel `/dashboard/audit` para consultar trazabilidad (admin).
-- UI/UX de `audit` pulida (2026-02-23): metadata resumida, JSON colapsable, badges de accion, mejor legibilidad de IDs y layout responsive movil/escritorio.
+- UI/UX de `audit` pulida (2026-02-23): resumen en lenguaje claro por evento, metadata resumida, JSON colapsable, badges de accion, mejor legibilidad de IDs y layout responsive movil/escritorio.
 - Hardening de permisos por rol (UI + backend + RLS):
   - `visitante`: sin acceso al modulo documental (ver/descargar/subir/revisar).
   - `contabilidad`: lectura documental (ver/descargar), sin subir/revisar.

@@ -51,6 +51,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - logo `Intranet Anagami` clickeable hacia `/dashboard`
   - nueva vista `/dashboard/access` para resumen de acceso y roles (corrige acceso roto desde dashboard)
 - Se aplica pulido UI/UX en `/dashboard/audit` (sin tocar logica):
+  - resumen en lenguaje claro por evento (que paso, actor y contexto)
   - metadata resumida + JSON colapsable
   - badges de accion
   - truncado de IDs con `title`

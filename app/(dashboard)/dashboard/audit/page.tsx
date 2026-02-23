@@ -9,6 +9,16 @@ type AuditPageProps = {
 };
 
 type MetadataRecord = Record<string, unknown> | null;
+type AuditLogRow = {
+  id: string;
+  actor_user_id: string | null;
+  actor_role: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  metadata: unknown;
+  created_at: string;
+};
 
 function getStringParam(value: string | string[] | undefined) {
   if (typeof value !== "string") {
@@ -33,6 +43,20 @@ function formatActionLabel(action: string) {
   return action.replaceAll("_", " ");
 }
 
+function formatActionTitle(action: string) {
+  if (action === "auth_login") return "Inicio de sesion";
+  if (action === "auth_logout") return "Cierre de sesion";
+  if (action === "document_uploaded") return "Documento cargado";
+  if (action === "document_approved") return "Documento aprobado";
+  if (action === "document_rejected") return "Documento rechazado";
+  if (action === "document_downloaded") return "Documento descargado";
+  if (action === "worker_created") return "Trabajador creado";
+  if (action === "worker_updated") return "Trabajador actualizado";
+  if (action === "worker_status_changed") return "Cambio de estado de trabajador";
+
+  return formatActionLabel(action);
+}
+
 function truncateMiddle(value: string, start = 8, end = 6) {
   if (!value || value.length <= start + end + 1) {
     return value;
@@ -47,6 +71,60 @@ function asMetadataRecord(metadata: unknown): MetadataRecord {
   }
 
   return metadata as Record<string, unknown>;
+}
+
+function formatRoleLabel(role: string | null) {
+  if (!role) return "Sin rol";
+  if (role === "admin") return "Administrador";
+  if (role === "rrhh") return "RRHH";
+  if (role === "contabilidad") return "Contabilidad";
+  if (role === "visitante") return "Visitante";
+  return role;
+}
+
+function formatEntityLabel(entityType: string | null) {
+  if (!entityType) return "Sin entidad";
+  if (entityType === "auth") return "Autenticacion";
+  if (entityType === "document") return "Documento";
+  if (entityType === "worker") return "Trabajador";
+  return entityType;
+}
+
+function formatMetadataValueForDisplay(key: string, value: string) {
+  if (!value) return value;
+
+  if (key === "method") {
+    if (value === "password") return "Contrasena";
+    return value;
+  }
+
+  if (key === "source") {
+    if (value === "browser") return "Navegador";
+    return value;
+  }
+
+  if (key === "reason") {
+    if (value === "manual") return "Cierre manual";
+    if (value === "timeout") return "Inactividad (timeout)";
+    return value;
+  }
+
+  if (key === "decision") {
+    if (value === "aprobado") return "Aprobado";
+    if (value === "rechazado") return "Rechazado";
+    return value;
+  }
+
+  if (key === "status" || key === "previousStatus" || key === "nextStatus") {
+    if (value === "pendiente") return "Pendiente";
+    if (value === "aprobado") return "Aprobado";
+    if (value === "rechazado") return "Rechazado";
+    if (value === "activo") return "Activo";
+    if (value === "inactivo") return "Inactivo";
+    return value;
+  }
+
+  return value;
 }
 
 function getMetadataField(metadata: MetadataRecord, key: string) {
@@ -103,6 +181,63 @@ function getMetadataSummary(metadataValue: unknown) {
     .filter((item) => item.value);
 }
 
+function buildAuditSummary(log: AuditLogRow) {
+  const metadata = asMetadataRecord(log.metadata);
+  const reason = getMetadataField(metadata, "reason");
+  const method = getMetadataField(metadata, "method");
+  const source = getMetadataField(metadata, "source");
+  const entity = formatEntityLabel(log.entity_type);
+  const actor = formatRoleLabel(log.actor_role);
+
+  if (log.action === "auth_login") {
+    return `Inicio de sesion de ${actor}${method ? ` con ${formatMetadataValueForDisplay("method", method)}` : ""}${
+      source ? ` desde ${formatMetadataValueForDisplay("source", source)}` : ""
+    }.`;
+  }
+
+  if (log.action === "auth_logout") {
+    return `Cierre de sesion de ${actor}${
+      reason ? ` (${formatMetadataValueForDisplay("reason", reason)})` : ""
+    }.`;
+  }
+
+  if (log.action.startsWith("document_")) {
+    return `${formatActionTitle(log.action)} por ${actor}.`;
+  }
+
+  if (log.action.startsWith("worker_")) {
+    return `${formatActionTitle(log.action)} por ${actor}.`;
+  }
+
+  return `${formatActionTitle(log.action)} sobre ${entity.toLowerCase()}.`;
+}
+
+function buildAuditSecondarySummary(log: AuditLogRow) {
+  const metadata = asMetadataRecord(log.metadata);
+  const parts: string[] = [];
+
+  if (log.entity_type) {
+    parts.push(`Entidad: ${formatEntityLabel(log.entity_type)}`);
+  }
+
+  const status = getMetadataField(metadata, "status");
+  if (status) {
+    parts.push(`Estado: ${formatMetadataValueForDisplay("status", status)}`);
+  }
+
+  const decision = getMetadataField(metadata, "decision");
+  if (decision) {
+    parts.push(`Decision: ${formatMetadataValueForDisplay("decision", decision)}`);
+  }
+
+  const reason = getMetadataField(metadata, "reason");
+  if (reason) {
+    parts.push(`Motivo: ${formatMetadataValueForDisplay("reason", reason)}`);
+  }
+
+  return parts.join(" • ");
+}
+
 function ActionBadge({ action }: { action: string }) {
   const tone =
     action.startsWith("auth_")
@@ -116,7 +251,7 @@ function ActionBadge({ action }: { action: string }) {
   return (
     <div className="space-y-1">
       <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${tone}`}>
-        {formatActionLabel(action)}
+        {formatActionTitle(action)}
       </span>
       <p className="font-mono text-[11px] text-slate-500">{action}</p>
     </div>
@@ -144,7 +279,7 @@ function MetadataSummary({ metadataValue }: { metadataValue: unknown }) {
                 : "break-words text-xs text-slate-700"
             }
           >
-            {value}
+            {formatMetadataValueForDisplay(key, value)}
           </dd>
         </div>
       ))}
@@ -179,7 +314,8 @@ function ActorCell({
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{actorRole ?? "sin rol"}</p>
+      <p className="text-xs font-medium text-slate-800">{formatRoleLabel(actorRole)}</p>
+      <p className="text-[11px] text-slate-500">Usuario</p>
       <p className="break-all font-mono text-xs text-slate-700">{actorUserId ?? "sin usuario"}</p>
     </div>
   );
@@ -194,10 +330,21 @@ function EntityCell({
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        {entityType ?? "sin entidad"}
-      </p>
+      <p className="text-xs font-medium text-slate-800">{formatEntityLabel(entityType)}</p>
+      <p className="text-[11px] text-slate-500">ID entidad</p>
       <p className="break-all font-mono text-xs text-slate-700">{entityId ?? "sin id"}</p>
+    </div>
+  );
+}
+
+function ReadableSummaryCard({ log }: { log: AuditLogRow }) {
+  const secondary = buildAuditSecondarySummary(log);
+
+  return (
+    <div className="mb-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Resumen</p>
+      <p className="mt-1 text-sm font-medium text-slate-900">{buildAuditSummary(log)}</p>
+      {secondary ? <p className="mt-1 text-xs text-slate-600">{secondary}</p> : null}
     </div>
   );
 }
@@ -240,7 +387,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
   }
 
   const { data: logs, error } = await query;
-  const rows = logs ?? [];
+  const rows = (logs ?? []) as AuditLogRow[];
 
   return (
     <section className="space-y-5">
@@ -363,6 +510,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 </div>
 
                 <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <ReadableSummaryCard log={log} />
                   <MetadataSummary metadataValue={log.metadata} />
                   <MetadataJsonDetails metadataValue={log.metadata} />
                 </div>
@@ -390,9 +538,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="space-y-1">
-                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                          {log.actor_role ?? "sin rol"}
-                        </p>
+                        <p className="text-xs font-medium text-slate-800">{formatRoleLabel(log.actor_role)}</p>
                         <span
                           title={log.actor_user_id ?? "sin usuario"}
                           className="inline-block max-w-44 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
@@ -403,9 +549,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="space-y-1">
-                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                          {log.entity_type ?? "sin entidad"}
-                        </p>
+                        <p className="text-xs font-medium text-slate-800">{formatEntityLabel(log.entity_type)}</p>
                         <span
                           title={log.entity_id ?? "sin id"}
                           className="inline-block max-w-44 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
@@ -416,6 +560,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                     </td>
                     <td className="min-w-[320px] px-4 py-3">
                       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <ReadableSummaryCard log={log} />
                         <MetadataSummary metadataValue={log.metadata} />
                         <MetadataJsonDetails metadataValue={log.metadata} />
                       </div>

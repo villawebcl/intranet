@@ -50,7 +50,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Pulido UI/UX de `Notificaciones` (resumen legible de payload, badges de email, truncado de IDs, responsive movil/escritorio). (2026-02-23)
 - [x] Navegacion dashboard mejorada (sidebar desktop + nav compacta movil + logo clickeable a `/dashboard`). (2026-02-23)
 - [x] Vista `Acceso y roles` (`/dashboard/access`) agregada y enlazada desde dashboard. (2026-02-23)
-- [x] Pulido UI/UX de `Auditoria` (metadata resumida, JSON colapsable, badges y responsive movil/escritorio). (2026-02-23)
+- [x] Pulido UI/UX de `Auditoria` (metadata resumida, resumen en lenguaje claro por evento, JSON colapsable, badges y responsive movil/escritorio). (2026-02-23)
 - [x] Vista de carpetas del trabajador con selector `Lista` / `Cuadricula` (default `Lista`). (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
 
@@ -85,7 +85,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
-- [x] Pulido UI/UX de `Auditoria` (`/dashboard/audit`): metadata resumida + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
+- [x] Pulido UI/UX de `Auditoria` (`/dashboard/audit`): resumen claro por evento + metadata resumida + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
 - [x] Navegacion dashboard con sidebar + logo clickeable y pagina `Acceso y roles` funcional (`/dashboard/access`). (2026-02-23)
 - [x] Carpeta de trabajador (`/dashboard/workers/[workerId]`) con vista `Lista` / `Cuadricula` para resumen de 12 carpetas (default `Lista`). (2026-02-23)
 - [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
