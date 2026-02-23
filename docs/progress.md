@@ -41,6 +41,15 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - validacion backend
   - proteccion de rutas del dashboard
 - Se sincroniza memoria persistente (`tasks`, `progress`, `SESSION_CONTEXT`) con el estado actual y proximo bloque recomendado.
+- Se aplica pulido UI/UX acotado en `/dashboard/notifications` (sin tocar logica):
+  - resumen legible de payload + JSON colapsable
+  - badge de estado de email (`Enviado` / `No enviado`)
+  - truncado de IDs largos con `title`
+  - vista responsive (cards en movil, tabla en escritorio)
+- Validaciones del bloque UI:
+  - `npm run lint` OK
+  - `npm run typecheck` OK
+  - `npm run build` con fallo por sandbox/Turbopack (permiso de puerto/proceso en entorno de ejecucion), no por error funcional del cambio
 
 #### Falta / arrastrado
 

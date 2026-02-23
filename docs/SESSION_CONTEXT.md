@@ -38,6 +38,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Notificaciones:
   - Registro interno en tabla `notifications` para eventos documentales.
   - Panel `/dashboard/notifications` para ver eventos recientes.
+  - UI/UX de `notifications` pulida (2026-02-23): resumen de payload legible, JSON colapsable, badges de email, mejor legibilidad de IDs y layout responsive movil/escritorio.
   - Envio de email via Resend en carga/aprobacion/rechazo (si ENV configurada).
   - Plantillas de email centralizadas y trazabilidad `sent_at` por notificacion enviada.
 - Registro de auditoria para crear/editar/cambiar estado de trabajador.

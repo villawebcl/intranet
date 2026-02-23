@@ -47,6 +47,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
 - [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
+- [x] Pulido UI/UX de `Notificaciones` (resumen legible de payload, badges de email, truncado de IDs, responsive movil/escritorio). (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
 
 ## Backlog de entrega / operacion (acceptance)
@@ -80,6 +81,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
+- [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
 - [x] Ticket `feature/acceptance-delivery-closeout`: checklists de acceptance/entrega normalizados con pendientes clasificados por tipo/responsable + propuesta de cierre. (2026-02-23)
 - [x] PR `#3` de smoke E2E auth/permisos mergeado en `main` (2026-02-22)
 - [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)
