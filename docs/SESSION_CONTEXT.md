@@ -22,6 +22,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - sidebar en desktop + navegacion compacta en movil
   - logo `Intranet Anagami` clickeable a `/dashboard`
   - pagina `/dashboard/access` para resumen de acceso y roles
+- UX de feedback/loading unificada (2026-02-23):
+  - `AlertBanner` / `FlashMessages` para mensajes consistentes (error/exito/aviso)
+  - `FormSubmitButton` con estado pendiente visible (`Procesando...`, `Guardando...`, etc.)
+  - aplicado a `login`, `logout`, workers, detalle worker, documentos, upload y notificaciones
 - Timeout por inactividad en cliente (`INACTIVITY_TIMEOUT_MINUTES`).
 - Modulo de trabajadores:
   - Listado + busqueda por RUT/nombre.
@@ -105,17 +109,17 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URL de produccion, responsable cliente, fechas, credenciales).
-2. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
-3. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).
-4. Agendar/registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
-5. (Opcional, separado) Evaluar smoke extra de auditoria para `auth_logout`.
+1. (UX opcional pre-entrega) Revisar estados vacios y consistencia visual final de `workers` / `documents`.
+2. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URL de produccion, responsable cliente, fechas, credenciales).
+3. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
+4. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).
+5. Agendar/registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
 
 ## Proxima sesion (ticket sugerido)
 
 - Nombre sugerido de rama: `ops/handoff-data-completion` (o continuar rama actual si aun no se hizo PR)
 - Objetivo: completar datos reales de handoff y cerrar acceptance formal del MVP.
-- Estado (2026-02-23): documentacion operativa lista + `staging` Vercel desplegado; faltan datos/confirmaciones externas para cierre final.
+- Estado (2026-02-23): documentacion operativa lista + `staging` Vercel desplegado + bloque UX/UI MVP avanzado (sidebar, audit/notificaciones legibles, feedback/loading consistente); faltan datos/confirmaciones externas para cierre final.
 - Alcance:
   1. Completar campos `PENDIENTE` en datos de entrega/registro de aceptacion.
   2. Registrar entrega de credenciales por canal seguro (sin secretos) y canal/acuse.

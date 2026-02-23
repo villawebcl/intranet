@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { AlertBanner } from "@/components/ui/alert-banner";
 import { canUploadDocuments } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -72,9 +74,9 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
       </header>
 
       {!isWorkerActive ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <AlertBanner variant="warning">
           Este trabajador esta inactivo. No se permitiran cargas de documento.
-        </p>
+        </AlertBanner>
       ) : null}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -120,13 +122,13 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            <button
-              type="submit"
+            <FormSubmitButton
+              pendingLabel="Subiendo..."
               disabled={!isWorkerActive}
-              className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
             >
               Subir documento
-            </button>
+            </FormSubmitButton>
             <Link
               href={`/dashboard/workers/${worker.id}`}
               className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"

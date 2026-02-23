@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { IdleSessionWatcher } from "@/components/auth/idle-session-watcher";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
 import { canManageWorkers, canViewAudit, canViewDocuments } from "@/lib/auth/roles";
 import { getClientEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -81,12 +82,12 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
                 <p className="max-w-52 truncate text-sm text-slate-700">{displayName}</p>
               </div>
               <form action={signOutAction}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                <FormSubmitButton
+                  pendingLabel="Cerrando..."
+                  className="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Cerrar sesion
-                </button>
+                </FormSubmitButton>
               </form>
             </div>
           </div>

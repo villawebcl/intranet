@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { FlashMessages } from "@/components/ui/flash-messages";
 import { canManageWorkers } from "@/lib/auth/roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -84,17 +86,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
         ) : null}
       </header>
 
-      {successMessage ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {successMessage}
-        </p>
-      ) : null}
-
-      {errorMessage ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {errorMessage}
-        </p>
-      ) : null}
+      <FlashMessages error={errorMessage} success={successMessage} />
 
       <form className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" method="get">
         <label htmlFor="q" className="text-sm font-medium text-slate-800">
@@ -193,12 +185,12 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                           <input type="hidden" name="workerId" value={worker.id} />
                           <input type="hidden" name="currentStatus" value={worker.status} />
                           <input type="hidden" name="returnTo" value={currentPath} />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                          <FormSubmitButton
+                            pendingLabel={worker.status === "activo" ? "Desactivando..." : "Activando..."}
+                            className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                           >
                             {worker.status === "activo" ? "Desactivar" : "Activar"}
-                          </button>
+                          </FormSubmitButton>
                         </form>
                       </>
                     ) : null}

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { FlashMessages } from "@/components/ui/flash-messages";
 import {
   canDownloadDocuments,
   canReviewDocuments,
@@ -131,16 +133,10 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
 
   return (
     <section className="space-y-5">
-      {getStringParam(urlParams.success) ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {getStringParam(urlParams.success)}
-        </p>
-      ) : null}
-      {getStringParam(urlParams.error) ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {getStringParam(urlParams.error)}
-        </p>
-      ) : null}
+      <FlashMessages
+        error={getStringParam(urlParams.error)}
+        success={getStringParam(urlParams.success)}
+      />
 
       <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -284,12 +280,12 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                         <input type="hidden" name="workerId" value={worker.id} />
                         <input type="hidden" name="documentId" value={document.id} />
                         <input type="hidden" name="returnTo" value={currentPath} />
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        <FormSubmitButton
+                          pendingLabel="Preparando..."
+                          className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                         >
                           Descargar
-                        </button>
+                        </FormSubmitButton>
                       </form>
                     ) : null}
 
@@ -300,12 +296,12 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                           <input type="hidden" name="documentId" value={document.id} />
                           <input type="hidden" name="decision" value="aprobado" />
                           <input type="hidden" name="returnTo" value={currentPath} />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                          <FormSubmitButton
+                            pendingLabel="Aprobando..."
+                            className="border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
                           >
                             Aprobar
-                          </button>
+                          </FormSubmitButton>
                         </form>
 
                         <form action={reviewDocumentAction} className="flex flex-wrap items-center gap-2">
@@ -320,12 +316,12 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                             maxLength={500}
                             className="w-48 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                           />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                          <FormSubmitButton
+                            pendingLabel="Rechazando..."
+                            className="border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
                           >
                             Rechazar
-                          </button>
+                          </FormSubmitButton>
                         </form>
                       </>
                     ) : null}

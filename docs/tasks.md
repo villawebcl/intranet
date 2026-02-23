@@ -45,13 +45,14 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
   - [x] Asercion de descarga real del PDF fixture (`Descargar` -> signed URL PDF).
   - [x] Smoke de auditoria filtrada: `admin` ve eventos `auth_login` en `/dashboard/audit` con filtros.
 - [x] Documentar matriz de permisos final en un archivo dedicado (`docs/permissions-matrix.md`, opcional). (2026-02-22)
-- [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
-- [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
+- [x] Revisar UX de mensajes/errores en pantallas clave y unificar banners reutilizables (`AlertBanner`, `FlashMessages`). (2026-02-23)
+- [x] Agregar estados de carga visibles en acciones criticas de formularios/acciones server (`FormSubmitButton`) en pantallas clave. (2026-02-23)
 - [x] Pulido UI/UX de `Notificaciones` (resumen legible de payload, badges de email, truncado de IDs, responsive movil/escritorio). (2026-02-23)
 - [x] Navegacion dashboard mejorada (sidebar desktop + nav compacta movil + logo clickeable a `/dashboard`). (2026-02-23)
 - [x] Vista `Acceso y roles` (`/dashboard/access`) agregada y enlazada desde dashboard. (2026-02-23)
 - [x] Pulido UI/UX de `Auditoria` (metadata resumida, resumen en lenguaje claro por evento, JSON colapsable, badges y responsive movil/escritorio). (2026-02-23)
 - [x] Vista de carpetas del trabajador con selector `Lista` / `Cuadricula` (default `Lista`). (2026-02-23)
+- [x] Unificacion UX de feedback/loading en pantallas clave (`login`, workers, detalle worker, documentos, upload, notificaciones, logout) con componentes reutilizables `AlertBanner`, `FlashMessages`, `FormSubmitButton`. (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
 
 ## Backlog de entrega / operacion (acceptance)
@@ -86,6 +87,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Tareas completadas recientemente (referencia)
 
 - [x] Pulido UI/UX de `Auditoria` (`/dashboard/audit`): resumen claro por evento + metadata resumida + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
+- [x] UX de feedback/loading unificada con componentes reutilizables (`AlertBanner`, `FlashMessages`, `FormSubmitButton`) y acciones con estado pendiente visible en `login`, `workers`, `documents`, `notifications` y `logout`. (2026-02-23)
 - [x] Navegacion dashboard con sidebar + logo clickeable y pagina `Acceso y roles` funcional (`/dashboard/access`). (2026-02-23)
 - [x] Carpeta de trabajador (`/dashboard/workers/[workerId]`) con vista `Lista` / `Cuadricula` para resumen de 12 carpetas (default `Lista`). (2026-02-23)
 - [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)

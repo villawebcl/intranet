@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { AlertBanner } from "@/components/ui/alert-banner";
+import { FlashMessages } from "@/components/ui/flash-messages";
 import { canManageWorkers, canUploadDocuments, canViewDocuments } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -117,17 +120,10 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
   return (
     <section className="space-y-5">
-      {getStringParam(urlParams.success) ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {getStringParam(urlParams.success)}
-        </p>
-      ) : null}
-
-      {getStringParam(urlParams.error) ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {getStringParam(urlParams.error)}
-        </p>
-      ) : null}
+      <FlashMessages
+        error={getStringParam(urlParams.error)}
+        success={getStringParam(urlParams.success)}
+      />
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <header className="flex flex-wrap items-start justify-between gap-3">
@@ -157,12 +153,12 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                   <input type="hidden" name="workerId" value={worker.id} />
                   <input type="hidden" name="currentStatus" value={worker.status} />
                   <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  <FormSubmitButton
+                    pendingLabel={worker.status === "activo" ? "Desactivando..." : "Activando..."}
+                    className="border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     {worker.status === "activo" ? "Desactivar" : "Activar"}
-                  </button>
+                  </FormSubmitButton>
                 </form>
               </>
             ) : null}
@@ -242,15 +238,15 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         </header>
 
         {documentsError ? (
-          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <AlertBanner className="mt-4" variant="error">
             No se pudo cargar resumen documental: {documentsError.message}
-          </p>
+          </AlertBanner>
         ) : null}
 
         {!canReadDocuments ? (
-          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <AlertBanner className="mt-4" variant="warning">
             Tu rol no tiene acceso al modulo documental de trabajadores.
-          </p>
+          </AlertBanner>
         ) : null}
 
         {foldersView === "list" ? (

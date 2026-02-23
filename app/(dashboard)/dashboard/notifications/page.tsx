@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FlashMessages } from "@/components/ui/flash-messages";
 import { canManageWorkers } from "@/lib/auth/roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -204,16 +205,10 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
   return (
     <section className="space-y-5">
-      {getStringParam(urlParams.success) ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {getStringParam(urlParams.success)}
-        </p>
-      ) : null}
-      {getStringParam(urlParams.error) ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {getStringParam(urlParams.error)}
-        </p>
-      ) : null}
+      <FlashMessages
+        error={getStringParam(urlParams.error)}
+        success={getStringParam(urlParams.success)}
+      />
 
       <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">

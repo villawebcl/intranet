@@ -70,6 +70,14 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - `npm run lint` OK
   - `npm run typecheck` OK
   - `npm run build` con fallo por sandbox/Turbopack (permiso de puerto/proceso en entorno de ejecucion), no por error funcional del cambio
+- Se unifica UX de feedback y estados de carga en pantallas clave (sin cambiar logica de negocio):
+  - componentes reutilizables `AlertBanner`, `FlashMessages` y `FormSubmitButton`
+  - `login` con error consistente y bloqueo de inputs durante submit
+  - acciones criticas con pending label visible (`logout`, activar/desactivar worker, descargar/aprobar/rechazar documentos, subida de documento, guardar worker)
+  - reemplazo de banners duplicados por `FlashMessages` en workers/detalle/documentos/notificaciones
+- Validaciones del bloque feedback/loading:
+  - `npm run lint` OK
+  - `npm run typecheck` OK
 
 #### Falta / arrastrado
 
@@ -78,6 +86,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Registrar backup/export inicial y estado de migraciones del entorno de entrega.
 - Confirmar politicas pendientes (`worker inactivo`, tamano PDF) y destinatarios de email (si aplica).
 - Agendar/registrar capacitacion + ventana de observaciones y obtener aceptacion formal cliente.
+- (Opcional UX) Revisar estados vacios y consistencia visual final de tablas/headers en `workers` y `documents`.
 
 ### 2026-02-20
 
@@ -187,7 +196,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Completar datos pendientes de handoff/cliente en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md`.
-2. Registrar credenciales por canal seguro (sin secretos), URLs, backup/export y capacitacion.
-3. Obtener aceptacion formal cliente y cerrar estado final del MVP.
-4. (Opcional, separado) Evaluar smoke extra de auditoria `auth_logout` si se considera necesario.
+1. Cerrar microfase UX restante (estados vacios + consistencia visual final en `workers`/`documents`) si se mantiene prioridad de polish pre-entrega.
+2. Completar datos pendientes de handoff/cliente en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md`.
+3. Registrar credenciales por canal seguro (sin secretos), URLs, backup/export y capacitacion.
+4. Obtener aceptacion formal cliente y cerrar estado final del MVP.
