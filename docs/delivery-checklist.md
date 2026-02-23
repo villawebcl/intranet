@@ -19,14 +19,14 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 
 ## Datos de entrega (completar)
 
-- Fecha estimada de entrega: `PENDIENTE`
+- Fecha estimada de entrega: `2026-03-31`
 - Fecha real de entrega: `PENDIENTE`
-- URL staging: `PENDIENTE`
-- URL produccion: `PENDIENTE`
-- Responsable tecnico (proveedor): `PENDIENTE`
-- Responsable operativo (proveedor): `PENDIENTE`
+- URL staging: `PENDIENTE` (usar URL de Vercel al desplegar; ej. `https://<proyecto>.vercel.app`)
+- URL produccion: `PENDIENTE` (dominio/subdominio por comprar; formato sugerido: `https://intranet.anagami.cl`)
+- Responsable tecnico (proveedor): `Cristian Villalobos`
+- Responsable operativo (proveedor): `Cristian Villalobos`
 - Responsable cliente (aprobacion): `PENDIENTE`
-- Canal seguro para credenciales (ej. email corporativo/WhatsApp/gestor): `PENDIENTE`
+- Canal seguro para credenciales (ej. email corporativo/WhatsApp/gestor): `email`
 
 ## Pendientes de cierre (clasificados)
 
@@ -37,24 +37,24 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 | Item | Estado | Responsable | Dependencia | Nota / evidencia esperada |
 |---|---|---|---|---|
 | Confirmar politica final de trabajador `inactivo` (alcance de restriccion) | pendiente | Producto + Tech Lead | Cliente | Impacta acceptance B y criterio operativo |
-| Confirmar politica final de tamano PDF (mantener 5MB o ajustar) | pendiente | Producto + Tech Lead | Cliente | Impacta acceptance C y mensajes UX |
-| Registrar estado de migraciones en entorno de entrega (aplicadas/pendientes) | pendiente | Dev/Infra | Acceso a entorno | Dejar fecha + responsable en este documento |
-| Ejecutar y registrar backup/export inicial DB (si aplica por acuerdo) | pendiente | Dev/Infra | Acceso a entorno + acuerdo cliente | Guardar referencia de archivo/ubicacion segura, no adjuntar dump al repo |
-| Confirmar Storage privado/reglas de acceso en entorno de entrega | pendiente | Dev/Infra | Acceso a entorno | Completa acceptance F (evidencia tecnica) |
-| Configurar y probar notificaciones por correo (`RESEND_*`) si entran en alcance | pendiente | Dev/Infra | Credenciales + destinatarios | Marcar `n/a` si MVP se entrega sin correo activo |
+| Confirmar politica final de tamano PDF (mantener 5MB o ajustar) | pendiente | Producto + Tech Lead | Cliente | Default en repo/migracion: 5MB + solo PDF; falta decision final |
+| Registrar estado de migraciones en entorno de entrega (aplicadas/pendientes) | pendiente | Cristian Villalobos | Acceso a entorno | Dejar fecha + responsable en este documento |
+| Ejecutar y registrar backup/export inicial DB (si aplica por acuerdo) | pendiente | Cristian Villalobos | Acceso a entorno + acuerdo cliente | Recomendado: ejecutar el dia de entrega antes de enviar credenciales; guardar referencia segura, no dump en repo |
+| Confirmar Storage privado/reglas de acceso en entorno de entrega | en curso | Cristian Villalobos | Acceso a entorno | Repo/migraciones confirman bucket privado + policies; falta validacion en entorno |
+| Configurar y probar notificaciones por correo (`RESEND_*`) si entran en alcance | pendiente | Cristian Villalobos | Credenciales + destinatarios | Recomendacion MVP: entregar con panel interno y marcar correo `n/a` hasta confirmacion cliente |
 
 ### 2) Operativo
 
 | Item | Estado | Responsable | Dependencia | Nota / evidencia esperada |
 |---|---|---|---|---|
-| Definir y registrar usuarios de prueba por rol (sin secretos en repo) | pendiente | Operaciones + Tech | Cliente (si valida naming) | Registrar solo identificadores y canal seguro |
-| Entregar credenciales `admin` por canal seguro | pendiente | Operaciones/PM | Responsable cliente disponible | Registrar fecha/canal/acuse |
-| Entregar credenciales de prueba por rol por canal seguro | pendiente | Operaciones/PM | Responsable cliente disponible | Registrar fecha/canal/acuse |
-| Acordar metodo de resguardo/rotacion de credenciales | pendiente | Operaciones + Cliente | Cliente | No almacenar secretos en repo |
-| Registrar URL(s) de entorno definitivas en checklist de acceptance | pendiente | Operaciones + Tech | Infra/hosting | Completa seccion "Registro de aceptacion" |
-| Preparar manual con capturas para cliente (version de entrega) | pendiente | Operaciones/QA | Datos/URLs finales | Plantilla y evidencia base ya existen |
-| Registrar canal de soporte/incidencias y ventana de observaciones (5 dias habiles) | pendiente | PM/Operaciones | Cliente | Dejar canal + fechas exactas |
-| Agendar o registrar capacitacion remota (2h) | pendiente | PM/Operaciones | Agenda cliente | Dejar fecha, asistentes y estado |
+| Definir y registrar usuarios de prueba por rol (sin secretos en repo) | pendiente | Cristian Villalobos | Cliente (si valida naming) | Registrar solo identificadores y canal seguro (`email`) |
+| Entregar credenciales `admin` por canal seguro | pendiente | Cristian Villalobos | Responsable cliente disponible | Registrar fecha/canal/acuse |
+| Entregar credenciales de prueba por rol por canal seguro | pendiente | Cristian Villalobos | Responsable cliente disponible | Registrar fecha/canal/acuse |
+| Acordar metodo de resguardo/rotacion de credenciales | pendiente | Cristian Villalobos + Cliente | Cliente | No almacenar secretos en repo |
+| Registrar URL(s) de entorno definitivas en checklist de acceptance | pendiente | Cristian Villalobos | Infra/hosting | Completa seccion "Registro de aceptacion" |
+| Preparar manual con capturas para cliente (version de entrega) | pendiente | Cristian Villalobos | Datos/URLs finales | Plantilla y evidencia base ya existen |
+| Registrar canal de soporte/incidencias y ventana de observaciones (5 dias habiles) | en curso | Cristian Villalobos | Cliente | Propuesta: email oficial + WhatsApp solo coordinacion; ventana estimada `2026-03-31` a `2026-04-06` |
+| Agendar o registrar capacitacion remota (2h) | pendiente | Cristian Villalobos | Agenda cliente | Recomendado: 1 sesion remota de hasta 2h |
 
 ### 3) Externo / cliente
 
@@ -62,7 +62,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 |---|---|---|---|---|
 | Confirmar responsables cliente (tecnico/operativo/aprobador) | pendiente | Cliente | Cliente | Completar "Datos de entrega" |
 | Confirmar destinatarios de email por area/unidad (si aplica) | pendiente | Cliente | Cliente | Impacta configuracion de notificaciones |
-| Confirmar si requiere repo compartido y usuarios con acceso | pendiente | Cliente + PM | Cliente | Marcar `n/a` si no aplica |
+| Confirmar si requiere repo compartido y usuarios con acceso | pendiente | Cliente + Cristian Villalobos | Cliente | Marcar `n/a` si no aplica |
 | Confirmar hosting/URL final de staging y/o produccion | pendiente | Cliente + Infra | Cliente/hosting | Completa acceptance H |
 | Recibir aprobacion formal (email/acta/firma) | pendiente | Cliente | Cierre acceptance | Completa "Registro de aceptacion" |
 
@@ -73,6 +73,8 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 - [ ] Metodo de resguardo de credenciales acordado (no repo)
 - [ ] Fecha/canal/acuse de entrega registrados en este documento (sin secretos)
 - Observaciones:
+  - Canal acordado inicialmente: `email`.
+  - No registrar passwords/secretos en el repo; solo fecha, canal y acuse.
 
 ## Repositorio y documentacion
 
@@ -98,6 +100,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 - [ ] Destinatarios por rol/area definidos
 - [ ] Prueba de correo documentada (si aplica)
 - [ ] Estado final marcado (`activo` / `n/a`) en este checklist
+- Recomendacion actual (MVP freelancer): `n/a` para correo externo en entrega inicial, manteniendo panel interno de notificaciones activo.
 
 ## Capacitacion y soporte
 
@@ -105,6 +108,10 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 - [ ] Ventana de observaciones (5 dias habiles) comunicada
 - [ ] Canal para soporte/incidencias definido
 - [ ] Responsable cliente para seguimiento post-entrega confirmado
+- Propuesta operativa base:
+  - Capacitacion: 1 sesion remota de hasta 2h (fecha por coordinar)
+  - Soporte/incidencias: `email` (oficial), WhatsApp solo coordinacion
+  - Ventana de observaciones estimada (si entrega `2026-03-31`): `2026-03-31` a `2026-04-06`
 
 ## Propuesta minima de cierre (checklist ejecutable)
 
@@ -132,7 +139,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 
 - Estado final: `PENDIENTE`
 - Bloqueadores:
-  - Datos de entrega (URLs, responsables, canal seguro) no confirmados
+  - Datos de entrega (URLs y responsable cliente) no confirmados
   - Credenciales y backup/export no registrados
   - Capacitacion/ventana de observaciones sin agenda cerrada
   - Aceptacion formal cliente pendiente

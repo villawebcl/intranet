@@ -90,8 +90,8 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 - [ ] Email al cargar documento
 - [ ] Email al aprobar documento
 - [ ] Email al rechazar documento
-- [ ] Panel / sección de notificaciones (admin o roles definidos)
-- [ ] Registro interno (aunque sea simple) de notificaciones emitidas o eventos
+- [x] Panel / sección de notificaciones (admin o roles definidos)
+- [x] Registro interno (aunque sea simple) de notificaciones emitidas o eventos
 
 **Evidencia**: correos recibidos en cuenta de prueba + capturas.
 
@@ -115,7 +115,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## F) Seguridad (Obligatorio)
 
 - [x] RLS habilitado en tablas sensibles
-- [ ] Storage con reglas coherentes (no público sin control)
+- [x] Storage con reglas coherentes (no público sin control)
 - [x] Validación en backend (no confiar solo en frontend)
 - [x] Protección de rutas del dashboard (no acceso anónimo)
 
@@ -135,9 +135,10 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## H) Entrega (Obligatorio)
 
 > Nota: pendientes operativos/cliente detallados con responsable/estado en `docs/delivery-checklist.md`.
+> Nota URL: `intranet@anagami.cl` es un correo; para produccion se debe registrar una URL (ej. `https://intranet.anagami.cl`).
 
 - [ ] Repo GitHub privado compartido con el cliente (si corresponde)
-- [ ] README con pasos de instalación/despliegue y variables de entorno
+- [x] README con pasos de instalación/despliegue y variables de entorno
 - [ ] Credenciales Admin entregadas por canal seguro
 - [ ] Backup inicial DB/export (según lo acordado)
 - [ ] Manual PDF (o docs) con capturas
@@ -148,11 +149,11 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## Registro de aceptación
 
-- Fecha de entrega: `PENDIENTE`
-- URL Staging / Producción: `PENDIENTE`
-- Responsable tecnico (proveedor): `PENDIENTE`
+- Fecha de entrega: `PENDIENTE` (estimada `2026-03-31`)
+- URL Staging / Producción: `PENDIENTE` (staging sugerido: Vercel al desplegar; produccion sugerida: `https://intranet.anagami.cl`)
+- Responsable tecnico (proveedor): `Cristian Villalobos`
 - Responsable cliente (aprobacion): `PENDIENTE`
-- Canal seguro de credenciales: `PENDIENTE`
+- Canal seguro de credenciales: `email`
 - Usuarios de prueba:
   - Admin: `PENDIENTE` (definir/registrar por canal seguro)
   - RRHH: `PENDIENTE`
