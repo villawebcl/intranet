@@ -21,7 +21,7 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 
 - Fecha estimada de entrega: `2026-03-31`
 - Fecha real de entrega: `PENDIENTE`
-- URL staging: `PENDIENTE` (usar URL de Vercel al desplegar; ej. `https://<proyecto>.vercel.app`)
+- URL staging: `https://intranet-lovat-delta.vercel.app` (Vercel alias temporal; deploy 2026-02-23, `/login` responde HTTP 200)
 - URL produccion: `PENDIENTE` (dominio/subdominio por comprar; formato sugerido: `https://intranet.anagami.cl`)
 - Responsable tecnico (proveedor): `Cristian Villalobos`
 - Responsable operativo (proveedor): `Cristian Villalobos`
@@ -51,7 +51,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 | Entregar credenciales `admin` por canal seguro | pendiente | Cristian Villalobos | Responsable cliente disponible | Registrar fecha/canal/acuse |
 | Entregar credenciales de prueba por rol por canal seguro | pendiente | Cristian Villalobos | Responsable cliente disponible | Registrar fecha/canal/acuse |
 | Acordar metodo de resguardo/rotacion de credenciales | pendiente | Cristian Villalobos + Cliente | Cliente | No almacenar secretos en repo |
-| Registrar URL(s) de entorno definitivas en checklist de acceptance | pendiente | Cristian Villalobos | Infra/hosting | Completa seccion "Registro de aceptacion" |
+| Registrar URL(s) de entorno definitivas en checklist de acceptance | en curso | Cristian Villalobos | Infra/hosting | Staging Vercel registrado (`https://intranet-lovat-delta.vercel.app`); falta URL de produccion |
 | Preparar manual con capturas para cliente (version de entrega) | pendiente | Cristian Villalobos | Datos/URLs finales | Plantilla y evidencia base ya existen |
 | Registrar canal de soporte/incidencias y ventana de observaciones (5 dias habiles) | en curso | Cristian Villalobos | Cliente | Propuesta: email oficial + WhatsApp solo coordinacion; ventana estimada `2026-03-31` a `2026-04-06` |
 | Agendar o registrar capacitacion remota (2h) | pendiente | Cristian Villalobos | Agenda cliente | Recomendado: 1 sesion remota de hasta 2h |
@@ -75,6 +75,9 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 - Observaciones:
   - Canal acordado inicialmente: `email`.
   - No registrar passwords/secretos en el repo; solo fecha, canal y acuse.
+  - Staging actual (Vercel alias temporal): `https://intranet-lovat-delta.vercel.app`
+  - URL de deployment (inmutable del redeploy exitoso): `https://intranet-nv59t9yaj-crislobos-projects.vercel.app`
+  - Se cargaron ENV minimas en Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `APP_URL`, `INACTIVITY_TIMEOUT_MINUTES`) y se hizo redeploy para corregir `500` inicial.
 
 ## Repositorio y documentacion
 
@@ -84,6 +87,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 - [x] `docs/manual-qa-evidence.md` actualizado con capturas/rutas
 - [x] `docs/permissions-matrix.md` revisado
 - [ ] `docs/ACCEPTANCE_CHECKLIST.md` completado con datos finales de entrega (URLs/usuarios/aceptacion)
+- [x] URL de `staging` desplegada en Vercel y registrada en checklist (2026-02-23)
 
 ## Base de datos / operacion
 
@@ -139,7 +143,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 
 - Estado final: `PENDIENTE`
 - Bloqueadores:
-  - Datos de entrega (URLs y responsable cliente) no confirmados
+  - Datos de entrega (URL de produccion y responsable cliente) no confirmados
   - Credenciales y backup/export no registrados
   - Capacitacion/ventana de observaciones sin agenda cerrada
   - Aceptacion formal cliente pendiente

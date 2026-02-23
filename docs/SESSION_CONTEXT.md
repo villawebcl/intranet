@@ -64,7 +64,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Documentacion de acceptance/entrega normalizada post-PR `#3`:
   - `docs/ACCEPTANCE_CHECKLIST.md` actualizado con estado de cierre y resumen de pendientes clasificados.
   - `docs/delivery-checklist.md` actualizado con pendientes por tipo (`tecnico`, `operativo`, `externo/cliente`), estado, responsable y propuesta minima de cierre.
-  - Pendiente completar datos reales de handoff (URLs, credenciales por canal seguro, backup/export, capacitacion, aceptacion cliente).
+  - `staging` Vercel desplegado y registrado (`https://intranet-lovat-delta.vercel.app`) con ENV minimas cargadas y verificacion `/login` = HTTP 200; pendiente URL de produccion y demas datos de handoff (credenciales, backup/export, capacitacion, aceptacion cliente).
 
 ## Rutas clave
 
@@ -99,7 +99,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URLs, responsables, fechas, canal seguro).
+1. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URL de produccion, responsable cliente, fechas, credenciales).
 2. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
 3. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).
 4. Agendar/registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
@@ -109,7 +109,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 - Nombre sugerido de rama: `ops/handoff-data-completion` (o continuar rama actual si aun no se hizo PR)
 - Objetivo: completar datos reales de handoff y cerrar acceptance formal del MVP.
-- Estado (2026-02-23): documentacion operativa lista; faltan datos/confirmaciones externas.
+- Estado (2026-02-23): documentacion operativa lista + `staging` Vercel desplegado; faltan datos/confirmaciones externas para cierre final.
 - Alcance:
   1. Completar campos `PENDIENTE` en datos de entrega/registro de aceptacion.
   2. Registrar entrega de credenciales por canal seguro (sin secretos) y canal/acuse.

@@ -46,6 +46,13 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - badge de estado de email (`Enviado` / `No enviado`)
   - truncado de IDs largos con `title`
   - vista responsive (cards en movil, tabla en escritorio)
+- Se despliega `staging` en Vercel y se registra URL temporal en checklists:
+  - alias temporal: `https://intranet-lovat-delta.vercel.app`
+  - deployment URL (redeploy exitoso): `https://intranet-nv59t9yaj-crislobos-projects.vercel.app`
+- Se diagnostica y corrige `500` inicial en `staging`:
+  - causa: faltaban ENV en Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+  - accion: carga de ENV minimas (`NEXT_PUBLIC_SUPABASE_*`, `APP_URL`, `INACTIVITY_TIMEOUT_MINUTES`) para `production` y `preview` + redeploy
+  - verificacion: `GET /login` responde `HTTP 200`
 - Validaciones del bloque UI:
   - `npm run lint` OK
   - `npm run typecheck` OK

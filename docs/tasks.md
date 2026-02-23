@@ -19,7 +19,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Normalizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-PR `#3`. (2026-02-23)
 - [x] Separar pendientes de cierre por tipo (tecnico / operativo / externo-cliente) con estado y responsable sugerido. (2026-02-23)
 - [x] Dejar propuesta minima de cierre (checklist + proximos pasos) para handoff. (2026-02-23)
-- [ ] Completar datos reales de entrega (URL, responsables, canal seguro, fechas) y cerrar acceptance formal con cliente.
+- [ ] Completar datos reales de entrega (URL de produccion, responsable cliente, credenciales, fechas) y cerrar acceptance formal con cliente. (`staging` Vercel ya desplegado)
 
 ## Proximas decisiones / definiciones (negocio + tecnica)
 
@@ -67,7 +67,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Preparar descripcion de PR/entrega para cierre QA. (Responsable: Tech; plantilla base en `docs/pr-manual-qa-evidence.md`)
 - [ ] Definir/registrar credenciales de prueba por rol por canal seguro (sin secretos en repo). (Responsable: Operaciones/PM)
 - [ ] Entregar credencial `admin` por canal seguro y registrar acuse. (Responsable: Operaciones/PM)
-- [ ] Confirmar URL de staging/produccion y registrar datos de entrega. (Responsable: Operaciones + Tech)
+- [ ] Confirmar URL de produccion y registrar datos finales de entrega. (Responsable: Operaciones + Tech; `staging` Vercel ya registrado)
 - [ ] Agendar/registrar capacitacion remota y ventana de observaciones. (Responsable: PM/Operaciones)
 - [ ] Definir canal de soporte/incidencias para post-entrega. (Responsable: PM/Operaciones)
 
@@ -82,6 +82,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Tareas completadas recientemente (referencia)
 
 - [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
+- [x] Deploy `staging` en Vercel realizado y URL temporal registrada en checklists (`https://intranet-lovat-delta.vercel.app`). (2026-02-23)
+- [x] Correccion de `staging` Vercel post-deploy: carga de ENV minimas + redeploy, `/login` responde HTTP 200. (2026-02-23)
 - [x] Ticket `feature/acceptance-delivery-closeout`: checklists de acceptance/entrega normalizados con pendientes clasificados por tipo/responsable + propuesta de cierre. (2026-02-23)
 - [x] PR `#3` de smoke E2E auth/permisos mergeado en `main` (2026-02-22)
 - [x] Smokes E2E de permisos por rol (admin/rrhh/contabilidad/visitante) ejecutados OK (`npm run e2e:smoke`). (2026-02-22)

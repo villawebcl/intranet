@@ -150,7 +150,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## Registro de aceptación
 
 - Fecha de entrega: `PENDIENTE` (estimada `2026-03-31`)
-- URL Staging / Producción: `PENDIENTE` (staging sugerido: Vercel al desplegar; produccion sugerida: `https://intranet.anagami.cl`)
+- URL Staging / Producción: `https://intranet-lovat-delta.vercel.app` / `PENDIENTE` (produccion sugerida: `https://intranet.anagami.cl`)
 - Responsable tecnico (proveedor): `Cristian Villalobos`
 - Responsable cliente (aprobacion): `PENDIENTE`
 - Canal seguro de credenciales: `email`
