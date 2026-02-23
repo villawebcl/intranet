@@ -29,6 +29,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Timeout por inactividad en cliente (`INACTIVITY_TIMEOUT_MINUTES`).
 - Modulo de trabajadores:
   - Listado + busqueda por RUT/nombre.
+  - UI de listado pulida (2026-02-23): header con contador, estado vacio accionable y vista responsive (cards movil + tabla escritorio).
   - Crear trabajador.
   - Editar trabajador.
   - Activar/Desactivar trabajador.
@@ -41,6 +42,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Bloqueo de carga para trabajador inactivo.
 - Modulo documental (revision):
   - Listado de documentos por trabajador (`/documents`) con filtros por carpeta/estado.
+  - UI de listado pulida (2026-02-23): contador de documentos, estado vacio accionable, cards movil + tabla escritorio y labels de estado legibles.
   - Flujo de revision `pendiente -> aprobado/rechazado`.
   - Rechazo con motivo obligatorio.
   - Descarga mediante URL firmada.
@@ -109,7 +111,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. (UX opcional pre-entrega) Revisar estados vacios y consistencia visual final de `workers` / `documents`.
+1. Revisar manualmente en `staging` el polish UX reciente (`workers` / `documents` en movil y escritorio).
 2. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URL de produccion, responsable cliente, fechas, credenciales).
 3. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
 4. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).

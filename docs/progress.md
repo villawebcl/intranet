@@ -78,6 +78,16 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Validaciones del bloque feedback/loading:
   - `npm run lint` OK
   - `npm run typecheck` OK
+- Se aplica microfase de consistencia visual y estados vacios en `workers` / `documents`:
+  - headers tipo card con contadores de registros/documentos
+  - estados vacios accionables (limpiar filtros / crear trabajador / subir PDF)
+  - vista responsive con tarjetas en movil + tabla en escritorio para listados
+  - labels de estado mas legibles (`Activo`, `Inactivo`, `Pendiente`, `Aprobado`, `Rechazado`)
+- Componente nuevo reutilizable:
+  - `components/ui/empty-state-card.tsx`
+- Validaciones del bloque consistencia/empty states:
+  - `npm run lint` OK
+  - `npm run typecheck` OK
 
 #### Falta / arrastrado
 
@@ -86,7 +96,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Registrar backup/export inicial y estado de migraciones del entorno de entrega.
 - Confirmar politicas pendientes (`worker inactivo`, tamano PDF) y destinatarios de email (si aplica).
 - Agendar/registrar capacitacion + ventana de observaciones y obtener aceptacion formal cliente.
-- (Opcional UX) Revisar estados vacios y consistencia visual final de tablas/headers en `workers` y `documents`.
+- (Opcional UX) Revisión visual manual en `staging` de tarjetas móviles y tablas desktop en `workers` / `documents`.
 
 ### 2026-02-20
 
@@ -196,7 +206,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Cerrar microfase UX restante (estados vacios + consistencia visual final en `workers`/`documents`) si se mantiene prioridad de polish pre-entrega.
+1. Revisión manual rápida en `staging` del polish UX reciente (sidebar, audit/notificaciones, workers/documents móvil+desktop).
 2. Completar datos pendientes de handoff/cliente en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md`.
 3. Registrar credenciales por canal seguro (sin secretos), URLs, backup/export y capacitacion.
 4. Obtener aceptacion formal cliente y cerrar estado final del MVP.
