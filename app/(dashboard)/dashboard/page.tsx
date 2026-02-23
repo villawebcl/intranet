@@ -4,7 +4,7 @@ const modules = [
   {
     name: "Acceso y roles",
     description: "Login, sesion y permisos por rol",
-    href: "/dashboard",
+    href: "/dashboard/access",
   },
   {
     name: "Trabajadores",
@@ -33,10 +33,10 @@ export default function DashboardPage() {
     <section className="space-y-5">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-          Dashboard (base inicial)
+          Dashboard
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Estructura lista para comenzar implementacion por tickets pequenos.
+          Accesos rapidos al MVP y modulos operativos.
         </p>
       </div>
 
