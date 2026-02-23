@@ -29,6 +29,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - Editar trabajador.
   - Activar/Desactivar trabajador.
   - Vista detalle de trabajador con las 12 carpetas fijas.
+  - Resumen de carpetas con selector de vista `Lista` / `Cuadricula` (default `Lista`) para mejor lectura operativa.
 - Modulo documental (base):
   - Subida de PDF por trabajador y carpeta fija.
   - Validacion backend: solo PDF y maximo 5MB.

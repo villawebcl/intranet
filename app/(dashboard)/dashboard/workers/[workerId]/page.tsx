@@ -19,6 +19,10 @@ function getStringParam(value: string | string[] | undefined) {
   return value.trim();
 }
 
+function normalizeFoldersView(value: string) {
+  return value === "grid" ? "grid" : "list";
+}
+
 type FolderSummary = {
   total: number;
   pendiente: number;
@@ -29,6 +33,7 @@ type FolderSummary = {
 export default async function WorkerDetailPage({ params, searchParams }: WorkerDetailPageProps) {
   const { workerId } = await params;
   const urlParams = await searchParams;
+  const foldersView = normalizeFoldersView(getStringParam(urlParams.foldersView));
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -202,10 +207,38 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <header>
-          <h2 className="text-lg font-semibold text-slate-950">Carpetas del trabajador</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Estructura fija de 12 carpetas para gestion documental del trabajador.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-950">Carpetas del trabajador</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Estructura fija de 12 carpetas para gestion documental del trabajador.
+              </p>
+            </div>
+            <div className="inline-flex rounded-lg border border-slate-300 bg-white p-1">
+              <Link
+                href={`/dashboard/workers/${worker.id}?foldersView=list`}
+                className={[
+                  "rounded-md px-3 py-1.5 text-xs font-semibold transition",
+                  foldersView === "list"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-700 hover:bg-slate-50",
+                ].join(" ")}
+              >
+                Lista
+              </Link>
+              <Link
+                href={`/dashboard/workers/${worker.id}?foldersView=grid`}
+                className={[
+                  "rounded-md px-3 py-1.5 text-xs font-semibold transition",
+                  foldersView === "grid"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-700 hover:bg-slate-50",
+                ].join(" ")}
+              >
+                Cuadricula
+              </Link>
+            </div>
+          </div>
         </header>
 
         {documentsError ? (
@@ -220,38 +253,91 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           </p>
         ) : null}
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {folderTypes.map((folderType) => {
-            const summary = folderSummary[folderType];
-            return (
-              <article key={folderType} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">{folderLabels[folderType]}</p>
-                <p className="mt-2 text-xs text-slate-600">Total: {summary.total}</p>
-                <p className="mt-1 text-xs text-slate-600">Pendientes: {summary.pendiente}</p>
-                <p className="mt-1 text-xs text-slate-600">Aprobados: {summary.aprobado}</p>
-                <p className="mt-1 text-xs text-slate-600">Rechazados: {summary.rechazado}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {canReadDocuments ? (
-                    <Link
-                      href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
-                      className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                    >
-                      Ver documentos
-                    </Link>
-                  ) : null}
-                  {canUpload ? (
-                    <Link
-                      href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
-                      className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                    >
-                      Subir PDF
-                    </Link>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        {foldersView === "list" ? (
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+            <ul className="divide-y divide-slate-200 bg-white">
+              {folderTypes.map((folderType) => {
+                const summary = folderSummary[folderType];
+
+                return (
+                  <li key={folderType} className="p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{folderLabels[folderType]}</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700">
+                            Total: {summary.total}
+                          </span>
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs text-amber-700">
+                            Pendientes: {summary.pendiente}
+                          </span>
+                          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-700">
+                            Aprobados: {summary.aprobado}
+                          </span>
+                          <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs text-rose-700">
+                            Rechazados: {summary.rechazado}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {canReadDocuments ? (
+                          <Link
+                            href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
+                            className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                          >
+                            Ver documentos
+                          </Link>
+                        ) : null}
+                        {canUpload ? (
+                          <Link
+                            href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
+                            className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                          >
+                            Subir PDF
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {folderTypes.map((folderType) => {
+              const summary = folderSummary[folderType];
+              return (
+                <article key={folderType} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-900">{folderLabels[folderType]}</p>
+                  <p className="mt-2 text-xs text-slate-600">Total: {summary.total}</p>
+                  <p className="mt-1 text-xs text-slate-600">Pendientes: {summary.pendiente}</p>
+                  <p className="mt-1 text-xs text-slate-600">Aprobados: {summary.aprobado}</p>
+                  <p className="mt-1 text-xs text-slate-600">Rechazados: {summary.rechazado}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {canReadDocuments ? (
+                      <Link
+                        href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
+                        className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      >
+                        Ver documentos
+                      </Link>
+                    ) : null}
+                    {canUpload ? (
+                      <Link
+                        href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
+                        className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      >
+                        Subir PDF
+                      </Link>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </section>
   );

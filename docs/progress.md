@@ -55,6 +55,9 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - badges de accion
   - truncado de IDs con `title`
   - vista responsive (cards en movil, tabla en escritorio)
+- Se mejora UX de ficha de trabajador (`/dashboard/workers/[workerId]`):
+  - resumen de 12 carpetas con selector de vista `Lista` / `Cuadricula`
+  - vista por defecto cambiada a `Lista` para lectura operativa mas rapida
 - Se despliega `staging` en Vercel y se registra URL temporal en checklists:
   - alias temporal: `https://intranet-lovat-delta.vercel.app`
   - deployment URL (redeploy exitoso): `https://intranet-nv59t9yaj-crislobos-projects.vercel.app`
