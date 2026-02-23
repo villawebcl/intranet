@@ -256,7 +256,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             </AlertBanner>
           ) : (
             <>
-              <div className="mt-4 space-y-3 md:hidden">
+              <div className="mt-4 space-y-3 xl:hidden">
                 {users.map((row) => {
                   const isCurrentUser = row.id === user.id;
                   const isProtectedAdmin = row.role === "admin";
@@ -391,16 +391,23 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                 })}
               </div>
 
-              <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 xl:block">
+                <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+                  <colgroup>
+                    <col className="w-[20%]" />
+                    <col className="w-[13%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[25%]" />
+                    <col className="w-[30%]" />
+                  </colgroup>
                   <thead className="bg-slate-50">
                     <tr>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Usuario</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Estado</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Ultimo acceso</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Editar perfil / rol</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">
-                        Reset / eliminar
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Usuario</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Estado</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Ultimo acceso</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">Perfil / rol</th>
+                      <th className="px-3 py-3 text-left font-semibold text-slate-700">
+                        Clave / baja
                       </th>
                     </tr>
                   </thead>
@@ -411,16 +418,18 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
                       return (
                       <tr key={row.id} className="align-top">
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-slate-900">{row.email}</p>
-                          <p className="mt-1 text-xs text-slate-500" title={row.id}>
+                        <td className="px-3 py-3 align-top">
+                          <p className="truncate font-medium text-slate-900" title={row.email}>
+                            {row.email}
+                          </p>
+                          <p className="mt-1 truncate text-xs text-slate-500" title={row.id}>
                             {row.id}
                           </p>
                           <p className="mt-1 text-xs text-slate-600">
                             Creado: {formatDate(row.createdAt)}
                           </p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3 align-top">
                           <div className="space-y-2">
                             <span
                               className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -431,11 +440,17 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                             >
                               {row.emailConfirmed ? "Confirmado" : "Sin confirmar"}
                             </span>
-                            <p className="text-xs text-slate-600">Rol actual: {roleLabel(row.role)}</p>
+                            <p className="break-words text-xs text-slate-600">
+                              Rol: {roleLabel(row.role)}
+                            </p>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-slate-700">{formatDate(row.lastSignInAt)}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3 align-top text-slate-700">
+                          <p className="break-words text-xs leading-5 md:text-sm">
+                            {formatDate(row.lastSignInAt)}
+                          </p>
+                        </td>
+                        <td className="px-3 py-3 align-top">
                           <form action={updateUserAdminAction} className="space-y-2">
                             <input type="hidden" name="userId" value={row.id} />
                             <input type="hidden" name="returnTo" value="/dashboard/users" />
@@ -446,18 +461,18 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               id={`fullName-${row.id}`}
                               name="fullName"
                               defaultValue={row.fullName}
-                              className="w-56 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                               placeholder="Nombre completo"
                             />
                             <label htmlFor={`role-${row.id}`} className="sr-only">
                               Rol
                             </label>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="grid gap-2">
                               <select
                                 id={`role-${row.id}`}
                                 name="role"
                                 defaultValue={row.role}
-                                className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                               >
                                 {appRoles.map((role) => (
                                   <option key={role} value={role}>
@@ -467,15 +482,15 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               </select>
                               <FormSubmitButton
                                 pendingLabel="Guardando..."
-                                className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                className="w-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                               >
                                 Guardar
                               </FormSubmitButton>
                             </div>
                           </form>
                         </td>
-                        <td className="px-4 py-3">
-                          <form action={resetUserPasswordAdminAction} className="flex flex-wrap items-center gap-2">
+                        <td className="px-3 py-3 align-top">
+                          <form action={resetUserPasswordAdminAction} className="grid gap-2">
                             <input type="hidden" name="userId" value={row.id} />
                             <input type="hidden" name="returnTo" value="/dashboard/users" />
                             <label htmlFor={`password-${row.id}`} className="sr-only">
@@ -487,12 +502,12 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               type="password"
                               minLength={8}
                               required
-                              className="w-44 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                              placeholder="Nueva contrasena"
+                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              placeholder="Nueva clave"
                             />
                             <FormSubmitButton
                               pendingLabel="Actualizando..."
-                              className="border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50"
+                              className="w-full border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50"
                             >
                               Resetear
                             </FormSubmitButton>
@@ -507,9 +522,9 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               </p>
                             </div>
                           ) : (
-                            <details className="mt-2 w-fit rounded-lg border border-red-200 bg-red-50">
+                            <details className="mt-2 rounded-lg border border-red-200 bg-red-50">
                               <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-semibold text-red-700">
-                                Eliminar usuario
+                                Eliminar
                               </summary>
                               <form
                                 action={deleteUserAdminAction}
@@ -517,7 +532,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               >
                                 <input type="hidden" name="userId" value={row.id} />
                                 <input type="hidden" name="returnTo" value="/dashboard/users" />
-                                <p className="max-w-56 text-xs text-red-800">{row.email}</p>
+                                <p className="break-all text-xs text-red-800">{row.email}</p>
                                 <label className="flex items-start gap-2 text-xs text-red-900">
                                   <input
                                     type="checkbox"
@@ -530,7 +545,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                                 </label>
                                 <FormSubmitButton
                                   pendingLabel="Eliminando..."
-                                  className="border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                                  className="w-full border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
                                 >
                                   Eliminar
                                 </FormSubmitButton>

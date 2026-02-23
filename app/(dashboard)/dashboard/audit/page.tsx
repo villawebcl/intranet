@@ -214,16 +214,16 @@ function MetadataSummary({ metadataValue }: { metadataValue: unknown }) {
         <li
           key={key}
           title={`${metadataFieldLabel(key)}: ${formatMetadataValueForDisplay(key, value)}`}
-          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1"
+          className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1"
         >
-          <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+          <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-slate-500">
             {metadataFieldLabel(key)}
           </span>
           <span
             className={
               key.endsWith("Id")
-                ? "max-w-44 truncate font-mono text-xs text-slate-700"
-                : "max-w-56 truncate text-xs text-slate-700"
+                ? "min-w-0 max-w-40 truncate font-mono text-xs text-slate-700"
+                : "min-w-0 max-w-44 truncate text-xs text-slate-700"
             }
           >
             {formatMetadataValueForDisplay(key, value)}
@@ -434,51 +434,60 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
           </div>
 
           <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm xl:block">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+              <colgroup>
+                <col className="w-[16%]" />
+                <col className="w-[13%]" />
+                <col className="w-[15%]" />
+                <col className="w-[14%]" />
+                <col className="w-[42%]" />
+              </colgroup>
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Fecha</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Accion</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Actor</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Entidad</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Metadata</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Fecha</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Accion</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Actor</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Entidad</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Metadata</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rows.map((log) => (
                   <tr key={log.id} className="align-top">
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">{formatDate(log.created_at)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 text-slate-700">
+                      <p className="break-words text-xs leading-5 md:text-sm">{formatDate(log.created_at)}</p>
+                    </td>
+                    <td className="px-3 py-3">
                       <ActionBadge action={log.action} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <div className="space-y-1">
                         <p className="text-xs font-medium text-slate-800">{formatRoleLabel(log.actor_role)}</p>
                         {log.actor_user_id ? (
                           <span
                             title={log.actor_user_id}
-                            className="inline-block max-w-44 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                            className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                           >
                             {truncateMiddle(log.actor_user_id)}
                           </span>
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <div className="space-y-1">
                         <p className="text-xs font-medium text-slate-800">{formatEntityLabel(log.entity_type)}</p>
                         {log.entity_id ? (
                           <span
                             title={log.entity_id}
-                            className="inline-block max-w-44 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                            className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                           >
                             {truncateMiddle(log.entity_id)}
                           </span>
                         ) : null}
                       </div>
                     </td>
-                    <td className="min-w-[420px] px-4 py-3">
-                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <td className="px-3 py-3">
+                      <div className="max-w-full rounded-lg border border-slate-200 bg-slate-50 p-3">
                         <MetadataSummary metadataValue={log.metadata} />
                       </div>
                     </td>

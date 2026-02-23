@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
+import { ModalButton } from "@/components/ui/modal-button";
 import { canViewAudit } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -11,6 +12,16 @@ type NotificationsPageProps = {
 };
 
 type NotificationPayload = Record<string, unknown> | null;
+type EmailFilterValue = "all" | "sent" | "pending";
+
+const notificationEventOptions = [
+  "document_uploaded",
+  "document_approved",
+  "document_rejected",
+  "document_download_requested",
+] as const;
+
+type NotificationEventFilter = (typeof notificationEventOptions)[number] | "all";
 
 function getStringParam(value: string | string[] | undefined) {
   if (typeof value !== "string") {
@@ -18,6 +29,23 @@ function getStringParam(value: string | string[] | undefined) {
   }
 
   return value.trim();
+}
+
+function getEventFilter(value: string | string[] | undefined): NotificationEventFilter {
+  const normalized = getStringParam(value);
+  if (!normalized) return "all";
+
+  return notificationEventOptions.includes(normalized as (typeof notificationEventOptions)[number])
+    ? (normalized as NotificationEventFilter)
+    : "all";
+}
+
+function getEmailFilter(value: string | string[] | undefined): EmailFilterValue {
+  const normalized = getStringParam(value);
+  if (normalized === "sent" || normalized === "pending") {
+    return normalized;
+  }
+  return "all";
 }
 
 function eventLabel(eventType: string) {
@@ -42,6 +70,34 @@ function formatDate(dateValue: string) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(dateValue));
+}
+
+function formatDateCompact(dateValue: string) {
+  const date = new Date(dateValue);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((today.getTime() - target.getTime()) / 86_400_000);
+
+  const timeLabel = new Intl.DateTimeFormat("es-CL", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+
+  if (diffDays === 0) {
+    return `Hoy · ${timeLabel}`;
+  }
+
+  if (diffDays === 1) {
+    return `Ayer · ${timeLabel}`;
+  }
+
+  const dateLabel = new Intl.DateTimeFormat("es-CL", {
+    day: "2-digit",
+    month: "short",
+  }).format(date);
+
+  return `${dateLabel} · ${timeLabel}`;
 }
 
 function asPayloadRecord(payload: unknown): NotificationPayload {
@@ -118,6 +174,39 @@ function getPayloadSummary(payloadValue: unknown) {
     .filter((item) => item.value && item.value !== "null");
 }
 
+function PayloadPreview({ payloadValue }: { payloadValue: unknown }) {
+  const summary = getPayloadSummary(payloadValue);
+
+  if (!summary.length) {
+    return <p className="text-xs text-slate-500">Sin resumen disponible.</p>;
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {summary.slice(0, 2).map(({ key, value }) => (
+        <div key={key} className="grid grid-cols-[76px_1fr] items-start gap-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+            {formatFieldLabel(key)}
+          </p>
+          <p
+            className={
+              key.endsWith("Id")
+                ? "truncate font-mono text-xs text-slate-700"
+                : "truncate text-xs text-slate-700"
+            }
+            title={formatPayloadValue(key, value)}
+          >
+            {formatPayloadValue(key, value)}
+          </p>
+        </div>
+      ))}
+      {summary.length > 2 ? (
+        <p className="text-[11px] text-slate-500">+{summary.length - 2} campos mas</p>
+      ) : null}
+    </div>
+  );
+}
+
 function EmailStatusBadge({ sentAt }: { sentAt: string | null }) {
   if (!sentAt) {
     return (
@@ -166,21 +255,50 @@ function PayloadSummary({ payloadValue }: { payloadValue: unknown }) {
   );
 }
 
-function PayloadJsonDetails({ payloadValue }: { payloadValue: unknown }) {
-  if (!payloadValue) {
-    return null;
-  }
-
+function PayloadDetailButton({
+  eventType,
+  createdAt,
+  userId,
+  payloadValue,
+  triggerLabel = "Ver detalle",
+}: {
+  eventType: string;
+  createdAt: string;
+  userId: string;
+  payloadValue: unknown;
+  triggerLabel?: string;
+}) {
   return (
-    <details className="group mt-2 rounded-lg border border-slate-200 bg-slate-50">
-      <summary className="cursor-pointer list-none px-3 py-2 text-xs font-medium text-slate-700">
-        <span className="group-open:hidden">Ver JSON</span>
-        <span className="hidden group-open:inline">Ocultar JSON</span>
-      </summary>
-      <pre className="max-h-48 overflow-auto border-t border-slate-200 px-3 py-2 text-xs text-slate-700">
-        {JSON.stringify(payloadValue, null, 2)}
-      </pre>
-    </details>
+    <ModalButton
+      triggerLabel={triggerLabel}
+      title={eventLabel(eventType)}
+      description={`${formatDate(createdAt)} · ${userId}`}
+      className="w-full sm:w-auto"
+    >
+      <div className="space-y-4">
+        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Resumen completo
+          </p>
+          <div className="mt-3">
+            <PayloadSummary payloadValue={payloadValue} />
+          </div>
+        </section>
+
+        {payloadValue ? (
+          <section className="rounded-xl border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                Payload JSON
+              </p>
+            </div>
+            <pre className="max-h-80 overflow-auto px-4 py-3 text-xs text-slate-700">
+              {JSON.stringify(payloadValue, null, 2)}
+            </pre>
+          </section>
+        ) : null}
+      </div>
+    </ModalButton>
   );
 }
 
@@ -195,6 +313,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   }
 
   const urlParams = await searchParams;
+  const eventFilter = getEventFilter(urlParams.event);
+  const emailFilter = getEmailFilter(urlParams.email);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -206,11 +326,24 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     redirect("/dashboard?error=No+tienes+permisos+para+ver+notificaciones");
   }
 
-  const query = supabase
+  let query = supabase
     .from("notifications")
     .select("id, user_id, event_type, payload, sent_at, created_at")
-    .order("created_at", { ascending: false })
-    .limit(100);
+    .order("created_at", { ascending: false });
+
+  if (eventFilter !== "all") {
+    query = query.eq("event_type", eventFilter);
+  }
+
+  if (emailFilter === "sent") {
+    query = query.not("sent_at", "is", null);
+  }
+
+  if (emailFilter === "pending") {
+    query = query.is("sent_at", null);
+  }
+
+  query = query.limit(100);
 
   const { data: notifications, error } = await query;
   const notificationRows = notifications ?? [];
@@ -238,14 +371,78 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           </Link>
         </div>
         {!error ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-              {notificationRows.length} registros
-            </span>
-            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-              Vista admin
-            </span>
-          </div>
+          <>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+                {notificationRows.length} registros
+              </span>
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+                Vista admin
+              </span>
+              {eventFilter !== "all" ? (
+                <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                  Evento: {eventLabel(eventFilter)}
+                </span>
+              ) : null}
+              {emailFilter !== "all" ? (
+                <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                  Email: {emailFilter === "sent" ? "Enviado" : "No enviado"}
+                </span>
+              ) : null}
+            </div>
+
+            <form className="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <div className="space-y-1.5">
+                <label htmlFor="filter-event" className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  Evento
+                </label>
+                <select
+                  id="filter-event"
+                  name="event"
+                  defaultValue={eventFilter}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                >
+                  <option value="all">Todos los eventos</option>
+                  {notificationEventOptions.map((eventType) => (
+                    <option key={eventType} value={eventType}>
+                      {eventLabel(eventType)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="filter-email" className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  Estado email
+                </label>
+                <select
+                  id="filter-email"
+                  name="email"
+                  defaultValue={emailFilter}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                >
+                  <option value="all">Todos</option>
+                  <option value="pending">No enviado</option>
+                  <option value="sent">Enviado</option>
+                </select>
+              </div>
+
+              <div className="flex items-end gap-2">
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  Filtrar
+                </button>
+                <Link
+                  href="/dashboard/notifications"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Limpiar
+                </Link>
+              </div>
+            </form>
+          </>
         ) : null}
       </header>
 
@@ -278,7 +475,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                       {eventLabel(notification.event_type)}
                     </p>
                     <p className="mt-1 text-xs text-slate-600">
-                      {formatDate(notification.created_at)}
+                      {formatDateCompact(notification.created_at)}
                     </p>
                   </div>
                   <EmailStatusBadge sentAt={notification.sent_at} />
@@ -291,50 +488,75 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   <p className="mt-1 break-all font-mono text-xs text-slate-700">{notification.user_id}</p>
                 </div>
 
-                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <PayloadSummary payloadValue={notification.payload} />
-                  <PayloadJsonDetails payloadValue={notification.payload} />
+                <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <PayloadPreview payloadValue={notification.payload} />
+                  <PayloadDetailButton
+                    eventType={notification.event_type}
+                    createdAt={notification.created_at}
+                    userId={notification.user_id}
+                    payloadValue={notification.payload}
+                    triggerLabel="Abrir detalle"
+                  />
                 </div>
               </article>
             ))}
           </div>
 
           <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm md:block">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+              <colgroup>
+                <col className="w-[18%]" />
+                <col className="w-[14%]" />
+                <col className="w-[14%]" />
+                <col className="w-[28%]" />
+                <col className="w-[14%]" />
+                <col className="w-[12%]" />
+              </colgroup>
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Evento</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Fecha</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Destino</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Resumen</th>
-                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Evento</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Fecha</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Destino</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Resumen</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Email</th>
+                  <th className="px-3 py-3 text-left font-semibold text-slate-700">Detalle</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {notificationRows.map((notification) => (
                   <tr key={notification.id} className="align-top">
-                    <td className="px-4 py-3 font-medium text-slate-900">
+                    <td className="px-3 py-3 font-medium text-slate-900">
                       {eventLabel(notification.event_type)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">
-                      {formatDate(notification.created_at)}
+                    <td className="whitespace-nowrap px-3 py-3 text-slate-700">
+                      <p className="text-xs leading-5 md:text-sm" title={formatDate(notification.created_at)}>
+                        {formatDateCompact(notification.created_at)}
+                      </p>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <span
                         title={notification.user_id}
-                        className="inline-block max-w-44 truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                        className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                       >
                         {truncateMiddle(notification.user_id)}
                       </span>
                     </td>
-                    <td className="min-w-[320px] px-4 py-3">
-                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                        <PayloadSummary payloadValue={notification.payload} />
-                        <PayloadJsonDetails payloadValue={notification.payload} />
+                    <td className="px-3 py-3">
+                      <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <PayloadPreview payloadValue={notification.payload} />
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">
+                    <td className="px-3 py-3 text-slate-700">
                       <EmailStatusBadge sentAt={notification.sent_at} />
+                    </td>
+                    <td className="px-3 py-3">
+                      <PayloadDetailButton
+                        eventType={notification.event_type}
+                        createdAt={notification.created_at}
+                        userId={notification.user_id}
+                        payloadValue={notification.payload}
+                        triggerLabel="Abrir"
+                      />
                     </td>
                   </tr>
                 ))}
