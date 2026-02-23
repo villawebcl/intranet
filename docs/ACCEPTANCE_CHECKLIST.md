@@ -5,8 +5,35 @@
 Checklist de validación para cierre del MVP.  
 Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
-> Actualizacion (2026-02-22): items de Acceso/Roles y Auditoria se marcaron segun pruebas manuales recientes reportadas como correctas. La evidencia visual base ya fue adjuntada; faltan datos de entrega.
+> Actualizacion (2026-02-23): se normaliza el estado post-PR `#3` (smoke E2E en `main`) y se separan pendientes de cierre en `docs/delivery-checklist.md` por tipo/responsable. La evidencia visual base ya fue adjuntada; faltan datos operativos y de cliente para acceptance final.
 > Referencias: evidencia QA en `docs/manual-qa-evidence.md` y cierre operativo en `docs/delivery-checklist.md`.
+
+---
+
+## Estado de cierre (2026-02-23)
+
+- Estado general acceptance MVP: `PENDIENTE` (bloqueado por datos/coord. de entrega, no por ausencia total de funcionalidad base).
+- Bloque con mayor avance confirmado: `A) Acceso y roles` + `E) Auditoria / Logs`.
+- Bloques con trabajo documental/evidencia pendiente: `B`, `C`, `D`, `F`, `G`, `H`.
+
+## Pendientes de acceptance (resumen clasificado)
+
+- Tecnico:
+  - Confirmar politica de trabajador `inactivo`.
+  - Confirmar politica final de tamano maximo PDF (5MB o ajuste).
+  - Registrar evidencia tecnica de seguridad en entorno de entrega (RLS/Storage/backend/proxy).
+  - Registrar backup/export inicial y estado de migraciones (si aplica).
+- Operativo:
+  - Definir/entregar credenciales por canal seguro (sin secretos en repo).
+  - Completar URLs de entorno y responsables de entrega.
+  - Preparar manual final con capturas version entrega.
+  - Agendar/registrar capacitacion y ventana de observaciones.
+- Externo/cliente:
+  - Confirmar responsables/aprobador.
+  - Confirmar URLs/hosting y destinatarios de correo (si aplica).
+  - Emitir aceptacion formal (email/acta/firma).
+
+> Detalle con estado y responsable por item: `docs/delivery-checklist.md`.
 
 ---
 
@@ -24,6 +51,8 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## B) Gestión de trabajadores (Obligatorio)
 
+> Nota: funcionalidad base implementada; faltan marcaciones de acceptance con evidencia en entorno de entrega.
+
 - [ ] Crear trabajador
 - [ ] Editar trabajador
 - [ ] Listar trabajadores + búsqueda básica
@@ -36,6 +65,8 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## C) Gestión documental PDF (Obligatorio)
+
+> Nota: flujo documental base existe y tiene cobertura smoke E2E parcial; faltan evidencia de acceptance y definicion final de politica de tamano PDF.
 
 - [ ] Subir documento (solo PDF)
 - [ ] Límite de tamaño: max 5MB (bloqueo y mensaje claro)
@@ -53,6 +84,8 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ---
 
 ## D) Notificaciones (Obligatorio)
+
+> Nota: el modulo y registro interno existen; configuracion/envios reales por correo dependen de configuracion `RESEND_*` y destinatarios confirmados.
 
 - [ ] Email al cargar documento
 - [ ] Email al aprobar documento
@@ -81,10 +114,10 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## F) Seguridad (Obligatorio)
 
-- [ ] RLS habilitado en tablas sensibles
+- [x] RLS habilitado en tablas sensibles
 - [ ] Storage con reglas coherentes (no público sin control)
-- [ ] Validación en backend (no confiar solo en frontend)
-- [ ] Protección de rutas del dashboard (no acceso anónimo)
+- [x] Validación en backend (no confiar solo en frontend)
+- [x] Protección de rutas del dashboard (no acceso anónimo)
 
 **Evidencia**: intento real de acceso con rol incorrecto (debe fallar).
 
@@ -101,6 +134,8 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## H) Entrega (Obligatorio)
 
+> Nota: pendientes operativos/cliente detallados con responsable/estado en `docs/delivery-checklist.md`.
+
 - [ ] Repo GitHub privado compartido con el cliente (si corresponde)
 - [ ] README con pasos de instalación/despliegue y variables de entorno
 - [ ] Credenciales Admin entregadas por canal seguro
@@ -115,6 +150,9 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 - Fecha de entrega: `PENDIENTE`
 - URL Staging / Producción: `PENDIENTE`
+- Responsable tecnico (proveedor): `PENDIENTE`
+- Responsable cliente (aprobacion): `PENDIENTE`
+- Canal seguro de credenciales: `PENDIENTE`
 - Usuarios de prueba:
   - Admin: `PENDIENTE` (definir/registrar por canal seguro)
   - RRHH: `PENDIENTE`
@@ -127,3 +165,4 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 - QA manual reportado: OK
 - Evidencia visual adjunta: si (set base en `evidence/manual-qa/` y referencias en `docs/manual-qa-evidence.md`)
 - Checklist listo para completar: si
+- Pendientes clasificados (tecnico/operativo/externo) con responsable: si (`docs/delivery-checklist.md`)

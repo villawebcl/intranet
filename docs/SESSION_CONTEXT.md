@@ -60,6 +60,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
     - `tests/e2e/smoke-auth.spec.ts` (login -> dashboard, logout manual, logout por timeout)
     - `tests/e2e/smoke-permissions.spec.ts` (permisos por rol MVP + lectura/descarga `contabilidad` + filtro auditoria `auth_login`)
 - PR `#3` (`feature/permissions-e2e-smoke`) mergeado en `main` con suite smoke E2E validada (`npm run e2e:smoke`, 10 tests).
+- Documentacion de acceptance/entrega normalizada post-PR `#3`:
+  - `docs/ACCEPTANCE_CHECKLIST.md` actualizado con estado de cierre y resumen de pendientes clasificados.
+  - `docs/delivery-checklist.md` actualizado con pendientes por tipo (`tecnico`, `operativo`, `externo/cliente`), estado, responsable y propuesta minima de cierre.
+  - Pendiente completar datos reales de handoff (URLs, credenciales por canal seguro, backup/export, capacitacion, aceptacion cliente).
 
 ## Rutas clave
 
@@ -94,32 +98,33 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 
 ## Proximo bloque recomendado (MVP)
 
-1. Iniciar `feature/acceptance-delivery-closeout` para cerrar checklist de acceptance/entrega post-PR #3.
-2. Completar datos de entrega pendientes (credenciales por canal seguro, URLs, backup/export, capacitacion).
-3. (Opcional) Evaluar smoke extra de auditoria para `auth_logout` en un ticket separado.
-4. Definir si limite 5MB se mantiene o se reduce por politica interna.
+1. Completar datos de handoff pendientes en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md` (URLs, responsables, fechas, canal seguro).
+2. Registrar entrega de credenciales por canal seguro y acuses (sin secretos en repo).
+3. Registrar backup/export, estado de migraciones y decision final de politicas (`worker inactivo`, tamano PDF).
+4. Agendar/registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
+5. (Opcional, separado) Evaluar smoke extra de auditoria para `auth_logout`.
 
 ## Proxima sesion (ticket sugerido)
 
-- Nombre sugerido de rama: `feature/acceptance-delivery-closeout`
-- Objetivo: cerrar pendientes de acceptance/entrega y dejar handoff del MVP listo para continuidad.
-- Estado (2026-02-22): listo para iniciar. Ticket `feature/permissions-e2e-smoke` ya mergeado via PR `#3`.
+- Nombre sugerido de rama: `ops/handoff-data-completion` (o continuar rama actual si aun no se hizo PR)
+- Objetivo: completar datos reales de handoff y cerrar acceptance formal del MVP.
+- Estado (2026-02-23): documentacion operativa lista; faltan datos/confirmaciones externas.
 - Alcance:
-  1. Actualizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-smoke E2E.
-  2. Definir/registrar referencia a credenciales de prueba por rol (canal seguro, sin secretos en repo).
-  3. Registrar URL(s) de entorno, backup/export y estado de capacitacion.
-  4. Separar claramente pendientes tecnicos vs operativos con responsables.
+  1. Completar campos `PENDIENTE` en datos de entrega/registro de aceptacion.
+  2. Registrar entrega de credenciales por canal seguro (sin secretos) y canal/acuse.
+  3. Registrar URLs, backup/export, migraciones y estado final de correo (`activo`/`n/a`).
+  4. Registrar capacitacion, ventana de observaciones y aceptacion formal cliente.
 - Criterios de aceptacion:
-  1. Checklists de acceptance/entrega consistentes y actualizados.
-  2. Pendientes externos documentados con responsable/estado.
-  3. Memoria persistente sincronizada al cierre.
+  1. `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` completos para handoff (sin pendientes criticos no justificados).
+  2. Pendientes restantes marcados `n/a` o escalados explicitamente con responsable/fecha.
+  3. Aceptacion formal cliente registrada.
 
 ## Arranque 5 minutos (siguiente sesion)
 
 1. `git checkout main && git pull origin main`
-2. `git checkout -b feature/acceptance-delivery-closeout`
-3. Revisar `docs/tasks.md`, `docs/progress.md`, `docs/ACCEPTANCE_CHECKLIST.md`, `docs/delivery-checklist.md`
-4. Actualizar checklists y dejar pendientes externos con responsables/estado
+2. `git checkout -b ops/handoff-data-completion` (o retomar rama abierta)
+3. Revisar `docs/delivery-checklist.md` (pendientes clasificados) y `docs/ACCEPTANCE_CHECKLIST.md` (registro de aceptacion)
+4. Completar datos reales con cliente/operaciones y marcar estados/acuse
 
 ## Pruebas manuales recientes (2026-02-21)
 

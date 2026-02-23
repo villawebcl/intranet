@@ -9,14 +9,46 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Leer este archivo antes de cambios importantes para entender el estado actual.
 - Actualizar este archivo al cerrar cualquier bloque relevante de trabajo.
 
-## Estado actual (2026-02-22)
+## Estado actual (2026-02-23)
 
 - MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
 - QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
 - Ticket `feature/permissions-e2e-smoke` completado y mergeado en `main` via PR `#3` (suite smoke auth/permisos OK local, 10 casos).
+- Ticket `feature/acceptance-delivery-closeout` deja checklists de acceptance/entrega normalizados y pendientes clasificados por tipo/responsable para handoff.
+- Bloqueo actual de cierre del MVP: datos operativos/cliente (URLs, credenciales por canal seguro, backup/export, capacitacion, aprobacion formal).
 
 ## Progreso diario
+
+### 2026-02-23
+
+#### Hecho
+
+- Se crea rama `feature/acceptance-delivery-closeout` desde `main` limpio para cierre documental/operativo.
+- Se revisa memoria persistente relevante:
+  - `docs/tasks.md`
+  - `docs/progress.md`
+  - `docs/SESSION_CONTEXT.md`
+  - `docs/ACCEPTANCE_CHECKLIST.md`
+  - `docs/delivery-checklist.md`
+- Se actualiza `docs/delivery-checklist.md` como documento operativo principal de handoff:
+  - pendientes clasificados (`tecnico`, `operativo`, `externo/cliente`)
+  - estado y responsable por item
+  - propuesta minima de cierre con checklist ejecutable y orden sugerido
+- Se normaliza `docs/ACCEPTANCE_CHECKLIST.md` con estado de cierre post-PR `#3`, resumen de pendientes clasificados y referencias operativas.
+- Se marcan items de seguridad ya confirmados por contexto implementado:
+  - RLS en tablas sensibles
+  - validacion backend
+  - proteccion de rutas del dashboard
+- Se sincroniza memoria persistente (`tasks`, `progress`, `SESSION_CONTEXT`) con el estado actual y proximo bloque recomendado.
+
+#### Falta / arrastrado
+
+- Completar datos reales de entrega/cliente en checklists (URLs, responsables, fechas, canal seguro).
+- Registrar entrega de credenciales por canal seguro (sin exponer secretos en repo).
+- Registrar backup/export inicial y estado de migraciones del entorno de entrega.
+- Confirmar politicas pendientes (`worker inactivo`, tamano PDF) y destinatarios de email (si aplica).
+- Agendar/registrar capacitacion + ventana de observaciones y obtener aceptacion formal cliente.
 
 ### 2026-02-20
 
@@ -126,7 +158,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 ## Proximo bloque recomendado
 
-1. Iniciar ticket `feature/acceptance-delivery-closeout` para cerrar checklist de acceptance/entrega.
-2. Completar datos pendientes (credenciales por canal seguro, URL de entorno, backup/export, capacitacion).
-3. (Opcional) Evaluar un smoke extra de auditoria `auth_logout` en ticket separado si se considera necesario.
-4. Mantener sincronizada la memoria persistente al cierre de cada bloque.
+1. Completar datos pendientes de handoff/cliente en `docs/delivery-checklist.md` y `docs/ACCEPTANCE_CHECKLIST.md`.
+2. Registrar credenciales por canal seguro (sin secretos), URLs, backup/export y capacitacion.
+3. Obtener aceptacion formal cliente y cerrar estado final del MVP.
+4. (Opcional, separado) Evaluar smoke extra de auditoria `auth_logout` si se considera necesario.
