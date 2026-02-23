@@ -46,6 +46,15 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - badge de estado de email (`Enviado` / `No enviado`)
   - truncado de IDs largos con `title`
   - vista responsive (cards en movil, tabla en escritorio)
+- Se mejora navegacion global del dashboard:
+  - sidebar en desktop + navegacion compacta en movil
+  - logo `Intranet Anagami` clickeable hacia `/dashboard`
+  - nueva vista `/dashboard/access` para resumen de acceso y roles (corrige acceso roto desde dashboard)
+- Se aplica pulido UI/UX en `/dashboard/audit` (sin tocar logica):
+  - metadata resumida + JSON colapsable
+  - badges de accion
+  - truncado de IDs con `title`
+  - vista responsive (cards en movil, tabla en escritorio)
 - Se despliega `staging` en Vercel y se registra URL temporal en checklists:
   - alias temporal: `https://intranet-lovat-delta.vercel.app`
   - deployment URL (redeploy exitoso): `https://intranet-nv59t9yaj-crislobos-projects.vercel.app`

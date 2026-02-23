@@ -18,6 +18,10 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
 - Auth con Supabase (login por email/password) en `/login`.
 - Proteccion de rutas privadas con `proxy.ts` para `/dashboard`.
 - Dashboard protegido en server y boton de cierre de sesion.
+- Navegacion dashboard mejorada (2026-02-23):
+  - sidebar en desktop + navegacion compacta en movil
+  - logo `Intranet Anagami` clickeable a `/dashboard`
+  - pagina `/dashboard/access` para resumen de acceso y roles
 - Timeout por inactividad en cliente (`INACTIVITY_TIMEOUT_MINUTES`).
 - Modulo de trabajadores:
   - Listado + busqueda por RUT/nombre.
@@ -49,6 +53,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - `auth_logout` al cerrar sesion manualmente.
   - `auth_logout` al cierre por inactividad (`reason=timeout`).
 - Panel `/dashboard/audit` para consultar trazabilidad (admin).
+- UI/UX de `audit` pulida (2026-02-23): metadata resumida, JSON colapsable, badges de accion, mejor legibilidad de IDs y layout responsive movil/escritorio.
 - Hardening de permisos por rol (UI + backend + RLS):
   - `visitante`: sin acceso al modulo documental (ver/descargar/subir/revisar).
   - `contabilidad`: lectura documental (ver/descargar), sin subir/revisar.

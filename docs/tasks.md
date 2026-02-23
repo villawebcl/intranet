@@ -48,6 +48,9 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [ ] Revisar UX de mensajes/errores (actualmente basado en query params tras `redirect`).
 - [ ] Agregar estados de carga mas visibles en acciones criticas si aun faltan pantallas.
 - [x] Pulido UI/UX de `Notificaciones` (resumen legible de payload, badges de email, truncado de IDs, responsive movil/escritorio). (2026-02-23)
+- [x] Navegacion dashboard mejorada (sidebar desktop + nav compacta movil + logo clickeable a `/dashboard`). (2026-02-23)
+- [x] Vista `Acceso y roles` (`/dashboard/access`) agregada y enlazada desde dashboard. (2026-02-23)
+- [x] Pulido UI/UX de `Auditoria` (metadata resumida, JSON colapsable, badges y responsive movil/escritorio). (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
 
 ## Backlog de entrega / operacion (acceptance)
@@ -81,6 +84,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Tareas completadas recientemente (referencia)
 
+- [x] Pulido UI/UX de `Auditoria` (`/dashboard/audit`): metadata resumida + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
+- [x] Navegacion dashboard con sidebar + logo clickeable y pagina `Acceso y roles` funcional (`/dashboard/access`). (2026-02-23)
 - [x] Pulido UI/UX de `Notificaciones` (`/dashboard/notifications`): resumen de payload + JSON colapsable + badges + vista movil/escritorio. (2026-02-23)
 - [x] Deploy `staging` en Vercel realizado y URL temporal registrada en checklists (`https://intranet-lovat-delta.vercel.app`). (2026-02-23)
 - [x] Correccion de `staging` Vercel post-deploy: carga de ENV minimas + redeploy, `/login` responde HTTP 200. (2026-02-23)
