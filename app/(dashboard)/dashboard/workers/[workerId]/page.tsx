@@ -4,7 +4,14 @@ import { notFound, redirect } from "next/navigation";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { FlashMessages } from "@/components/ui/flash-messages";
-import { canManageWorkers, canUploadDocuments, canViewDocuments } from "@/lib/auth/roles";
+import {
+  ACCOUNTING_UPLOAD_FOLDER_TYPE,
+  canManageWorkers,
+  canUploadDocuments,
+  canUploadDocumentToFolder,
+  canViewDocuments,
+  getUploadableDocumentFolders,
+} from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { toggleWorkerStatusAction } from "../actions";
@@ -55,6 +62,9 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
   const canManage = canManageWorkers(profile?.role);
   const canUpload = canUploadDocuments(profile?.role);
+  const uploadableFolders = getUploadableDocumentFolders(profile?.role);
+  const primaryUploadFolder = uploadableFolders[0] ?? null;
+  const hasSingleUploadFolder = uploadableFolders.length === 1;
   const canReadDocuments = canViewDocuments(profile?.role);
 
   const { data: worker, error: workerError } = await supabase
@@ -162,12 +172,14 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 </form>
               </>
             ) : null}
-            {canUpload ? (
+            {canUpload && primaryUploadFolder ? (
               <Link
-                href={`/dashboard/workers/${worker.id}/documents/new`}
+                href={`/dashboard/workers/${worker.id}/documents/new${
+                  hasSingleUploadFolder ? `?folder=${primaryUploadFolder}` : ""
+                }`}
                 className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                Subir documento
+                {primaryUploadFolder === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir documento"}
               </Link>
             ) : null}
             {canReadDocuments ? (
@@ -285,12 +297,12 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                             Ver documentos
                           </Link>
                         ) : null}
-                        {canUpload ? (
+                        {canUpload && canUploadDocumentToFolder(profile?.role, folderType) ? (
                           <Link
                             href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
                             className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
-                            Subir PDF
+                            {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir PDF"}
                           </Link>
                         ) : null}
                       </div>
@@ -320,12 +332,12 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         Ver documentos
                       </Link>
                     ) : null}
-                    {canUpload ? (
+                    {canUpload && canUploadDocumentToFolder(profile?.role, folderType) ? (
                       <Link
                         href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
                         className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                       >
-                        Subir PDF
+                        {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir PDF"}
                       </Link>
                     ) : null}
                   </div>

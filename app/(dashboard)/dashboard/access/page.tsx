@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { canManageWorkers, canViewAudit, canViewDocuments } from "@/lib/auth/roles";
+import {
+  canManageUsers,
+  canManageWorkers,
+  canViewAudit,
+  canViewDocuments,
+} from "@/lib/auth/roles";
 import { appRoles } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -36,9 +41,11 @@ export default async function AccessRolesPage() {
 
   const matrix = appRoles.map((role) => ({
     role,
+    users: canManageUsers(role),
     workers: canManageWorkers(role),
     viewDocuments: canViewDocuments(role),
-    uploadDocuments: role === "admin" || role === "rrhh",
+    uploadDocuments:
+      role === "admin" || role === "rrhh" || role === "contabilidad",
     reviewDocuments: role === "admin" || role === "rrhh",
     audit: canViewAudit(role),
   }));
@@ -68,9 +75,10 @@ export default async function AccessRolesPage() {
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-900">Reglas clave</h2>
         <ul className="mt-3 space-y-2 text-sm text-slate-700">
-          <li>`admin` y `rrhh` pueden gestionar trabajadores y documentos.</li>
-          <li>`contabilidad` tiene acceso documental de solo lectura (ver/descargar).</li>
-          <li>`visitante` no tiene acceso al modulo documental.</li>
+          <li>`admin` gestiona usuarios, workers, documentos, notificaciones y auditoria.</li>
+          <li>`rrhh` gestiona trabajadores y documentos (sin auditoria).</li>
+          <li>`contabilidad` ve/descarga documentos y puede subir solo `Liquidaciones`.</li>
+          <li>`visitante` puede ver listado documental y solicitar descarga (sin descarga directa).</li>
           <li>Auditoria solo disponible para `admin`.</li>
         </ul>
       </section>
@@ -80,6 +88,7 @@ export default async function AccessRolesPage() {
           <thead className="bg-slate-50">
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Rol</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-700">Gestion usuarios</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Gestion trabajadores</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Ver documentos</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-700">Subir</th>
@@ -100,6 +109,7 @@ export default async function AccessRolesPage() {
                       </span>
                     ) : null}
                   </td>
+                  <td className="px-4 py-3 text-slate-700">{yesNo(row.users)}</td>
                   <td className="px-4 py-3 text-slate-700">{yesNo(row.workers)}</td>
                   <td className="px-4 py-3 text-slate-700">{yesNo(row.viewDocuments)}</td>
                   <td className="px-4 py-3 text-slate-700">{yesNo(row.uploadDocuments)}</td>
@@ -134,6 +144,8 @@ export default async function AccessRolesPage() {
               <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
                 <dt className="text-slate-500">Trabajadores</dt>
                 <dd className="text-slate-700">{yesNo(row.workers)}</dd>
+                <dt className="text-slate-500">Usuarios</dt>
+                <dd className="text-slate-700">{yesNo(row.users)}</dd>
                 <dt className="text-slate-500">Ver docs</dt>
                 <dd className="text-slate-700">{yesNo(row.viewDocuments)}</dd>
                 <dt className="text-slate-500">Subir</dt>

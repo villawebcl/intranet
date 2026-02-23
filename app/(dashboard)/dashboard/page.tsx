@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
 import {
+  canManageUsers,
   canManageWorkers,
   canReviewDocuments,
   canViewAudit,
@@ -207,10 +208,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const role = (profile?.role as AppRole | null | undefined) ?? "visitante";
   const canManage = canManageWorkers(role);
+  const canManageUserAccounts = canManageUsers(role);
   const canSeeDocuments = canViewDocuments(role);
   const canReview = canReviewDocuments(role);
   const canSeeAudit = canViewAudit(role);
   const isAdmin = role === "admin";
+  const canSeeNotificationsPanel = isAdmin;
 
   const workersTotalPromise = supabase.from("workers").select("id", { count: "exact", head: true });
   const workersActivePromise = supabase
@@ -252,7 +255,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         .from("documents")
         .select("id, file_name, status, folder_type, created_at, worker:workers(first_name, last_name)")
         .order("created_at", { ascending: false })
-        .limit(5)
+        .limit(3)
     : Promise.resolve(null);
 
   const pendingDocumentsListPromise = canReview
@@ -261,14 +264,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         .select("id, file_name, status, folder_type, created_at, worker:workers(first_name, last_name)")
         .eq("status", "pendiente")
         .order("created_at", { ascending: false })
-        .limit(5)
+        .limit(3)
     : Promise.resolve(null);
 
   let recentNotificationsQuery = supabase
     .from("notifications")
     .select("id, event_type, sent_at, created_at")
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(3);
   if (!isAdmin) {
     recentNotificationsQuery = recentNotificationsQuery.eq("user_id", user.id);
   }
@@ -279,7 +282,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         .from("audit_logs")
         .select("id, action, actor_role, created_at")
         .order("created_at", { ascending: false })
-        .limit(5)
+        .limit(3)
     : Promise.resolve(null);
 
   const [
@@ -313,7 +316,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const workersInactive = workersInactiveResult.count ?? 0;
   const documentsTotal = documentsTotalResult?.count ?? 0;
   const documentsPending = documentsPendingResult?.count ?? 0;
-  const notificationsTotal = notificationsTotalResult.count ?? 0;
   const notificationsPendingEmail = notificationsPendingEmailResult.count ?? 0;
   const recentDocuments = (((recentDocumentsResult?.data ?? []) as unknown) as RecentDocumentRow[]) ?? [];
   const pendingDocumentsList =
@@ -335,32 +337,37 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     recentAuditResult?.error ?? null,
   ].filter(Boolean);
 
-  const capabilityLabels = [
-    canManage ? "Gestion de trabajadores" : null,
-    canSeeDocuments ? "Consulta documental" : null,
-    canReview ? "Revision documental" : null,
-    canSeeAudit ? "Auditoria" : null,
-  ].filter(Boolean) as string[];
-
   const quickActions = [
-    canManage
+    {
+      href: "/dashboard/workers",
+      label: "Trabajadores",
+      variant: "secondary" as const,
+    },
+    canManageUserAccounts
+      ? {
+          href: "/dashboard/users",
+          label: "Gestionar usuarios",
+          variant: "secondary" as const,
+        }
+      : null,
+    canReview && documentsPending > 0
+      ? {
+          href: "/dashboard/workers",
+          label: "Revisar pendientes",
+          variant: "primary" as const,
+        }
+      : null,
+    canSeeNotificationsPanel
+      ? { href: "/dashboard/notifications", label: "Notificaciones", variant: "secondary" as const }
+      : null,
+    canSeeAudit ? { href: "/dashboard/audit", label: "Revisar auditoria", variant: "secondary" as const } : null,
+    canManage && !canReview
       ? {
           href: "/dashboard/workers/new",
           label: "Registrar trabajador",
           variant: "primary" as const,
         }
       : null,
-    canReview && documentsPending > 0
-      ? {
-          href: "/dashboard/workers",
-          label: "Revisar pendientes documentales",
-          variant: "primary" as const,
-        }
-      : null,
-    canSeeDocuments
-      ? { href: "/dashboard/notifications", label: "Ver actividad documental", variant: "secondary" as const }
-      : null,
-    canSeeAudit ? { href: "/dashboard/audit", label: "Revisar auditoria", variant: "secondary" as const } : null,
   ].filter(Boolean) as Array<{ href: string; label: string; variant: "primary" | "secondary" }>;
 
   return (
@@ -371,21 +378,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Dashboard</h1>
-            <p className="mt-1 text-sm text-slate-600">
-              Resumen operativo del MVP con pendientes y actividad reciente.
-            </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
                 Rol: {formatRole(role)}
               </span>
-              {capabilityLabels.map((label) => (
-                <span
-                  key={label}
-                  className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700"
-                >
-                  {label}
+              {canReview && documentsPending > 0 ? (
+                <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+                  {documentsPending} pendientes
                 </span>
-              ))}
+              ) : null}
             </div>
           </div>
 
@@ -417,37 +418,31 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Trabajadores" value={workersTotal} hint="Total registrados" />
-        <MetricCard label="Activos" value={workersActive} hint="Disponibles para gestion" tone="success" />
-        <MetricCard
-          label="Inactivos"
-          value={workersInactive}
-          hint="Requieren seguimiento si corresponde"
-          tone={workersInactive > 0 ? "warning" : "default"}
-        />
-        <MetricCard
-          label="Notificaciones"
-          value={notificationsTotal}
-          hint={isAdmin ? "Vista general del sistema" : "Tus eventos documentales"}
-        />
+        {canManage ? (
+          <MetricCard
+            label="Inactivos"
+            value={workersInactive}
+            hint="Seguimiento"
+            tone={workersInactive > 0 ? "warning" : "default"}
+          />
+        ) : (
+          <MetricCard label="Activos" value={workersActive} hint="Disponibles" tone="success" />
+        )}
         {canSeeDocuments ? (
-          <>
-            <MetricCard label="Documentos" value={documentsTotal} hint="Registros documentales" />
-            <MetricCard
-              label={canReview ? "Pendientes por revisar" : "Pendientes visibles"}
-              value={documentsPending}
-              hint={canReview ? "Cola actual de revision" : "Informativo segun permisos"}
-              tone={documentsPending > 0 ? "warning" : "default"}
-            />
-          </>
+          <MetricCard
+            label={canReview ? "Pendientes" : "Documentos"}
+            value={canReview ? documentsPending : documentsTotal}
+            hint={canReview ? "Para revisar" : "Visibles"}
+            tone={canReview && documentsPending > 0 ? "warning" : "default"}
+          />
         ) : null}
-        <MetricCard
-          label="Email no enviado"
-          value={notificationsPendingEmail}
-          hint={isAdmin ? "Pendientes de notificacion por correo" : "Pendientes de tus eventos"}
-          tone={notificationsPendingEmail > 0 ? "warning" : "default"}
-        />
-        {canSeeAudit ? (
-          <MetricCard label="Auditoria reciente" value={recentAudit.length} hint="Ultimos eventos cargados" />
+        {canSeeNotificationsPanel ? (
+          <MetricCard
+            label="Email no enviado"
+            value={notificationsPendingEmail}
+            hint="Pendientes"
+            tone={notificationsPendingEmail > 0 ? "warning" : "default"}
+          />
         ) : null}
       </div>
 
@@ -455,7 +450,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         {canReview ? (
           <SectionCard
             title="Cola de revision"
-            description="Documentos pendientes mas recientes para evaluar."
             actionHref="/dashboard/workers"
             actionLabel="Ir a trabajadores"
           >
@@ -491,7 +485,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         {canSeeDocuments ? (
           <SectionCard
             title="Documentos recientes"
-            description="Ultimos movimientos documentales visibles para tu rol."
             actionHref="/dashboard/workers"
             actionLabel="Ver modulo documental"
           >
@@ -528,52 +521,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </SectionCard>
         ) : (
-          <SectionCard
-            title="Modulo documental"
-            description="Tu rol no tiene acceso documental. El dashboard prioriza trabajadores y notificaciones personales."
-          >
+          <SectionCard title="Modulo documental">
             <EmptyList message="Sin acceso a documentos para este rol." />
           </SectionCard>
         )}
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <SectionCard
-          title="Notificaciones recientes"
-          description={isAdmin ? "Eventos documentales del sistema." : "Eventos documentales asociados a tu cuenta."}
-          actionHref="/dashboard/notifications"
-          actionLabel="Ver notificaciones"
-        >
-          {!recentNotifications.length ? (
-            <EmptyList message="No hay notificaciones recientes." />
-          ) : (
-            <ul className="space-y-2">
-              {recentNotifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {notificationEventLabel(notification.event_type)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-600">{formatDate(notification.created_at)}</p>
-                  </div>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${notificationStatusClass(notification.sent_at)}`}
-                  >
-                    {notification.sent_at ? "Email enviado" : "Email no enviado"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-
         {canSeeAudit ? (
           <SectionCard
             title="Auditoria reciente"
-            description="Ultimos eventos criticos registrados."
             actionHref="/dashboard/audit"
             actionLabel="Ver auditoria"
           >
@@ -605,10 +562,42 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </ul>
             )}
           </SectionCard>
-        ) : (
+        ) : null}
+
+        {canSeeNotificationsPanel ? (
+          <SectionCard
+            title="Notificaciones recientes"
+            actionHref="/dashboard/notifications"
+            actionLabel="Ver notificaciones"
+          >
+            {!recentNotifications.length ? (
+              <EmptyList message="No hay notificaciones recientes." />
+            ) : (
+              <ul className="space-y-2">
+                {recentNotifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {notificationEventLabel(notification.event_type)}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-600">{formatDate(notification.created_at)}</p>
+                    </div>
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${notificationStatusClass(notification.sent_at)}`}
+                    >
+                      {notification.sent_at ? "Email enviado" : "Email no enviado"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </SectionCard>
+        ) : !canSeeAudit ? (
           <SectionCard
             title="Acceso y permisos"
-            description="Consulta que modulos puede usar tu rol y que acciones estan habilitadas."
             actionHref="/dashboard/access"
             actionLabel="Ver acceso y roles"
           >
@@ -635,7 +624,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               ))}
             </div>
           </SectionCard>
-        )}
+        ) : null}
       </div>
     </section>
   );

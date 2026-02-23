@@ -4,10 +4,17 @@ import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 
 import {
+  canUploadDocumentToFolder,
   canDownloadDocuments,
+  canRequestDocumentDownload,
   canReviewDocuments,
   canUploadDocuments,
 } from "@/lib/auth/roles";
+import {
+  BLOCK_UPLOAD_FOR_INACTIVE_WORKERS,
+  DOCUMENT_MAX_SIZE_BYTES,
+  DOCUMENT_MAX_SIZE_MB,
+} from "@/lib/constants/documents";
 import { type AppRole, type FolderType } from "@/lib/constants/domain";
 import {
   buildDocumentReviewedEmail,
@@ -27,7 +34,6 @@ import {
   uploadDocumentSchema,
 } from "@/lib/validators/documents";
 
-const DOCUMENT_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const WORKERS_BASE_PATH = "/dashboard/workers";
 
 function getSafePath(path: string | undefined, fallback: string) {
@@ -144,7 +150,11 @@ export async function uploadDocumentAction(formData: FormData) {
   }
 
   if (fileValue.size > DOCUMENT_MAX_SIZE_BYTES) {
-    redirect(withMessage(returnPath, { error: "El archivo supera el limite de 5MB" }));
+    redirect(
+      withMessage(returnPath, {
+        error: `El archivo supera el limite de ${DOCUMENT_MAX_SIZE_MB}MB`,
+      }),
+    );
   }
 
   const context = await getRoleContext();
@@ -152,12 +162,12 @@ export async function uploadDocumentAction(formData: FormData) {
     redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
 
-  if (!canUploadDocuments(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para subir documentos" }));
-  }
-
   const workerId = parsed.data.workerId;
   const folderType = parsed.data.folderType;
+
+  if (!canUploadDocuments(context.role) || !canUploadDocumentToFolder(context.role, folderType)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para subir documentos" }));
+  }
 
   const { data: worker } = await context.supabase
     .from("workers")
@@ -169,7 +179,7 @@ export async function uploadDocumentAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "Trabajador no encontrado" }));
   }
 
-  if (worker.status !== "activo") {
+  if (BLOCK_UPLOAD_FOR_INACTIVE_WORKERS && worker.status !== "activo") {
     redirect(
       withMessage(returnPath, {
         error: "No se permiten cargas para trabajadores inactivos",
@@ -454,4 +464,72 @@ export async function downloadDocumentAction(formData: FormData) {
   });
 
   redirect(data.signedUrl);
+}
+
+export async function requestDocumentDownloadAction(formData: FormData) {
+  const parsed = downloadDocumentSchema.safeParse({
+    workerId: formData.get("workerId"),
+    documentId: formData.get("documentId"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Solicitud invalida de descarga" }));
+  }
+
+  const context = await getRoleContext();
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (!canRequestDocumentDownload(context.role)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para solicitar descargas" }));
+  }
+
+  const { data: document, error: documentError } = await context.supabase
+    .from("documents")
+    .select("id, worker_id, file_name, folder_type")
+    .eq("id", parsed.data.documentId)
+    .eq("worker_id", parsed.data.workerId)
+    .maybeSingle();
+
+  if (documentError || !document) {
+    redirect(withMessage(returnPath, { error: "Documento no encontrado" }));
+  }
+
+  const reviewerUserIds = await getDefaultReviewerUserIds();
+  await insertNotifications({
+    supabase: context.supabase,
+    recipientUserIds: reviewerUserIds,
+    eventType: "document_download_requested",
+    payload: {
+      workerId: parsed.data.workerId,
+      documentId: document.id,
+      folderType: document.folder_type,
+      fileName: document.file_name,
+      requestedBy: context.user.id,
+    },
+    createdBy: context.user.id,
+  });
+
+  await insertAuditLog({
+    action: "document_download_requested",
+    actorUserId: context.user.id,
+    actorRole: context.role,
+    entityId: document.id,
+    metadata: {
+      workerId: parsed.data.workerId,
+      fileName: document.file_name,
+      folderType: document.folder_type,
+    },
+  });
+
+  redirect(
+    withMessage(returnPath, {
+      success: "Solicitud de descarga enviada al equipo administrador",
+    }),
+  );
 }

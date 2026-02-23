@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+function emptyStringToUndefined(value: unknown) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : undefined;
+}
+
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
@@ -8,9 +17,9 @@ const clientEnvSchema = z.object({
 });
 
 const serverEnvSchema = z.object({
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  RESEND_API_KEY: z.string().min(1).optional(),
-  NOTIFICATIONS_FROM_EMAIL: z.string().email().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.preprocess(emptyStringToUndefined, z.string().min(1).optional()),
+  RESEND_API_KEY: z.preprocess(emptyStringToUndefined, z.string().min(1).optional()),
+  NOTIFICATIONS_FROM_EMAIL: z.preprocess(emptyStringToUndefined, z.string().email().optional()),
 });
 
 export function getClientEnv() {

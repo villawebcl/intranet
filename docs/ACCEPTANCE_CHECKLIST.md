@@ -6,7 +6,8 @@ Checklist de validación para cierre del MVP.
 Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 > Actualizacion (2026-02-23): se normaliza el estado post-PR `#3` (smoke E2E en `main`) y se separan pendientes de cierre en `docs/delivery-checklist.md` por tipo/responsable. La evidencia visual base ya fue adjuntada; faltan datos operativos y de cliente para acceptance final.
-> Referencias: evidencia QA en `docs/manual-qa-evidence.md` y cierre operativo en `docs/delivery-checklist.md`.
+> Actualizacion (2026-02-23, cierre tecnico): se formalizan las politicas MVP de modulo documental (trabajador `inactivo` bloquea carga; PDF max `5MB`) y quedan registradas en `docs/decisions.md`.
+> Referencias: evidencia QA en `docs/manual-qa-evidence.md`, cierre operativo en `docs/delivery-checklist.md` y estado de implementacion en `docs/closeout-status-fase1.md`.
 
 ---
 
@@ -19,8 +20,6 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## Pendientes de acceptance (resumen clasificado)
 
 - Tecnico:
-  - Confirmar politica de trabajador `inactivo`.
-  - Confirmar politica final de tamano maximo PDF (5MB o ajuste).
   - Registrar evidencia tecnica de seguridad en entorno de entrega (RLS/Storage/backend/proxy).
   - Registrar backup/export inicial y estado de migraciones (si aplica).
 - Operativo:
@@ -34,6 +33,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
   - Emitir aceptacion formal (email/acta/firma).
 
 > Detalle con estado y responsable por item: `docs/delivery-checklist.md`.
+> Estado funcional/tecnico consolidado del MVP: `docs/closeout-status-fase1.md`.
 
 ---
 
@@ -51,14 +51,14 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## B) Gestión de trabajadores (Obligatorio)
 
-> Nota: funcionalidad base implementada; faltan marcaciones de acceptance con evidencia en entorno de entrega.
+> Nota: funcionalidad base implementada; la regla de trabajador `inactivo` ya queda definida para MVP (bloqueo de carga, lectura/descarga segun rol). Aun faltan marcaciones de acceptance con evidencia en entorno de entrega.
 
 - [ ] Crear trabajador
 - [ ] Editar trabajador
 - [ ] Listar trabajadores + búsqueda básica
 - [ ] Activar/Desactivar trabajador (no elimina datos)
 - [ ] Al entrar a un trabajador, se muestran las **12 carpetas fijas**
-- [ ] Si trabajador está Inactivo: reglas claras (ej: no subir documentos o solo lectura, según decisión documentada)
+- [x] Si trabajador está Inactivo: reglas claras (MVP: no subir nuevos documentos; lectura/descarga según rol)
 
 **Evidencia**: casos de prueba manual en staging.
 
@@ -66,10 +66,10 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 
 ## C) Gestión documental PDF (Obligatorio)
 
-> Nota: flujo documental base existe y tiene cobertura smoke E2E parcial; faltan evidencia de acceptance y definicion final de politica de tamano PDF.
+> Nota: flujo documental base existe y tiene cobertura smoke E2E parcial; la politica MVP de tamano queda fijada en `5MB`. Faltan evidencia de acceptance y cierre operativo.
 
 - [ ] Subir documento (solo PDF)
-- [ ] Límite de tamaño: max 5MB (bloqueo y mensaje claro)
+- [x] Límite de tamaño: max 5MB (bloqueo y mensaje claro)
 - [ ] Documento queda asociado a:
   - [ ] trabajador
   - [ ] carpeta fija (enum, no texto libre)
@@ -141,7 +141,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 - [x] README con pasos de instalación/despliegue y variables de entorno
 - [ ] Credenciales Admin entregadas por canal seguro
 - [ ] Backup inicial DB/export (según lo acordado)
-- [ ] Manual PDF (o docs) con capturas
+- [ ] Manual PDF (o docs) con capturas (borrador base en `docs/manual-usuario-mvp.md`)
 - [ ] Capacitación remota (2h) realizada o agendada
 - [ ] Ventana de observaciones: 5 días hábiles (registrar issues)
 

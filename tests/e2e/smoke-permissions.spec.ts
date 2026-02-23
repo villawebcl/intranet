@@ -86,25 +86,39 @@ test.describe("Permissions smoke", () => {
     }
   });
 
-  test("contabilidad no puede abrir /documents/new", async ({ page }) => {
+  test("contabilidad puede abrir /documents/new solo para liquidaciones", async ({ page }) => {
     const fixtures = readSmokeRuntimeFixtures();
 
     await loginAsRole(page, "contabilidad");
-    await page.goto(`/dashboard/workers/${fixtures.worker.id}/documents/new`);
+    await page.goto(`/dashboard/workers/${fixtures.worker.id}/documents/new?folder=folder_01`);
 
-    await expect(page).toHaveURL(new RegExp(`/dashboard/workers/${fixtures.worker.id}(?:\\?.*)?$`));
-    await expect(page.getByText("No tienes permisos para subir documentos")).toBeVisible();
-    await expect(page.locator(`a[href="/dashboard/workers/${fixtures.worker.id}/documents"]`)).toBeVisible();
+    await expect(page).toHaveURL(
+      new RegExp(`/dashboard/workers/${fixtures.worker.id}/documents/new(?:\\?.*)?$`),
+    );
+    await expect(page.getByRole("heading", { name: "Subir documento PDF" })).toBeVisible();
+
+    const folderSelect = page.locator('select[name="folderType"]');
+    await expect(folderSelect).toHaveValue("folder_10");
+    await expect(folderSelect.locator("option")).toHaveCount(1);
+    await expect(folderSelect.locator('option[value="folder_10"]')).toHaveText("Liquidaciones");
+    await expect(page.getByText("Tu rol solo puede cargar documentos en la carpeta: Liquidaciones.")).toBeVisible();
   });
 
-  test("visitante no puede acceder al modulo documental del trabajador", async ({ page }) => {
+  test("visitante puede visualizar documentos y solicitar descarga", async ({ page }) => {
     const fixtures = readSmokeRuntimeFixtures();
 
     await loginAsRole(page, "visitante");
     await page.goto(`/dashboard/workers/${fixtures.worker.id}/documents`);
 
-    await expect(page).toHaveURL(/\/dashboard\/workers(?:\?.*)?$/);
-    await expect(page.getByRole("heading", { name: "Trabajadores" })).toBeVisible();
-    await expect(page.getByText("No tienes permisos para ver documentos")).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/dashboard/workers/${fixtures.worker.id}/documents(?:\\?.*)?$`));
+    await expect(page.getByRole("heading", { name: "Documentos del trabajador" })).toBeVisible();
+
+    const row = page.locator("tbody tr").filter({ hasText: fixtures.document.fileName }).first();
+    await expect(row).toBeVisible();
+    await expect(row.getByRole("button", { name: "Descargar" })).toHaveCount(0);
+    await expect(row.getByRole("button", { name: "Solicitar descarga" })).toBeVisible();
+
+    await row.getByRole("button", { name: "Solicitar descarga" }).click();
+    await expect(page.getByText("Solicitud de descarga enviada al equipo administrador")).toBeVisible();
   });
 });

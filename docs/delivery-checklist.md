@@ -14,7 +14,9 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 ## Referencias
 
 - `docs/ACCEPTANCE_CHECKLIST.md`
+- `docs/closeout-status-fase1.md`
 - `docs/manual-qa-evidence.md`
+- `docs/manual-usuario-mvp.md`
 - `docs/RUNBOOK.md`
 
 ## Datos de entrega (completar)
@@ -36,8 +38,8 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 
 | Item | Estado | Responsable | Dependencia | Nota / evidencia esperada |
 |---|---|---|---|---|
-| Confirmar politica final de trabajador `inactivo` (alcance de restriccion) | pendiente | Producto + Tech Lead | Cliente | Impacta acceptance B y criterio operativo |
-| Confirmar politica final de tamano PDF (mantener 5MB o ajustar) | pendiente | Producto + Tech Lead | Cliente | Default en repo/migracion: 5MB + solo PDF; falta decision final |
+| Confirmar politica final de trabajador `inactivo` (alcance de restriccion) | completado | Producto + Tech Lead | - | MVP fijado: bloquear nuevas cargas si trabajador esta inactivo; lectura/descarga segun rol. Registrado en `docs/decisions.md` (ADR-010) y aplicado en UI/backend |
+| Confirmar politica final de tamano PDF (mantener 5MB o ajustar) | completado | Producto + Tech Lead | - | MVP fijado en 5MB + solo PDF; validacion UI/backend y registro en `docs/decisions.md` (ADR-011) |
 | Registrar estado de migraciones en entorno de entrega (aplicadas/pendientes) | pendiente | Cristian Villalobos | Acceso a entorno | Dejar fecha + responsable en este documento |
 | Ejecutar y registrar backup/export inicial DB (si aplica por acuerdo) | pendiente | Cristian Villalobos | Acceso a entorno + acuerdo cliente | Recomendado: ejecutar el dia de entrega antes de enviar credenciales; guardar referencia segura, no dump en repo |
 | Confirmar Storage privado/reglas de acceso en entorno de entrega | en curso | Cristian Villalobos | Acceso a entorno | Repo/migraciones confirman bucket privado + policies; falta validacion en entorno |
@@ -52,7 +54,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 | Entregar credenciales de prueba por rol por canal seguro | pendiente | Cristian Villalobos | Responsable cliente disponible | Registrar fecha/canal/acuse |
 | Acordar metodo de resguardo/rotacion de credenciales | pendiente | Cristian Villalobos + Cliente | Cliente | No almacenar secretos en repo |
 | Registrar URL(s) de entorno definitivas en checklist de acceptance | en curso | Cristian Villalobos | Infra/hosting | Staging Vercel registrado (`https://intranet-lovat-delta.vercel.app`); falta URL de produccion |
-| Preparar manual con capturas para cliente (version de entrega) | pendiente | Cristian Villalobos | Datos/URLs finales | Plantilla y evidencia base ya existen |
+| Preparar manual con capturas para cliente (version de entrega) | en curso | Cristian Villalobos | Datos/URLs finales | Borrador base listo en `docs/manual-usuario-mvp.md`; faltan capturas finales y datos de handoff |
 | Registrar canal de soporte/incidencias y ventana de observaciones (5 dias habiles) | en curso | Cristian Villalobos | Cliente | Propuesta: email oficial + WhatsApp solo coordinacion; ventana estimada `2026-03-31` a `2026-04-06` |
 | Agendar o registrar capacitacion remota (2h) | pendiente | Cristian Villalobos | Agenda cliente | Recomendado: 1 sesion remota de hasta 2h |
 
@@ -93,8 +95,8 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 
 - [ ] Backup/export inicial DB realizado (si aplica)
 - [ ] Migraciones aplicadas y registradas
-- [ ] Politica de tamano PDF confirmada (5MB o cambio)
-- [ ] Politica de trabajador inactivo confirmada
+- [x] Politica de tamano PDF confirmada (MVP: 5MB)
+- [x] Politica de trabajador inactivo confirmada (MVP: bloquea carga; lectura/descarga segun rol)
 - [ ] Evidencia tecnica de seguridad (RLS/Storage/backend/proxy) registrada para acceptance
 
 ## Notificaciones / correo
@@ -122,7 +124,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 ### Checklist
 
 - [ ] Completar responsables y canal seguro en "Datos de entrega"
-- [ ] Definir politicas pendientes (trabajador inactivo + tamano PDF)
+- [ ] Validar con cliente si requiere override futuro de politicas MVP (tamano PDF / trabajador inactivo)
 - [ ] Registrar URL(s) definitivas de entorno
 - [ ] Entregar credenciales por canal seguro y registrar acuse (sin secretos)
 - [ ] Ejecutar/registrar backup-export inicial (o marcar `n/a` por acuerdo)
@@ -135,7 +137,7 @@ Estado sugerido: `pendiente`, `en curso`, `completado`, `bloqueado`, `n/a`.
 
 1. Operaciones/PM: completar responsables cliente + canal seguro + fecha tentativa de entrega.
 2. Tech/Infra: registrar URLs, migraciones y backup/export (o justificar `n/a`).
-3. Cliente + PM: confirmar destinatarios y politicas pendientes (inactivo, tamano PDF).
+3. Cliente + PM: confirmar destinatarios de email por area/unidad y alcance de notificaciones (si aplica correo externo).
 4. Operaciones: enviar credenciales y manual final; registrar acuse.
 5. Cliente: realizar acceptance final y dejar evidencia formal.
 

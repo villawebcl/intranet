@@ -4,7 +4,7 @@ import Link from "next/link";
 import { IdleSessionWatcher } from "@/components/auth/idle-session-watcher";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
-import { canManageWorkers, canViewAudit, canViewDocuments } from "@/lib/auth/roles";
+import { canManageUsers, canManageWorkers, canViewAudit } from "@/lib/auth/roles";
 import { getClientEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -40,6 +40,15 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
       label: "Acceso y roles",
       description: "Matriz funcional y alcances por rol",
     },
+    ...(canManageUsers(profile?.role)
+      ? [
+          {
+            href: "/dashboard/users",
+            label: "Usuarios",
+            description: "Crear accesos y asignar roles",
+          },
+        ]
+      : []),
     {
       href: "/dashboard/workers",
       label: "Trabajadores",
@@ -47,12 +56,12 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
         ? "Gestion de trabajadores y acceso a documentos"
         : "Consulta de trabajadores segun permisos",
     },
-    ...(canViewDocuments(profile?.role)
+    ...(role === "admin"
       ? [
           {
             href: "/dashboard/notifications",
             label: "Notificaciones",
-            description: "Eventos documentales y estado de email",
+            description: "Panel admin de eventos documentales y estado de email",
           },
         ]
       : []),

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
-import { canManageWorkers } from "@/lib/auth/roles";
+import { canViewAudit } from "@/lib/auth/roles";
+import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 type NotificationsPageProps = {
@@ -28,6 +29,9 @@ function eventLabel(eventType: string) {
   }
   if (eventType === "document_rejected") {
     return "Documento rechazado";
+  }
+  if (eventType === "document_download_requested") {
+    return "Solicitud de descarga";
   }
 
   return eventType;
@@ -74,8 +78,18 @@ function formatFieldLabel(key: string) {
   if (key === "workerId") return "Trabajador";
   if (key === "documentId") return "Documento";
   if (key === "rejectionReason") return "Motivo";
+  if (key === "requestedBy") return "Solicitado por";
 
   return key;
+}
+
+function formatPayloadValue(key: string, value: string) {
+  if (key === "folderType") {
+    const folderType = value as (typeof folderTypes)[number];
+    return folderLabels[folderType] ?? value;
+  }
+
+  return value;
 }
 
 function truncateMiddle(value: string, start = 8, end = 6) {
@@ -96,6 +110,7 @@ function getPayloadSummary(payloadValue: unknown) {
     "workerId",
     "documentId",
     "rejectionReason",
+    "requestedBy",
   ] as const;
 
   return orderedKeys
@@ -143,7 +158,7 @@ function PayloadSummary({ payloadValue }: { payloadValue: unknown }) {
                 : "break-words text-xs text-slate-700"
             }
           >
-            {value}
+            {formatPayloadValue(key, value)}
           </dd>
         </div>
       ))}
@@ -187,18 +202,15 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     .eq("id", user.id)
     .maybeSingle();
 
-  const isAdmin = profile?.role === "admin";
-  const canSeeAll = isAdmin || canManageWorkers(profile?.role);
+  if (!canViewAudit(profile?.role)) {
+    redirect("/dashboard?error=No+tienes+permisos+para+ver+notificaciones");
+  }
 
-  let query = supabase
+  const query = supabase
     .from("notifications")
     .select("id, user_id, event_type, payload, sent_at, created_at")
     .order("created_at", { ascending: false })
     .limit(100);
-
-  if (!canSeeAll) {
-    query = query.eq("user_id", user.id);
-  }
 
   const { data: notifications, error } = await query;
   const notificationRows = notifications ?? [];
@@ -215,9 +227,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Notificaciones</h1>
             <p className="mt-1 text-sm text-slate-600">
-              {canSeeAll
-                ? "Vista operativa de eventos documentales recientes."
-                : "Eventos documentales recientes de tu cuenta."}
+              Panel admin de eventos documentales recientes y estado de envio de email.
             </p>
           </div>
           <Link
@@ -233,7 +243,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
               {notificationRows.length} registros
             </span>
             <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-              {canSeeAll ? "Vista general" : "Vista personal"}
+              Vista admin
             </span>
           </div>
         ) : null}

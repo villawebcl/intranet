@@ -4,7 +4,11 @@ import { type AppRole } from "@/lib/constants/domain";
 import { getServerEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
-type NotificationEventType = "document_uploaded" | "document_approved" | "document_rejected";
+type NotificationEventType =
+  | "document_uploaded"
+  | "document_approved"
+  | "document_rejected"
+  | "document_download_requested";
 
 type InsertNotificationsParams = {
   supabase: SupabaseClient;

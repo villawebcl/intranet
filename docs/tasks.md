@@ -12,6 +12,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 ## Estado del backlog (2026-02-23)
 
 - Prioridad actual: cerrar handoff del MVP (datos de entrega + acceptance final) usando checklists/documentacion operativa ya normalizada.
+- Estado tecnico/funcional consolidado en `docs/closeout-status-fase1.md` para separar implementacion vs pendientes operativos.
 
 ## Ahora (prioridad alta)
 
@@ -23,8 +24,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ## Proximas decisiones / definiciones (negocio + tecnica)
 
-- [ ] Definir politica exacta para trabajador `inactivo` (solo bloquear subida vs restriccion mayor).
-- [ ] Confirmar politica final de tamano maximo PDF (mantener 5MB o ajustar).
+- [x] Definir politica exacta para trabajador `inactivo` (MVP: bloquear subida; lectura/descarga segun rol) y registrarla en ADR/checklists. (2026-02-23)
+- [x] Confirmar politica final de tamano maximo PDF (MVP: 5MB) y reflejarla en ADR/checklists. (2026-02-23)
 - [ ] Definir destinatarios de email por area/unidad (si cambia del esquema actual por roles).
 
 ## Backlog tecnico (MVP+)
@@ -56,13 +57,22 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Pulido de estados vacios y consistencia visual final en `workers` / `documents` (headers con contadores, empty states accionables, tarjetas movil + tabla desktop). (2026-02-23)
 - [x] Rehacer `/dashboard` como resumen operativo (metricas, pendientes y actividad reciente por rol) en lugar de duplicar accesos del menu lateral. (2026-02-23)
 - [ ] Consolidar o deprecar archivos legacy (`AI_CONTEXT.md`, `SESSION_CONTEXT.md`) cuando el flujo nuevo este estabilizado.
+- [x] Alinear nombres de las 12 carpetas del MVP con el documento de alcance (labels de negocio en UI). (2026-02-23)
+- [x] Ajustar panel de `Notificaciones` para visibilidad en `admin` (menu, dashboard y ruta). (2026-02-23)
+- [x] Habilitar a `contabilidad` subida de documentos solo en carpeta `Liquidaciones` (UI + backend + RLS). (2026-02-23)
+- [x] Habilitar flujo de `visitante` con visualizacion documental restringida + solicitud de descarga (UI + backend + RLS). (2026-02-23)
+- [x] Implementar modulo admin de `Usuarios` (listar, crear, asignar rol, resetear contrasena). (2026-02-23)
+- [x] Corregir parseo de ENV opcionales vacias para no bloquear modulo `Usuarios` (`RESEND_*` vacio -> `undefined`). (2026-02-23)
+- [x] Simplificar `Auditoria` para lectura operativa concisa (sin resumen narrativo/JSON; metadata en chips). (2026-02-23)
+- [x] Simplificar/reordenar dashboard de inicio (menos saturacion, foco en acciones y actividad esencial). (2026-02-23)
+- [x] Crear documento de cierre funcional/operativo de Fase 1 (`docs/closeout-status-fase1.md`). (2026-02-23)
 
 ## Backlog de entrega / operacion (acceptance)
 
 ### Tecnico
 
-- [ ] Confirmar politica exacta para trabajador `inactivo` y registrarla en acceptance/entrega. (Responsable: Producto + Tech Lead)
-- [ ] Confirmar politica final de tamano maximo PDF (5MB o ajuste) y reflejarla en acceptance/manual. (Responsable: Producto + Tech Lead)
+- [x] Confirmar politica exacta para trabajador `inactivo` y registrarla en acceptance/entrega. (Responsable: Producto + Tech Lead; 2026-02-23)
+- [x] Confirmar politica final de tamano maximo PDF (5MB o ajuste) y reflejarla en acceptance/manual. (Responsable: Producto + Tech Lead; 2026-02-23)
 - [ ] Registrar estado de migraciones del entorno de entrega (aplicadas/pendientes). (Responsable: Dev/Infra)
 - [ ] Ejecutar/registrar backup-export inicial DB segun acuerdo (o marcar `n/a`). (Responsable: Dev/Infra)
 - [ ] Confirmar evidencia tecnica de seguridad en entorno de entrega (Storage privado/reglas). (Responsable: Dev/Infra)
@@ -70,7 +80,8 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 
 ### Operativo
 
-- [ ] Preparar manual con capturas para cliente (version final de entrega). (Responsable: Operaciones/QA; plantilla base en `docs/manual-qa-evidence.md`)
+- [ ] Preparar manual con capturas para cliente (version final de entrega). (Responsable: Operaciones/QA; borrador base en `docs/manual-usuario-mvp.md`, evidencias en `docs/manual-qa-evidence.md`)
+- [ ] Completar `docs/closeout-status-fase1.md` con datos finales de entorno si se desea usar como acta tecnica de entrega (URLs definitivas / migraciones / correo activo o `n/a`). (Responsable: Tech/Operaciones)
 - [x] Preparar descripcion de PR/entrega para cierre QA. (Responsable: Tech; plantilla base en `docs/pr-manual-qa-evidence.md`)
 - [ ] Definir/registrar credenciales de prueba por rol por canal seguro (sin secretos en repo). (Responsable: Operaciones/PM)
 - [ ] Entregar credencial `admin` por canal seguro y registrar acuse. (Responsable: Operaciones/PM)

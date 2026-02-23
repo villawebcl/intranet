@@ -16,6 +16,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
 - Ticket `feature/permissions-e2e-smoke` completado y mergeado en `main` via PR `#3` (suite smoke auth/permisos OK local, 10 casos).
 - Ticket `feature/acceptance-delivery-closeout` deja checklists de acceptance/entrega normalizados y pendientes clasificados por tipo/responsable para handoff.
+- Politicas MVP del modulo documental ya formalizadas en memoria/ADR: trabajador `inactivo` bloquea carga (mantiene lectura/descarga por rol) y PDF max `5MB`.
 - Bloqueo actual de cierre del MVP: datos operativos/cliente (URLs, credenciales por canal seguro, backup/export, capacitacion, aprobacion formal).
 
 ## Progreso diario
@@ -96,13 +97,74 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Validaciones del bloque dashboard:
   - `npm run lint` OK
   - `npm run typecheck` OK
+- Se centraliza la politica documental MVP en `lib/constants/documents.ts` para evitar divergencias:
+  - tamano maximo PDF `5MB` (bytes + etiqueta UI)
+  - `accept` de archivo PDF
+  - regla de bloqueo de carga para trabajador `inactivo`
+- Se actualiza modulo documental para usar constantes compartidas y mantener mensajes alineados (`upload` page + server action).
+- Se mejora accesibilidad minima en revision documental:
+  - inputs `Motivo rechazo` ahora tienen `label` explicito (móvil y escritorio) en `/dashboard/workers/[workerId]/documents`
+- Se registran decisiones tecnicas en memoria:
+  - ADR-010: trabajador `inactivo` bloquea carga; lectura/descarga segun rol
+  - ADR-011: PDF maximo `5MB` para MVP
+- Se sincronizan checklists (`acceptance` / `delivery`) y backlog (`tasks`) marcando cerradas las 2 decisiones tecnicas documentales.
+- Se crea `docs/manual-usuario-mvp.md` como borrador operativo del manual de usuario para entrega:
+  - acceso/login/logout/timeout
+  - navegacion y roles
+  - flujos de trabajadores/documentos/notificaciones/auditoria
+  - reglas MVP (PDF max 5MB, bloqueo de carga para trabajador inactivo)
+  - checklist de uso diario y lista de capturas pendientes para version final
+- Se actualiza `docs/delivery-checklist.md` dejando el manual en estado `en curso` (borrador listo; faltan capturas y datos de handoff).
+- Se alinean labels de las 12 carpetas del trabajador con el alcance funcional (nombres de negocio en vez de `Carpeta 01..12`).
+- Se ajusta el panel de `Notificaciones` para uso administrativo:
+  - visible en menu solo para `admin`
+  - acceso a `/dashboard/notifications` restringido a `admin`
+  - dashboard deja de mostrar widgets/accesos de notificaciones a roles no admin
+  - resumen de payload muestra nombre de carpeta legible (no `folder_XX`)
+- Se habilita excepcion de alcance para `contabilidad` en gestion documental:
+  - puede cargar PDF solo en carpeta `Liquidaciones` (`folder_10`)
+  - UI limita selector de carpeta y botones de subida a esa carpeta
+  - backend valida carpeta permitida por rol
+  - se agrega migracion RLS para `documents`, `storage` y `notifications` restringida a `folder_10`
+  - smoke E2E de permisos actualizado para reflejar acceso acotado a `/documents/new`
+- Se habilita flujo para `visitante` alineado al alcance:
+  - visualizacion documental restringida (listado/metadata)
+  - sin descarga directa (boton `Descargar` oculto/bloqueado por rol)
+  - nuevo boton `Solicitar descarga` en listado documental
+  - server action registra notificacion interna (`document_download_requested`) y auditoria
+  - nueva migracion RLS/constraint para permitir lectura documental a `visitante` y nueva notificacion
+- Se implementa modulo admin de gestion de usuarios (`/dashboard/users`):
+  - listado de usuarios desde Supabase Auth + perfiles (`profiles`)
+  - creacion de usuario (correo, contrasena inicial, rol, nombre)
+  - edicion de nombre/rol
+  - reset de contrasena
+  - auditoria de acciones (`user_created`, `user_updated`, `user_password_reset`)
+  - acceso visible solo para `admin` desde menu y quick action del dashboard
+- Se corrige validacion de variables de entorno opcionales en server:
+  - strings vacias en `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` y `NOTIFICATIONS_FROM_EMAIL` se normalizan a `undefined`
+  - evita bloqueo del modulo `Usuarios` cuando `RESEND_*` no esta configurado aun
+- Se simplifica `/dashboard/audit` para uso operativo:
+  - columnas y celdas mas concisas (sin resumen narrativo ni `Ver JSON`)
+  - metadata en chips clave/valor (wrap + truncado con `title`)
+  - tabla solo en pantallas amplias; cards en tamaños intermedios para evitar compresion
+- Se simplifica `/dashboard` (inicio) por solicitud de UX:
+  - se elimina texto de resumen operativo redundante
+  - menos metricas y menos items por bloque
+  - orden de contenido con foco en operacion/actividad reciente
+  - acciones rapidas mas acotadas
+- Se consolida estado de implementacion y pendientes de cierre en `docs/closeout-status-fase1.md` (referencia tecnica para handoff).
+- Validaciones finales del bloque (antes de cierre de rama):
+  - `npm run lint` OK
+  - `npm run typecheck` OK
 
 #### Falta / arrastrado
 
 - Completar datos reales de entrega/cliente en checklists (URLs, responsables, fechas, canal seguro).
 - Registrar entrega de credenciales por canal seguro (sin exponer secretos en repo).
 - Registrar backup/export inicial y estado de migraciones del entorno de entrega.
-- Confirmar politicas pendientes (`worker inactivo`, tamano PDF) y destinatarios de email (si aplica).
+- Confirmar destinatarios de email por area/unidad (si aplica) y estado final de notificaciones por correo (`activo`/`n/a`).
+- Completar capturas finales del manual de usuario y datos de handoff en `docs/manual-usuario-mvp.md`.
+- (Opcional documental) Completar `docs/closeout-status-fase1.md` con datos finales de entrega para usarlo como acta tecnica de cierre.
 - Agendar/registrar capacitacion + ventana de observaciones y obtener aceptacion formal cliente.
 - (Opcional UX) Revisión visual manual en `staging` del dashboard nuevo y de tarjetas móviles/tablas desktop en `workers` / `documents`.
 

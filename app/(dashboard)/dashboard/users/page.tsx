@@ -1,0 +1,463 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { AlertBanner } from "@/components/ui/alert-banner";
+import { FlashMessages } from "@/components/ui/flash-messages";
+import { appRoles } from "@/lib/constants/domain";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
+import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+
+import {
+  createUserAdminAction,
+  resetUserPasswordAdminAction,
+  updateUserAdminAction,
+} from "./actions";
+
+type UsersPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+type AuthUserRow = {
+  id: string;
+  email: string;
+  fullName: string;
+  role: (typeof appRoles)[number];
+  createdAt: string | null;
+  lastSignInAt: string | null;
+  emailConfirmed: boolean;
+};
+
+function getStringParam(value: string | string[] | undefined) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim();
+}
+
+function roleLabel(role: (typeof appRoles)[number]) {
+  if (role === "admin") return "Admin";
+  if (role === "rrhh") return "RRHH";
+  if (role === "contabilidad") return "Contabilidad";
+  return "Visitante";
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "Sin registro";
+  }
+
+  return new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+export default async function UsersPage({ searchParams }: UsersPageProps) {
+  const params = await searchParams;
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (currentProfile?.role !== "admin") {
+    redirect("/dashboard?error=No+tienes+permisos+para+gestionar+usuarios");
+  }
+
+  let users: AuthUserRow[] = [];
+  let loadError: string | null = null;
+
+  try {
+    const adminClient = createSupabaseAdminClient();
+    const { data: usersPage, error: usersError } = await adminClient.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+
+    if (usersError) {
+      loadError = `No se pudieron listar usuarios: ${usersError.message}`;
+    } else {
+      const authUsers = usersPage.users;
+      const userIds = authUsers.map((authUser) => authUser.id);
+      const { data: profiles, error: profilesError } = userIds.length
+        ? await supabase.from("profiles").select("id, role, full_name").in("id", userIds)
+        : { data: [], error: null };
+
+      if (profilesError) {
+        loadError = `No se pudieron cargar perfiles: ${profilesError.message}`;
+      }
+
+      const profilesById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+
+      users = authUsers
+        .map((authUser) => {
+          const profile = profilesById.get(authUser.id);
+          const metadataFullName =
+            typeof authUser.user_metadata?.full_name === "string"
+              ? authUser.user_metadata.full_name
+              : "";
+
+          return {
+            id: authUser.id,
+            email: authUser.email ?? "sin-correo",
+            fullName: profile?.full_name ?? metadataFullName ?? "",
+            role: (profile?.role ?? "visitante") as (typeof appRoles)[number],
+            createdAt: authUser.created_at ?? null,
+            lastSignInAt: authUser.last_sign_in_at ?? null,
+            emailConfirmed: Boolean(authUser.email_confirmed_at),
+          };
+        })
+        .sort((a, b) => a.email.localeCompare(b.email, "es"));
+    }
+  } catch (error) {
+    loadError =
+      error instanceof Error
+        ? `Modulo de usuarios no disponible: ${error.message}`
+        : "Modulo de usuarios no disponible";
+  }
+
+  const successMessage = getStringParam(params.success);
+  const errorMessage = getStringParam(params.error);
+
+  return (
+    <section className="space-y-5">
+      <FlashMessages error={errorMessage} success={successMessage} />
+
+      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Usuarios</h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Gestion administrativa de accesos: crear usuarios, asignar roles y resetear contrasenas.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href="/dashboard/access"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Ver acceso y roles
+            </Link>
+            <Link
+              href="/dashboard"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Volver al dashboard
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-950">Crear usuario</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Crea el acceso en Supabase Auth y registra su rol/perfil en la intranet.
+        </p>
+
+        <form action={createUserAdminAction} className="mt-4 grid gap-4 lg:grid-cols-4">
+          <div className="space-y-1.5 lg:col-span-1">
+            <label htmlFor="create-email" className="text-sm font-medium text-slate-900">
+              Correo
+            </label>
+            <input
+              id="create-email"
+              name="email"
+              type="email"
+              required
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              placeholder="usuario@anagami.cl"
+            />
+          </div>
+
+          <div className="space-y-1.5 lg:col-span-1">
+            <label htmlFor="create-fullName" className="text-sm font-medium text-slate-900">
+              Nombre completo
+            </label>
+            <input
+              id="create-fullName"
+              name="fullName"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              placeholder="Nombre Apellido"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="create-role" className="text-sm font-medium text-slate-900">
+              Rol
+            </label>
+            <select
+              id="create-role"
+              name="role"
+              defaultValue="visitante"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+            >
+              {appRoles.map((role) => (
+                <option key={role} value={role}>
+                  {roleLabel(role)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="create-password" className="text-sm font-medium text-slate-900">
+              Contrasena inicial
+            </label>
+            <input
+              id="create-password"
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              placeholder="Minimo 8 caracteres"
+            />
+          </div>
+
+          <div className="lg:col-span-4">
+            <FormSubmitButton
+              pendingLabel="Creando..."
+              className="bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+            >
+              Crear usuario
+            </FormSubmitButton>
+          </div>
+        </form>
+      </section>
+
+      {loadError ? <AlertBanner variant="error">{loadError}</AlertBanner> : null}
+
+      {!loadError ? (
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-950">Usuarios registrados</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                {users.length} {users.length === 1 ? "usuario" : "usuarios"} listados.
+              </p>
+            </div>
+          </div>
+
+          {!users.length ? (
+            <AlertBanner className="mt-4" variant="warning">
+              No se encontraron usuarios en Supabase Auth.
+            </AlertBanner>
+          ) : (
+            <>
+              <div className="mt-4 space-y-3 md:hidden">
+                {users.map((row) => (
+                  <article key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-slate-900">{row.email}</p>
+                        <p className="mt-1 text-xs text-slate-500">{row.fullName || "Sin nombre"}</p>
+                      </div>
+                      <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                        {roleLabel(row.role)}
+                      </span>
+                    </div>
+
+                    <dl className="mt-3 grid gap-2 text-xs text-slate-600">
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Confirmado</dt>
+                        <dd>{row.emailConfirmed ? "Si" : "No"}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Ultimo acceso</dt>
+                        <dd className="text-right">{formatDate(row.lastSignInAt)}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Creado</dt>
+                        <dd className="text-right">{formatDate(row.createdAt)}</dd>
+                      </div>
+                    </dl>
+
+                    <form action={updateUserAdminAction} className="mt-4 space-y-3">
+                      <input type="hidden" name="userId" value={row.id} />
+                      <input type="hidden" name="returnTo" value="/dashboard/users" />
+                      <div className="space-y-1.5">
+                        <label htmlFor={`fullName-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
+                          Nombre
+                        </label>
+                        <input
+                          id={`fullName-mobile-${row.id}`}
+                          name="fullName"
+                          defaultValue={row.fullName}
+                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label htmlFor={`role-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
+                          Rol
+                        </label>
+                        <select
+                          id={`role-mobile-${row.id}`}
+                          name="role"
+                          defaultValue={row.role}
+                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        >
+                          {appRoles.map((role) => (
+                            <option key={role} value={role}>
+                              {roleLabel(role)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <FormSubmitButton
+                        pendingLabel="Guardando..."
+                        className="w-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+                      >
+                        Guardar cambios
+                      </FormSubmitButton>
+                    </form>
+
+                    <form action={resetUserPasswordAdminAction} className="mt-3 space-y-2">
+                      <input type="hidden" name="userId" value={row.id} />
+                      <input type="hidden" name="returnTo" value="/dashboard/users" />
+                      <label htmlFor={`password-mobile-${row.id}`} className="text-xs font-medium text-slate-700">
+                        Nueva contrasena
+                      </label>
+                      <input
+                        id={`password-mobile-${row.id}`}
+                        name="password"
+                        type="password"
+                        minLength={8}
+                        required
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        placeholder="Minimo 8 caracteres"
+                      />
+                      <FormSubmitButton
+                        pendingLabel="Actualizando..."
+                        className="w-full border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50"
+                      >
+                        Resetear contrasena
+                      </FormSubmitButton>
+                    </form>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
+                <table className="min-w-full divide-y divide-slate-200 text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Usuario</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Estado</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Ultimo acceso</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Editar perfil / rol</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Reset contrasena</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {users.map((row) => (
+                      <tr key={row.id} className="align-top">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-900">{row.email}</p>
+                          <p className="mt-1 text-xs text-slate-500" title={row.id}>
+                            {row.id}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-600">
+                            Creado: {formatDate(row.createdAt)}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="space-y-2">
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                row.emailConfirmed
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {row.emailConfirmed ? "Confirmado" : "Sin confirmar"}
+                            </span>
+                            <p className="text-xs text-slate-600">Rol actual: {roleLabel(row.role)}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">{formatDate(row.lastSignInAt)}</td>
+                        <td className="px-4 py-3">
+                          <form action={updateUserAdminAction} className="space-y-2">
+                            <input type="hidden" name="userId" value={row.id} />
+                            <input type="hidden" name="returnTo" value="/dashboard/users" />
+                            <label htmlFor={`fullName-${row.id}`} className="sr-only">
+                              Nombre completo
+                            </label>
+                            <input
+                              id={`fullName-${row.id}`}
+                              name="fullName"
+                              defaultValue={row.fullName}
+                              className="w-56 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              placeholder="Nombre completo"
+                            />
+                            <label htmlFor={`role-${row.id}`} className="sr-only">
+                              Rol
+                            </label>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <select
+                                id={`role-${row.id}`}
+                                name="role"
+                                defaultValue={row.role}
+                                className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              >
+                                {appRoles.map((role) => (
+                                  <option key={role} value={role}>
+                                    {roleLabel(role)}
+                                  </option>
+                                ))}
+                              </select>
+                              <FormSubmitButton
+                                pendingLabel="Guardando..."
+                                className="border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                              >
+                                Guardar
+                              </FormSubmitButton>
+                            </div>
+                          </form>
+                        </td>
+                        <td className="px-4 py-3">
+                          <form action={resetUserPasswordAdminAction} className="flex flex-wrap items-center gap-2">
+                            <input type="hidden" name="userId" value={row.id} />
+                            <input type="hidden" name="returnTo" value="/dashboard/users" />
+                            <label htmlFor={`password-${row.id}`} className="sr-only">
+                              Nueva contrasena
+                            </label>
+                            <input
+                              id={`password-${row.id}`}
+                              name="password"
+                              type="password"
+                              minLength={8}
+                              required
+                              className="w-44 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              placeholder="Nueva contrasena"
+                            />
+                            <FormSubmitButton
+                              pendingLabel="Actualizando..."
+                              className="border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50"
+                            >
+                              Resetear
+                            </FormSubmitButton>
+                          </form>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+      ) : null}
+    </section>
+  );
+}

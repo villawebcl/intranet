@@ -6,15 +6,22 @@ import { AlertBanner } from "@/components/ui/alert-banner";
 import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import {
+  ACCOUNTING_UPLOAD_FOLDER_TYPE,
   canDownloadDocuments,
+  canRequestDocumentDownload,
   canReviewDocuments,
   canUploadDocuments,
   canViewDocuments,
+  getUploadableDocumentFolders,
 } from "@/lib/auth/roles";
 import { documentStatuses, folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
-import { downloadDocumentAction, reviewDocumentAction } from "./actions";
+import {
+  downloadDocumentAction,
+  requestDocumentDownloadAction,
+  reviewDocumentAction,
+} from "./actions";
 
 type WorkerDocumentsPageProps = {
   params: Promise<{ workerId: string }>;
@@ -104,9 +111,13 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
     .maybeSingle();
 
   const canUpload = canUploadDocuments(profile?.role);
+  const uploadableFolders = getUploadableDocumentFolders(profile?.role);
+  const primaryUploadFolder = uploadableFolders[0] ?? null;
+  const hasSingleUploadFolder = uploadableFolders.length === 1;
   const canReview = canReviewDocuments(profile?.role);
   const canView = canViewDocuments(profile?.role);
   const canDownload = canDownloadDocuments(profile?.role);
+  const canRequestDownload = canRequestDocumentDownload(profile?.role);
 
   if (!canView) {
     redirect("/dashboard/workers?error=No+tienes+permisos+para+ver+documentos");
@@ -191,12 +202,14 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
             >
               Volver a trabajador
             </Link>
-            {canUpload ? (
+            {canUpload && primaryUploadFolder ? (
               <Link
-                href={`/dashboard/workers/${worker.id}/documents/new`}
+                href={`/dashboard/workers/${worker.id}/documents/new${
+                  hasSingleUploadFolder ? `?folder=${primaryUploadFolder}` : ""
+                }`}
                 className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                Subir PDF
+                {primaryUploadFolder === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir PDF"}
               </Link>
             ) : null}
           </div>
@@ -206,6 +219,12 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
       {worker.status !== "activo" && canUpload ? (
         <AlertBanner variant="warning">
           El trabajador esta inactivo. La carga de nuevos documentos estara bloqueada hasta reactivarlo.
+        </AlertBanner>
+      ) : null}
+
+      {canRequestDownload && !canDownload ? (
+        <AlertBanner variant="info">
+          Tu rol puede visualizar documentos y enviar solicitudes de descarga, pero no descargar archivos directamente.
         </AlertBanner>
       ) : null}
 
@@ -294,8 +313,13 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
             ...(canUpload
               ? [
                   {
-                    href: `/dashboard/workers/${worker.id}/documents/new`,
-                    label: "Subir PDF",
+                    href: `/dashboard/workers/${worker.id}/documents/new${
+                      hasSingleUploadFolder && primaryUploadFolder ? `?folder=${primaryUploadFolder}` : ""
+                    }`,
+                    label:
+                      primaryUploadFolder === ACCOUNTING_UPLOAD_FOLDER_TYPE
+                        ? "Subir liquidacion"
+                        : "Subir PDF",
                     variant: "primary" as const,
                   },
                 ]
@@ -360,6 +384,20 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                     </form>
                   ) : null}
 
+                  {canRequestDownload ? (
+                    <form action={requestDocumentDownloadAction}>
+                      <input type="hidden" name="workerId" value={worker.id} />
+                      <input type="hidden" name="documentId" value={document.id} />
+                      <input type="hidden" name="returnTo" value={currentPath} />
+                      <FormSubmitButton
+                        pendingLabel="Solicitando..."
+                        className="w-full border border-blue-300 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                      >
+                        Solicitar descarga
+                      </FormSubmitButton>
+                    </form>
+                  ) : null}
+
                   {canReview && document.status === "pendiente" ? (
                     <div className="space-y-2">
                       <form action={reviewDocumentAction}>
@@ -380,7 +418,11 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                         <input type="hidden" name="documentId" value={document.id} />
                         <input type="hidden" name="decision" value="rechazado" />
                         <input type="hidden" name="returnTo" value={currentPath} />
+                        <label htmlFor={`rejectionReason-mobile-${document.id}`} className="sr-only">
+                          Motivo de rechazo
+                        </label>
                         <input
+                          id={`rejectionReason-mobile-${document.id}`}
                           name="rejectionReason"
                           placeholder="Motivo rechazo"
                           required
@@ -453,6 +495,20 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                           </form>
                         ) : null}
 
+                        {canRequestDownload ? (
+                          <form action={requestDocumentDownloadAction}>
+                            <input type="hidden" name="workerId" value={worker.id} />
+                            <input type="hidden" name="documentId" value={document.id} />
+                            <input type="hidden" name="returnTo" value={currentPath} />
+                            <FormSubmitButton
+                              pendingLabel="Solicitando..."
+                              className="border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                            >
+                              Solicitar descarga
+                            </FormSubmitButton>
+                          </form>
+                        ) : null}
+
                         {canReview && document.status === "pendiente" ? (
                           <>
                             <form action={reviewDocumentAction}>
@@ -473,7 +529,11 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
                               <input type="hidden" name="documentId" value={document.id} />
                               <input type="hidden" name="decision" value="rechazado" />
                               <input type="hidden" name="returnTo" value={currentPath} />
+                              <label htmlFor={`rejectionReason-table-${document.id}`} className="sr-only">
+                                Motivo de rechazo
+                              </label>
                               <input
+                                id={`rejectionReason-table-${document.id}`}
                                 name="rejectionReason"
                                 placeholder="Motivo rechazo"
                                 required
