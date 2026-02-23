@@ -486,7 +486,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <SectionCard
             title="Documentos recientes"
             actionHref="/dashboard/workers"
-            actionLabel="Ver modulo documental"
+            actionLabel="Ver documentos"
           >
             {!recentDocuments.length ? (
               <EmptyList message="Aun no hay documentos registrados." />
@@ -521,8 +521,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </SectionCard>
         ) : (
-          <SectionCard title="Modulo documental">
-            <EmptyList message="Sin acceso a documentos para este rol." />
+          <SectionCard title="Documentos">
+            <EmptyList message="Tu rol no tiene acceso a documentos." />
           </SectionCard>
         )}
       </div>

@@ -41,7 +41,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p className="text-sm font-medium text-slate-900">Iniciar sesion</p>
         <p className="mt-2 text-sm text-slate-600">
-          Usa tu cuenta creada en Supabase Auth para entrar al dashboard.
+          Usa tu cuenta para ingresar al panel.
         </p>
 
         {reason === "timeout" ? (

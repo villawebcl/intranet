@@ -41,3 +41,9 @@ export const resetUserPasswordAdminSchema = z.object({
     .max(128, "La contrasena es demasiado larga"),
   returnTo: z.string().trim().optional(),
 });
+
+export const deleteUserAdminSchema = z.object({
+  userId: z.string().uuid("Usuario invalido"),
+  confirmDelete: z.literal("yes", "Debes confirmar la eliminacion"),
+  returnTo: z.string().trim().optional(),
+});

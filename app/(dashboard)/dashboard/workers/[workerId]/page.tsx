@@ -14,7 +14,7 @@ import {
 } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { toggleWorkerStatusAction } from "../actions";
+import { deleteWorkerAction, toggleWorkerStatusAction } from "../actions";
 
 type WorkerDetailPageProps = {
   params: Promise<{ workerId: string }>;
@@ -61,6 +61,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
     .maybeSingle();
 
   const canManage = canManageWorkers(profile?.role);
+  const isAdmin = profile?.role === "admin";
   const canUpload = canUploadDocuments(profile?.role);
   const uploadableFolders = getUploadableDocumentFolders(profile?.role);
   const primaryUploadFolder = uploadableFolders[0] ?? null;
@@ -211,6 +212,37 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             <p className="mt-1 truncate font-semibold text-slate-900">{worker.email ?? "Sin correo"}</p>
           </div>
         </div>
+
+        {isAdmin ? (
+          <details className="mt-4 rounded-xl border border-red-200 bg-red-50">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-red-700">
+              Eliminar trabajador (solo admin)
+            </summary>
+            <form action={deleteWorkerAction} className="space-y-3 border-t border-red-200 px-4 py-4">
+              <input type="hidden" name="workerId" value={worker.id} />
+              <input type="hidden" name="returnTo" value="/dashboard/workers" />
+              <p className="text-sm text-red-800">
+                Vas a eliminar a {worker.first_name} {worker.last_name}. Esta accion no se puede deshacer.
+              </p>
+              <label className="flex items-start gap-2 text-sm text-red-900">
+                <input
+                  type="checkbox"
+                  name="confirmDelete"
+                  value="yes"
+                  required
+                  className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                />
+                Confirmo que quiero eliminar este trabajador
+              </label>
+              <FormSubmitButton
+                pendingLabel="Eliminando..."
+                className="border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+              >
+                Eliminar trabajador
+              </FormSubmitButton>
+            </form>
+          </details>
+        ) : null}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -257,7 +289,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
         {!canReadDocuments ? (
           <AlertBanner className="mt-4" variant="warning">
-            Tu rol no tiene acceso al modulo documental de trabajadores.
+            Tu rol no tiene acceso a los documentos de trabajadores.
           </AlertBanner>
         ) : null}
 

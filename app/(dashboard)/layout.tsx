@@ -33,7 +33,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
     {
       href: "/dashboard",
       label: "Inicio",
-      description: "Resumen del MVP y accesos rapidos",
+      description: "Resumen general y accesos rapidos",
     },
     {
       href: "/dashboard/access",
