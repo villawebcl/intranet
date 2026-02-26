@@ -7,12 +7,14 @@ import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import {
   ACCOUNTING_UPLOAD_FOLDER_TYPE,
+  canAccessAssignedWorker,
   canDownloadDocuments,
   canRequestDocumentDownload,
   canReviewDocuments,
   canUploadDocuments,
   canViewDocuments,
   getUploadableDocumentFolders,
+  isWorkerScopedRole,
 } from "@/lib/auth/roles";
 import { documentStatuses, folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -106,18 +108,30 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, worker_id")
     .eq("id", user.id)
     .maybeSingle();
 
-  const canUpload = canUploadDocuments(profile?.role);
-  const uploadableFolders = getUploadableDocumentFolders(profile?.role);
+  const role = profile?.role ?? "visitante";
+
+  if (isWorkerScopedRole(role)) {
+    if (!profile?.worker_id) {
+      redirect("/dashboard?error=Tu+cuenta+trabajador+no+tiene+trabajador+asignado");
+    }
+
+    if (!canAccessAssignedWorker(role, profile.worker_id, workerId)) {
+      redirect(`/dashboard/workers/${profile.worker_id}/documents?error=Solo+puedes+ver+tu+documentacion`);
+    }
+  }
+
+  const canUpload = canUploadDocuments(role);
+  const uploadableFolders = getUploadableDocumentFolders(role);
   const primaryUploadFolder = uploadableFolders[0] ?? null;
   const hasSingleUploadFolder = uploadableFolders.length === 1;
-  const canReview = canReviewDocuments(profile?.role);
-  const canView = canViewDocuments(profile?.role);
-  const canDownload = canDownloadDocuments(profile?.role);
-  const canRequestDownload = canRequestDocumentDownload(profile?.role);
+  const canReview = canReviewDocuments(role);
+  const canView = canViewDocuments(role);
+  const canDownload = canDownloadDocuments(role);
+  const canRequestDownload = canRequestDocumentDownload(role);
 
   if (!canView) {
     redirect("/dashboard/workers?error=No+tienes+permisos+para+ver+documentos");
@@ -196,12 +210,14 @@ export default async function WorkerDocumentsPage({ params, searchParams }: Work
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/dashboard/workers/${worker.id}`}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Volver a trabajador
-            </Link>
+            {!isWorkerScopedRole(role) ? (
+              <Link
+                href={`/dashboard/workers/${worker.id}`}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Volver a trabajador
+              </Link>
+            ) : null}
             {canUpload && primaryUploadFolder ? (
               <Link
                 href={`/dashboard/workers/${worker.id}/documents/new${

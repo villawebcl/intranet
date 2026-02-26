@@ -41,6 +41,7 @@ function roleLabel(role: (typeof appRoles)[number]) {
   if (role === "admin") return "Admin";
   if (role === "rrhh") return "RRHH";
   if (role === "contabilidad") return "Contabilidad";
+  if (role === "trabajador") return "Trabajador";
   return "Visitante";
 }
 
@@ -177,7 +178,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               type="email"
               required
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
-              placeholder="usuario@anagami.cl"
+              placeholder="usuario@empresa.cl"
             />
           </div>
 

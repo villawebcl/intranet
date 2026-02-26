@@ -1,4 +1,4 @@
-# RUNBOOK — Intranet Anagami
+# RUNBOOK — Intranet Base
 
 ## 1) Requisitos locales
 

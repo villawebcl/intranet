@@ -1,4 +1,4 @@
-# Manual de Usuario (MVP) — Intranet Anagami
+# Manual de Usuario (MVP) — Intranet Base
 
 ## Objetivo
 
@@ -41,7 +41,7 @@ Este manual describe:
 
 La cabecera muestra:
 
-- nombre de la intranet (`Intranet Anagami`)
+- nombre de la intranet (`Intranet Base`)
 - rol del usuario
 - nombre/correo del usuario
 - boton `Cerrar sesion`

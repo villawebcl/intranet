@@ -78,6 +78,7 @@ function formatRoleLabel(role: string | null) {
   if (role === "admin") return "Administrador";
   if (role === "rrhh") return "RRHH";
   if (role === "contabilidad") return "Contabilidad";
+  if (role === "trabajador") return "Trabajador";
   if (role === "visitante") return "Visitante";
   return role;
 }

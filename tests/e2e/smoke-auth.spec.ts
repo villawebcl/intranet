@@ -18,7 +18,7 @@ test.describe("Auth smoke", () => {
 
     await page.waitForURL(/\/login(?:\?|$)/);
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
-    await expect(page.getByRole("heading", { name: "Intranet Anagami" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Intranet Base" })).toBeVisible();
     await expect(page.getByText("La sesion se cerro por inactividad.")).toHaveCount(0);
   });
 

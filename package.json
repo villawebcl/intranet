@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "e2e:smoke": "playwright test tests/e2e",
     "e2e:smoke:headed": "playwright test tests/e2e --headed",
+    "supabase:provision-trabajador": "node scripts/provision-trabajador-demo.mjs",
+    "supabase:reset-users": "node scripts/reset-supabase-users.mjs --yes",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

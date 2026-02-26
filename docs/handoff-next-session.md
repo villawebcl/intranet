@@ -114,7 +114,7 @@ Se considera handoff cerrado cuando:
 Usar este prompt (copiar/pegar):
 
 ```txt
-Continuemos con el handoff/acceptance final del proyecto Intranet Anagami (Fase 1).
+Continuemos con el handoff/acceptance final del proyecto Intranet Base (Fase 1).
 
 Contexto:
 - La etapa funcional del MVP ya fue cerrada y mergeada.

@@ -9,7 +9,7 @@ export async function loginAsRole(page: Page, role: SmokeRole) {
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     await page.goto("/login");
-    await expect(page.getByRole("heading", { name: "Intranet Anagami" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Intranet Base" })).toBeVisible();
 
     await page.getByLabel("Correo").fill(user.email);
     await page.getByLabel("Contrasena").fill(user.password);

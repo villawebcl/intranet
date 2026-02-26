@@ -1,4 +1,4 @@
--- Intranet Anagami - visitante con visualizacion documental restringida + solicitud de descarga
+-- Intranet Base - visitante con visualizacion documental restringida + solicitud de descarga
 
 -- Permitir nuevo tipo de evento de notificacion para solicitud de descarga
 alter table public.notifications

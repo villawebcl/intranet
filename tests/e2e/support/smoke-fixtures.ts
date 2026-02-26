@@ -52,25 +52,25 @@ export function getSmokeUsersSeed(): Record<SmokeRole, SmokeUserSeed> {
   return {
     admin: {
       role: "admin",
-      email: process.env.E2E_SMOKE_ADMIN_EMAIL ?? "e2e.smoke.admin@anagami.local",
+      email: process.env.E2E_SMOKE_ADMIN_EMAIL ?? "e2e.smoke.admin@empresa.local",
       password: process.env.E2E_SMOKE_ADMIN_PASSWORD ?? "E2E-smoke-1234!",
       fullName: "E2E Smoke Admin",
     },
     rrhh: {
       role: "rrhh",
-      email: process.env.E2E_SMOKE_RRHH_EMAIL ?? "e2e.smoke.rrhh@anagami.local",
+      email: process.env.E2E_SMOKE_RRHH_EMAIL ?? "e2e.smoke.rrhh@empresa.local",
       password: process.env.E2E_SMOKE_RRHH_PASSWORD ?? "E2E-smoke-1234!",
       fullName: "E2E Smoke RRHH",
     },
     contabilidad: {
       role: "contabilidad",
-      email: process.env.E2E_SMOKE_CONTABILIDAD_EMAIL ?? "e2e.smoke.contabilidad@anagami.local",
+      email: process.env.E2E_SMOKE_CONTABILIDAD_EMAIL ?? "e2e.smoke.contabilidad@empresa.local",
       password: process.env.E2E_SMOKE_CONTABILIDAD_PASSWORD ?? "E2E-smoke-1234!",
       fullName: "E2E Smoke Contabilidad",
     },
     visitante: {
       role: "visitante",
-      email: process.env.E2E_SMOKE_VISITANTE_EMAIL ?? "e2e.smoke.visitante@anagami.local",
+      email: process.env.E2E_SMOKE_VISITANTE_EMAIL ?? "e2e.smoke.visitante@empresa.local",
       password: process.env.E2E_SMOKE_VISITANTE_PASSWORD ?? "E2E-smoke-1234!",
       fullName: "E2E Smoke Visitante",
     },
@@ -85,7 +85,7 @@ export function getSmokeWorkerSeed(): SmokeWorkerSeed {
     status: "activo",
     area: "QA",
     position: "Tester E2E",
-    email: "trabajador.smoke@anagami.local",
+    email: "trabajador.smoke@empresa.local",
     phone: "+56900000000",
   };
 }

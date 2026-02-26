@@ -1,4 +1,4 @@
--- Intranet Anagami - contabilidad puede subir solo liquidaciones (folder_10)
+-- Intranet Base - contabilidad puede subir solo liquidaciones (folder_10)
 
 -- Documents: permitir insert a contabilidad solo para folder_10
 drop policy if exists documents_insert_privileged on public.documents;

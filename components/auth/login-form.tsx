@@ -89,7 +89,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           onChange={(event) => setEmail(event.target.value)}
           disabled={isSubmitting}
           className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
-          placeholder="usuario@anagami.cl"
+          placeholder="usuario@empresa.cl"
         />
       </div>
 

@@ -3,7 +3,7 @@ import { folderTypes, type AppRole, type FolderType } from "@/lib/constants/doma
 const workerManagerRoles: AppRole[] = ["admin", "rrhh"];
 const documentUploaderRoles: AppRole[] = ["admin", "rrhh", "contabilidad"];
 const documentReviewerRoles: AppRole[] = ["admin", "rrhh"];
-const documentViewerRoles: AppRole[] = ["admin", "rrhh", "contabilidad", "visitante"];
+const documentViewerRoles: AppRole[] = ["admin", "rrhh", "contabilidad", "trabajador", "visitante"];
 const documentDownloaderRoles: AppRole[] = ["admin", "rrhh", "contabilidad"];
 const auditViewerRoles: AppRole[] = ["admin"];
 export const ACCOUNTING_UPLOAD_FOLDER_TYPE: FolderType = "folder_10";
@@ -97,4 +97,20 @@ export function canViewAudit(role: AppRole | null | undefined) {
   }
 
   return auditViewerRoles.includes(role);
+}
+
+export function isWorkerScopedRole(role: AppRole | null | undefined) {
+  return role === "trabajador";
+}
+
+export function canAccessAssignedWorker(
+  role: AppRole | null | undefined,
+  assignedWorkerId: string | null | undefined,
+  targetWorkerId: string,
+) {
+  if (!isWorkerScopedRole(role)) {
+    return true;
+  }
+
+  return Boolean(assignedWorkerId) && assignedWorkerId === targetWorkerId;
 }

@@ -4,11 +4,13 @@ import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 
 import {
+  canAccessAssignedWorker,
   canUploadDocumentToFolder,
   canDownloadDocuments,
   canRequestDocumentDownload,
   canReviewDocuments,
   canUploadDocuments,
+  isWorkerScopedRole,
 } from "@/lib/auth/roles";
 import {
   BLOCK_UPLOAD_FOR_INACTIVE_WORKERS,
@@ -75,16 +77,43 @@ async function getRoleContext() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { supabase, user: null, role: null as AppRole | null };
+    return { supabase, user: null, role: null as AppRole | null, profileWorkerId: null as string | null };
   }
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, worker_id")
     .eq("id", user.id)
     .maybeSingle();
 
-  return { supabase, user, role: profile?.role ?? "visitante" };
+  return {
+    supabase,
+    user,
+    role: (profile?.role ?? "visitante") as AppRole,
+    profileWorkerId: profile?.worker_id ?? null,
+  };
+}
+
+function ensureWorkerScopeOrRedirect(params: {
+  role: AppRole;
+  profileWorkerId: string | null;
+  targetWorkerId: string;
+}) {
+  if (!isWorkerScopedRole(params.role)) {
+    return;
+  }
+
+  if (!params.profileWorkerId) {
+    redirect(withMessage("/dashboard", { error: "Tu cuenta trabajador no tiene trabajador asignado" }));
+  }
+
+  if (!canAccessAssignedWorker(params.role, params.profileWorkerId, params.targetWorkerId)) {
+    redirect(
+      withMessage(`/dashboard/workers/${params.profileWorkerId}/documents`, {
+        error: "Solo puedes ver tu documentacion",
+      }),
+    );
+  }
 }
 
 async function insertAuditLog(params: {
@@ -164,6 +193,12 @@ export async function uploadDocumentAction(formData: FormData) {
 
   const workerId = parsed.data.workerId;
   const folderType = parsed.data.folderType;
+
+  ensureWorkerScopeOrRedirect({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: workerId,
+  });
 
   if (!canUploadDocuments(context.role) || !canUploadDocumentToFolder(context.role, folderType)) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para subir documentos" }));
@@ -307,6 +342,12 @@ export async function reviewDocumentAction(formData: FormData) {
     redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
 
+  ensureWorkerScopeOrRedirect({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: parsed.data.workerId,
+  });
+
   if (!canReviewDocuments(context.role)) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para revisar documentos" }));
   }
@@ -430,6 +471,12 @@ export async function downloadDocumentAction(formData: FormData) {
     redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
 
+  ensureWorkerScopeOrRedirect({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: parsed.data.workerId,
+  });
+
   if (!canDownloadDocuments(context.role)) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para descargar documentos" }));
   }
@@ -484,6 +531,12 @@ export async function requestDocumentDownloadAction(formData: FormData) {
   if (!context.user) {
     redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
+
+  ensureWorkerScopeOrRedirect({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: parsed.data.workerId,
+  });
 
   if (!canRequestDocumentDownload(context.role)) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para solicitar descargas" }));

@@ -1,4 +1,4 @@
--- Intranet Anagami - Base schema (MVP Fase 1)
+-- Intranet Base - Base schema (MVP Fase 1)
 
 create extension if not exists pgcrypto;
 

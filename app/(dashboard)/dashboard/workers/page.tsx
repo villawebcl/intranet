@@ -5,7 +5,7 @@ import { FormSubmitButton } from "@/components/forms/form-submit-button";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
-import { canManageWorkers } from "@/lib/auth/roles";
+import { canManageWorkers, isWorkerScopedRole } from "@/lib/auth/roles";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import { deleteWorkerAction, toggleWorkerStatusAction } from "./actions";
@@ -20,6 +20,14 @@ function getStringParam(value: string | string[] | undefined) {
   }
 
   return value.trim();
+}
+
+function getStatusFilter(value: string | string[] | undefined) {
+  if (value === "activo" || value === "inactivo") {
+    return value;
+  }
+
+  return "";
 }
 
 function getStatusPillClass(status: string) {
@@ -46,19 +54,33 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
 
   const params = await searchParams;
   const query = getStringParam(params.q);
+  const statusFilter = getStatusFilter(params.status);
   const successMessage = getStringParam(params.success);
   const errorMessage = getStringParam(params.error);
-  const currentPath = query.length
-    ? `/dashboard/workers?q=${encodeURIComponent(query)}`
+  const currentSearch = new URLSearchParams();
+  if (query.length) currentSearch.set("q", query);
+  if (statusFilter) currentSearch.set("status", statusFilter);
+  const currentPath = currentSearch.toString()
+    ? `/dashboard/workers?${currentSearch.toString()}`
     : "/dashboard/workers";
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, worker_id")
     .eq("id", user.id)
     .maybeSingle();
-  const canManage = canManageWorkers(profile?.role);
-  const isAdmin = profile?.role === "admin";
+  const role = profile?.role ?? "visitante";
+
+  if (isWorkerScopedRole(role)) {
+    if (!profile?.worker_id) {
+      redirect("/dashboard?error=Tu+cuenta+trabajador+no+tiene+trabajador+asignado");
+    }
+
+    redirect(`/dashboard/workers/${profile.worker_id}/documents`);
+  }
+
+  const canManage = canManageWorkers(role);
+  const isAdmin = role === "admin";
 
   let workersQuery = supabase
     .from("workers")
@@ -70,10 +92,13 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
       `rut.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`,
     );
   }
+  if (statusFilter) {
+    workersQuery = workersQuery.eq("status", statusFilter);
+  }
 
   const { data: workers, error } = await workersQuery;
   const workersCount = workers?.length ?? 0;
-  const hasFilters = query.length > 0;
+  const hasFilters = query.length > 0 || Boolean(statusFilter);
 
   return (
     <section className="space-y-5">
@@ -85,11 +110,16 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               Listado con busqueda basica y estado activo/inactivo.
             </p>
             {!error ? (
-              <p className="mt-3">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
                   {workersCount} {workersCount === 1 ? "registro" : "registros"}
                 </span>
-              </p>
+                {statusFilter ? (
+                  <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                    Estado: {getStatusLabel(statusFilter)}
+                  </span>
+                ) : null}
+              </div>
             ) : null}
           </div>
 
@@ -111,14 +141,24 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
         <label htmlFor="q" className="mt-3 block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
           Buscar por RUT o nombre
         </label>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_180px_auto_auto]">
           <input
             id="q"
             name="q"
             defaultValue={query}
-            className="min-w-60 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+            className="min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
             placeholder="Ej: 12.345.678-9 o Perez"
           />
+          <select
+            id="status"
+            name="status"
+            defaultValue={statusFilter}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+          >
+            <option value="">Todos los estados</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+          </select>
           <button
             type="submit"
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"

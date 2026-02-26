@@ -49,7 +49,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - vista responsive (cards en movil, tabla en escritorio)
 - Se mejora navegacion global del dashboard:
   - sidebar en desktop + navegacion compacta en movil
-  - logo `Intranet Anagami` clickeable hacia `/dashboard`
+  - logo `Intranet Base` clickeable hacia `/dashboard`
   - nueva vista `/dashboard/access` para resumen de acceso y roles (corrige acceso roto desde dashboard)
 - Se aplica pulido UI/UX en `/dashboard/audit` (sin tocar logica):
   - resumen en lenguaje claro por evento (que paso, actor y contexto)

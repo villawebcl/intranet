@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               Panel interno
             </p>
             <h1 className="mt-4 max-w-xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              Intranet Anagami
+              Intranet Base
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
               Gestion documental interna con acceso por roles, trazabilidad y panel operativo para

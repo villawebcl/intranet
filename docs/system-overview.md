@@ -11,7 +11,7 @@ Resumen ejecutivo del sistema para retomar contexto rapido sin depender del chat
 
 ## Proposito del sistema
 
-Intranet web para **gestion documental de trabajadores** de Anagami Seguridad.
+Intranet web para **gestion documental de trabajadores** de empresa cliente.
 
 Permite:
 

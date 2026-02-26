@@ -137,7 +137,7 @@ export function WorkerForm(props: WorkerFormProps) {
             type="email"
             defaultValue={props.values.email}
             className={inputClassName()}
-            placeholder="trabajador@anagami.cl"
+            placeholder="trabajador@empresa.cl"
           />
         </div>
 

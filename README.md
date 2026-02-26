@@ -1,6 +1,6 @@
-# Intranet Anagami
+# Intranet Base
 
-Base inicial del MVP de gestion documental para Anagami Seguridad.
+Base inicial del MVP de gestion documental para empresa cliente.
 
 ## Stack
 
@@ -94,4 +94,4 @@ npm run start
 ## Nota importante
 
 Las politicas RLS incluidas son una base segura para iniciar. Se deben ajustar por ticket cuando se cierre la matriz final de permisos (especialmente rol `visitante`).
-# intranetanagami
+# intranet-plantilla

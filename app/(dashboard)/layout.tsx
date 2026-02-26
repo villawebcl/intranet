@@ -4,7 +4,7 @@ import Link from "next/link";
 import { IdleSessionWatcher } from "@/components/auth/idle-session-watcher";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
-import { canManageUsers, canManageWorkers, canViewAudit } from "@/lib/auth/roles";
+import { canManageUsers, canManageWorkers, canViewAudit, isWorkerScopedRole } from "@/lib/auth/roles";
 import { getClientEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -22,24 +22,39 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, worker_id")
     .eq("id", user.id)
     .maybeSingle();
 
   const env = getClientEnv();
   const displayName = profile?.full_name || user.email || "Usuario";
   const role = profile?.role || "visitante";
+  const workerDocumentsHref =
+    isWorkerScopedRole(role) && profile?.worker_id ? `/dashboard/workers/${profile.worker_id}/documents` : null;
+
   const navItems = [
     {
       href: "/dashboard",
       label: "Inicio",
       description: "Resumen general y accesos rapidos",
     },
-    {
-      href: "/dashboard/access",
-      label: "Acceso y roles",
-      description: "Matriz funcional y alcances por rol",
-    },
+    ...(isWorkerScopedRole(role)
+      ? workerDocumentsHref
+        ? [
+            {
+              href: workerDocumentsHref,
+              label: "Mi documentacion",
+              description: "Consulta de documentos asociados a tu cuenta",
+            },
+          ]
+        : []
+      : [
+          {
+            href: "/dashboard/access",
+            label: "Acceso y roles",
+            description: "Matriz funcional y alcances por rol",
+          },
+        ]),
     ...(canManageUsers(profile?.role)
       ? [
           {
@@ -49,13 +64,17 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           },
         ]
       : []),
-    {
-      href: "/dashboard/workers",
-      label: "Trabajadores",
-      description: canManageWorkers(profile?.role)
-        ? "Gestion de trabajadores y acceso a documentos"
-        : "Consulta de trabajadores segun permisos",
-    },
+    ...(!isWorkerScopedRole(role)
+      ? [
+          {
+            href: "/dashboard/workers",
+            label: "Trabajadores",
+            description: canManageWorkers(profile?.role)
+              ? "Gestion de trabajadores y acceso a documentos"
+              : "Consulta de trabajadores segun permisos",
+          },
+        ]
+      : []),
     ...(role === "admin"
       ? [
           {
@@ -90,7 +109,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
               </span>
               <span>
                 <span className="dashboard-shell-brand-title block text-sm font-semibold text-slate-900">
-                  Intranet Anagami
+                  Intranet Base
                 </span>
                 <span className="dashboard-shell-brand-subtitle block text-xs text-slate-500">
                   Gestion documental interna
