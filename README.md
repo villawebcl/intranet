@@ -1,97 +1,178 @@
-# Intranet Base
+# Intranet Base (Plantilla)
 
-Base inicial del MVP de gestion documental para empresa cliente.
+Plantilla reusable de intranet documental (white-label) para adaptarla por cliente.
+
+Incluye:
+- login + logout
+- dashboard inicial con resumen operativo
+- gestion de trabajadores
+- gestion documental por carpetas
+- auditoria
+- notificaciones
+- permisos por rol con Supabase RLS
+- rol `trabajador` con acceso solo a su propia documentacion
+
+## Roles incluidos
+
+- `admin`
+- `rrhh`
+- `contabilidad`
+- `trabajador`
+- `visitante`
 
 ## Stack
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
 - Supabase (Postgres/Auth/Storage/RLS)
-- Zod para validacion de entorno
+- Zod
+- Playwright (smoke E2E)
 
-## Estructura
+## Inicio rapido
 
-- `app/`: rutas y UI
-- `lib/`: constantes de dominio, entorno, clientes Supabase
-- `supabase/migrations/`: esquema SQL y politicas base
-- `supabase/policies/`: documentacion de RLS
-- `supabase/seed/`: scripts de datos iniciales
-- `docs/`: contexto funcional, decisiones y runbook
+1. Instalar dependencias
 
-## Memoria persistente (obligatorio)
+```bash
+npm install
+```
 
-Antes de cambios importantes, leer:
+2. Crear variables de entorno
+
+```bash
+cp .env.example .env.local
+```
+
+3. Configurar Supabase en `.env.local`
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+4. Levantar local
+
+```bash
+npm run dev
+```
+
+La app abre en `http://localhost:3000` y redirige directo a `/login`.
+
+## Configuracion de base de datos (Supabase)
+
+Aplica las migraciones en orden (por nombre/fecha) desde `supabase/migrations/`.
+
+Migraciones clave:
+- `20260220_000001_init_schema.sql` (schema base + RLS inicial)
+- `20260221_000002_permissions_hardening.sql`
+- `20260223_000003_contabilidad_upload_liquidaciones.sql`
+- `20260223_000004_visitante_document_view_request.sql`
+- `20260226_000005_trabajador_self_documents.sql` (agrega rol `trabajador` + `profiles.worker_id`)
+- `20260226_000006_trabajador_self_documents_policies.sql` (politicas RLS del rol `trabajador`)
+
+Nota:
+- Las migraciones `000005` y `000006` estan separadas a proposito para evitar error de PostgreSQL al usar un valor nuevo de enum en la misma transaccion.
+
+## Usuarios demo (ficticios)
+
+Puedes crear/actualizar usuarios demo con:
+
+```bash
+npm run supabase:reset-users
+```
+
+Esto crea cuentas demo y ajusta perfiles/roles.
+
+Usuarios demo esperados:
+- `admin@empresa.local`
+- `rrhh@empresa.local`
+- `contabilidad@empresa.local`
+- `trabajador@empresa.local`
+- `visitante@empresa.local`
+
+Clave demo actual:
+- `Pass123!`
+
+Provision especifica del trabajador demo (auth + ficha `workers` + vinculacion `profiles.worker_id`):
+
+```bash
+npm run supabase:provision-trabajador
+```
+
+## Scripts utiles
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+npm run format
+npm run format:check
+npm run e2e:smoke
+npm run e2e:smoke:headed
+npm run supabase:reset-users
+npm run supabase:provision-trabajador
+```
+
+## Personalizacion por cliente (checklist)
+
+Usa esta base y cambia al menos:
+
+1. Branding
+- nombre de la intranet
+- logo / favicon
+- textos de login/dashboard
+
+2. Dominio y correos
+- `APP_URL`
+- `NOTIFICATIONS_FROM_EMAIL`
+- dominio de deploy (Vercel u otro)
+
+3. Usuarios y roles
+- cuentas reales del cliente
+- politicas/alcances segun contrato
+
+4. Permisos / RLS
+- revisar politicas de `documents`, `storage.objects`, `notifications`
+- validar matriz de acceso por rol
+
+5. E2E fixtures
+- correos y datos de prueba en `.env.local` (si usaras smoke tests)
+
+## Estructura del proyecto
+
+- `app/`: rutas y UI (login/dashboard)
+- `components/`: componentes reutilizables
+- `lib/`: auth, constantes, validadores, supabase clients, notificaciones
+- `supabase/migrations/`: schema y politicas SQL
+- `tests/e2e/`: smoke tests con Playwright
+- `scripts/`: utilidades de provision/reset para Supabase
+- `docs/`: documentacion funcional y tecnica
+
+## Deploy (Vercel)
+
+Minimo requerido en variables de entorno:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `APP_URL`
+
+Opcional (emails):
+- `RESEND_API_KEY`
+- `NOTIFICATIONS_FROM_EMAIL`
+
+## Calidad y flujo recomendado
+
+- Trabajar por ramas (`feature/...`)
+- No desarrollar directo en `main`
+- Ejecutar antes de merge:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run build`
+
+## Documentacion adicional
 
 - `docs/system-overview.md`
 - `docs/architecture.md`
 - `docs/decisions.md`
 - `docs/progress.md`
 - `docs/tasks.md`
-
-Despues de cambios importantes, actualizar estos archivos (al menos progreso/tareas/decisiones segun corresponda).
-
-## Contexto rapido para retomar
-
-- Leer primero: `docs/system-overview.md`
-- Arquitectura y patrones: `docs/architecture.md`
-- Estado actual: `docs/progress.md`
-- Backlog: `docs/tasks.md`
-- Contexto legacy detallado: `docs/SESSION_CONTEXT.md`
-- Contexto completo legacy: `docs/AI_CONTEXT.md`
-
-## Flujo de trabajo obligatorio
-
-1. Actualizar `main` local.
-2. Crear rama por ticket (`feature/...`).
-3. Implementar alcance acotado.
-4. Ejecutar `npm run lint`, `npm run typecheck` y `npm run build`.
-5. Abrir PR y hacer merge a `main`.
-
-No trabajar directo en `main` para features.
-
-## Primeros pasos
-
-1. Instalar dependencias:
-
-```bash
-npm install
-```
-
-2. Crear variables de entorno:
-
-```bash
-cp .env.example .env.local
-```
-
-3. Levantar entorno local:
-
-```bash
-npm run dev
-```
-
-## Scripts
-
-```bash
-npm run dev
-npm run lint
-npm run typecheck
-npm run format
-npm run format:check
-npm run build
-npm run start
-```
-
-## Base de datos
-
-- Aplicar migracion inicial: `supabase/migrations/20260220_000001_init_schema.sql`
-- Incluye:
-  - enums de dominio (`app_role`, `folder_type`, `document_status`)
-  - tablas (`profiles`, `workers`, `documents`, `notifications`, `audit_logs`)
-  - triggers `updated_at`
-  - RLS base por rol
-  - bucket privado `documents` con limite 5MB y PDF
-
-## Nota importante
-
-Las politicas RLS incluidas son una base segura para iniciar. Se deben ajustar por ticket cuando se cierre la matriz final de permisos (especialmente rol `visitante`).
-# intranet-plantilla
