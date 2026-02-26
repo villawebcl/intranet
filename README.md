@@ -1,6 +1,6 @@
-# Intranet Anagami
+# Intranet 
 
-Base inicial del MVP de gestion documental para Anagami Seguridad.
+Base inicial del MVP de gestion documental para Intranet de Seguridad.
 
 ## Stack
 
