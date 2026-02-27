@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createApprovedDownloadUrl } from "../../lib/services/documents.service";
+import { createApprovedDownloadUrl, resolveDocumentDownloadRequest } from "../../lib/services/documents.service";
 import { createCoreUser, deleteCoreUser } from "../../lib/services/users.service";
 
 function createUsersSupabaseStub(options?: {
@@ -62,8 +62,10 @@ function createAdminClientStub(options: {
   const calls: {
     profileUpsertPayload?: Record<string, unknown>;
     deleteUserInputs: Array<{ userId: string; shouldSoftDelete: boolean }>;
+    rpcCalls: Array<{ fn: string; args: Record<string, unknown> }>;
   } = {
     deleteUserInputs: [],
+    rpcCalls: [],
   };
 
   const adminClient = {
@@ -97,6 +99,10 @@ function createAdminClientStub(options: {
           return { error: options.profileUpsertError ?? null };
         },
       };
+    },
+    rpc: async (fn: string, args: Record<string, unknown>) => {
+      calls.rpcCalls.push({ fn, args });
+      return { error: null };
     },
   };
 
@@ -186,9 +192,62 @@ function createDocumentSupabaseStub(options: {
   return { supabase, calls };
 }
 
+function createResolveDownloadRequestSupabaseStub(params: {
+  selectResults: Array<{ data: unknown; error: unknown }>;
+  updateResults: Array<{ data: unknown; error: unknown }>;
+}) {
+  let selectIndex = 0;
+  let updateIndex = 0;
+
+  const calls: {
+    updatePayloads: Array<Record<string, unknown>>;
+  } = {
+    updatePayloads: [],
+  };
+
+  const supabase = {
+    from: (table: string) => {
+      if (table !== "download_requests") {
+        throw new Error(`unexpected table: ${table}`);
+      }
+
+      const selectChain = {
+        eq: () => selectChain,
+        maybeSingle: async () => {
+          const result = params.selectResults[selectIndex] ?? { data: null, error: null };
+          selectIndex += 1;
+          return result;
+        },
+      };
+
+      return {
+        select: () => selectChain,
+        update: (payload: Record<string, unknown>) => {
+          calls.updatePayloads.push(payload);
+          const updateChain = {
+            eq: () => updateChain,
+            select: () => ({
+              maybeSingle: async () => {
+                const result = params.updateResults[updateIndex] ?? { data: null, error: null };
+                updateIndex += 1;
+                return result;
+              },
+            }),
+          };
+
+          return updateChain;
+        },
+      };
+    },
+  };
+
+  return { supabase, calls };
+}
+
 function createAdminStorageClientStub(options?: { signedUrl?: string; signedUrlError?: unknown }) {
   const calls: {
     signedUrlInput?: { path: string; expiresInSeconds: number };
+    rpcArgs?: { fn: string; args: Record<string, unknown> };
   } = {};
 
   const adminClient = {
@@ -208,6 +267,10 @@ function createAdminStorageClientStub(options?: { signedUrl?: string; signedUrlE
           },
         };
       },
+    },
+    rpc: async (fn: string, args: Record<string, unknown>) => {
+      calls.rpcArgs = { fn, args };
+      return { error: null };
     },
   };
 
@@ -267,7 +330,9 @@ test("createCoreUser crea perfil y registra auditoria", async () => {
   });
   expect(calls.rpcCalls.some((rpcCall) => rpcCall.fn === "admin_set_profile_role_and_worker")).toBeTruthy();
   expect(
-    calls.rpcCalls.some((rpcCall) => rpcCall.fn === "insert_audit_log" && rpcCall.args.p_action === "user_created"),
+    adminCalls.rpcCalls.some(
+      (rpcCall) => rpcCall.fn === "insert_audit_log" && rpcCall.args.p_action === "user_created",
+    ),
   ).toBeTruthy();
 });
 
@@ -350,6 +415,178 @@ test("deleteCoreUser usa soft delete como fallback si falla hard delete", async 
   ]);
 });
 
+test("resolveDocumentDownloadRequest aprueba solicitud pendiente y audita", async () => {
+  const { supabase, calls } = createResolveDownloadRequestSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "req-1",
+          status: "pendiente",
+          worker_id: "worker-1",
+          document_id: "doc-1",
+          requested_by: "visitante-1",
+        },
+        error: null,
+      },
+    ],
+    updateResults: [
+      {
+        data: {
+          id: "req-1",
+          status: "aprobado",
+          worker_id: "worker-1",
+          document_id: "doc-1",
+          requested_by: "visitante-1",
+        },
+        error: null,
+      },
+    ],
+  });
+  const { adminClient, calls: adminCalls } = createAdminClientStub({});
+
+  const result = await resolveDocumentDownloadRequest(
+    {
+      supabase: supabase as never,
+      adminClient: adminClient as never,
+      actorUserId: "rrhh-1",
+      actorRole: "rrhh",
+    },
+    {
+      workerId: "worker-1",
+      requestId: "req-1",
+      decision: "aprobado",
+      decisionNote: "ok",
+    },
+  );
+
+  expect(result).toEqual({ ok: true, data: undefined });
+  expect(calls.updatePayloads).toHaveLength(1);
+  expect(adminCalls.rpcCalls).toHaveLength(1);
+  expect(adminCalls.rpcCalls[0]?.fn).toBe("insert_audit_log");
+  expect(adminCalls.rpcCalls[0]?.args.p_action).toBe("document_download_request_approved");
+});
+
+test("resolveDocumentDownloadRequest falla si solicitud ya esta procesada", async () => {
+  const { supabase, calls } = createResolveDownloadRequestSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "req-1",
+          status: "aprobado",
+          worker_id: "worker-1",
+          document_id: "doc-1",
+          requested_by: "visitante-1",
+        },
+        error: null,
+      },
+    ],
+    updateResults: [],
+  });
+  const { adminClient, calls: adminCalls } = createAdminClientStub({});
+
+  const result = await resolveDocumentDownloadRequest(
+    {
+      supabase: supabase as never,
+      adminClient: adminClient as never,
+      actorUserId: "rrhh-1",
+      actorRole: "rrhh",
+    },
+    {
+      workerId: "worker-1",
+      requestId: "req-1",
+      decision: "aprobado",
+      decisionNote: null,
+    },
+  );
+
+  expect(result).toEqual({ ok: false, error: "La solicitud ya fue procesada" });
+  expect(calls.updatePayloads).toHaveLength(0);
+  expect(adminCalls.rpcCalls).toHaveLength(0);
+});
+
+test("resolveDocumentDownloadRequest evita side-effects duplicados en doble aprobacion", async () => {
+  const { supabase, calls } = createResolveDownloadRequestSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "req-1",
+          status: "pendiente",
+          worker_id: "worker-1",
+          document_id: "doc-1",
+          requested_by: "visitante-1",
+        },
+        error: null,
+      },
+      {
+        data: {
+          id: "req-1",
+          status: "pendiente",
+          worker_id: "worker-1",
+          document_id: "doc-1",
+          requested_by: "visitante-1",
+        },
+        error: null,
+      },
+    ],
+    updateResults: [
+      {
+        data: {
+          id: "req-1",
+          status: "aprobado",
+          worker_id: "worker-1",
+          document_id: "doc-1",
+          requested_by: "visitante-1",
+        },
+        error: null,
+      },
+      {
+        data: null,
+        error: null,
+      },
+    ],
+  });
+  const { adminClient, calls: adminCalls } = createAdminClientStub({});
+
+  const first = await resolveDocumentDownloadRequest(
+    {
+      supabase: supabase as never,
+      adminClient: adminClient as never,
+      actorUserId: "rrhh-1",
+      actorRole: "rrhh",
+    },
+    {
+      workerId: "worker-1",
+      requestId: "req-1",
+      decision: "aprobado",
+      decisionNote: null,
+    },
+  );
+
+  const second = await resolveDocumentDownloadRequest(
+    {
+      supabase: supabase as never,
+      adminClient: adminClient as never,
+      actorUserId: "rrhh-1",
+      actorRole: "rrhh",
+    },
+    {
+      workerId: "worker-1",
+      requestId: "req-1",
+      decision: "aprobado",
+      decisionNote: null,
+    },
+  );
+
+  expect(first).toEqual({ ok: true, data: undefined });
+  expect(second).toEqual({ ok: false, error: "La solicitud ya fue procesada" });
+  expect(calls.updatePayloads).toHaveLength(2);
+  expect(
+    adminCalls.rpcCalls.filter(
+      (rpcCall) => rpcCall.fn === "insert_audit_log" && rpcCall.args.p_action === "document_download_request_approved",
+    ),
+  ).toHaveLength(1);
+});
+
 test("createApprovedDownloadUrl bloquea sin permisos", async () => {
   const { supabase } = createDocumentSupabaseStub({
     request: null,
@@ -429,8 +666,8 @@ test("createApprovedDownloadUrl genera enlace temporal para solicitud aprobada",
     path: "worker-1/folder_01/file.pdf",
     expiresInSeconds: 300,
   });
-  expect(calls.rpcArgs?.fn).toBe("insert_audit_log");
-  expect(calls.rpcArgs?.args.p_action).toBe("document_downloaded");
+  expect(adminCalls.rpcArgs?.fn).toBe("insert_audit_log");
+  expect(adminCalls.rpcArgs?.args.p_action).toBe("document_downloaded");
 });
 
 test("createApprovedDownloadUrl falla cuando la solicitud no esta aprobada", async () => {

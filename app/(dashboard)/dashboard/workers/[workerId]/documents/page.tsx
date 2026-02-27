@@ -22,12 +22,12 @@ import { documentStatuses, folderLabels, folderTypes } from "@/lib/constants/dom
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import {
-  downloadApprovedRequestAction,
   downloadDocumentAction,
   resolveDownloadRequestAction,
   requestDocumentDownloadAction,
   reviewDocumentAction,
 } from "./actions";
+import { ApprovedDownloadButton } from "./approved-download-button";
 
 type WorkerDocumentsPageProps = {
   params: Promise<{ workerId: string }>;
@@ -591,21 +591,14 @@ export default async function WorkerDocumentsPage({
                       {canRequestDownload ? (
                         <>
                           {approvedDownloadRequest ? (
-                            <form action={downloadApprovedRequestAction} className="space-y-2">
-                              <input
-                                type="hidden"
-                                name="requestId"
-                                value={approvedDownloadRequest.id}
-                              />
-                              <input type="hidden" name="workerId" value={worker.id} />
-                              <input type="hidden" name="returnTo" value={currentPath} />
-                              <FormSubmitButton
-                                pendingLabel="Generando..."
-                                className="w-full border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
-                              >
-                                Descargar aprobado (5 min)
-                              </FormSubmitButton>
-                            </form>
+                            <ApprovedDownloadButton
+                              requestId={approvedDownloadRequest.id}
+                              workerId={worker.id}
+                              returnTo={currentPath}
+                              buttonLabel="Descargar aprobado (5 min)"
+                              pendingLabel="Generando..."
+                              buttonClassName="w-full border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            />
                           ) : pendingDownloadRequest ? (
                             <div className="rounded-sm border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                               Solicitud pendiente de aprobacion.
@@ -743,17 +736,15 @@ export default async function WorkerDocumentsPage({
                                   </div>
                                 ) : null}
                                 {request.status === "aprobado" ? (
-                                  <form action={downloadApprovedRequestAction} className="mt-2">
-                                    <input type="hidden" name="requestId" value={request.id} />
-                                    <input type="hidden" name="workerId" value={worker.id} />
-                                    <input type="hidden" name="returnTo" value={currentPath} />
-                                    <FormSubmitButton
-                                      pendingLabel="Generando..."
-                                      className="w-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
-                                    >
-                                      Generar link (5 min)
-                                    </FormSubmitButton>
-                                  </form>
+                                  <ApprovedDownloadButton
+                                    requestId={request.id}
+                                    workerId={worker.id}
+                                    returnTo={currentPath}
+                                    buttonLabel="Generar link (5 min)"
+                                    pendingLabel="Generando..."
+                                    buttonClassName="w-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                    wrapperClassName="mt-2 space-y-2"
+                                  />
                                 ) : null}
                               </div>
                             ))}
@@ -883,21 +874,14 @@ export default async function WorkerDocumentsPage({
                             {canRequestDownload ? (
                               <>
                                 {approvedDownloadRequest ? (
-                                  <form action={downloadApprovedRequestAction}>
-                                    <input
-                                      type="hidden"
-                                      name="requestId"
-                                      value={approvedDownloadRequest.id}
-                                    />
-                                    <input type="hidden" name="workerId" value={worker.id} />
-                                    <input type="hidden" name="returnTo" value={currentPath} />
-                                    <FormSubmitButton
-                                      pendingLabel="Generando..."
-                                      className="border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
-                                    >
-                                      Descargar aprobado
-                                    </FormSubmitButton>
-                                  </form>
+                                  <ApprovedDownloadButton
+                                    requestId={approvedDownloadRequest.id}
+                                    workerId={worker.id}
+                                    returnTo={currentPath}
+                                    buttonLabel="Descargar aprobado"
+                                    pendingLabel="Generando..."
+                                    buttonClassName="border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                  />
                                 ) : pendingDownloadRequest ? (
                                   <p className="rounded-sm border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
                                     Solicitud pendiente
@@ -1033,28 +1017,15 @@ export default async function WorkerDocumentsPage({
                                         </div>
                                       ) : null}
                                       {request.status === "aprobado" ? (
-                                        <form
-                                          action={downloadApprovedRequestAction}
-                                          className="mt-2"
-                                        >
-                                          <input
-                                            type="hidden"
-                                            name="requestId"
-                                            value={request.id}
-                                          />
-                                          <input type="hidden" name="workerId" value={worker.id} />
-                                          <input
-                                            type="hidden"
-                                            name="returnTo"
-                                            value={currentPath}
-                                          />
-                                          <FormSubmitButton
-                                            pendingLabel="Generando..."
-                                            className="w-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
-                                          >
-                                            Generar link (5 min)
-                                          </FormSubmitButton>
-                                        </form>
+                                        <ApprovedDownloadButton
+                                          requestId={request.id}
+                                          workerId={worker.id}
+                                          returnTo={currentPath}
+                                          buttonLabel="Generar link (5 min)"
+                                          pendingLabel="Generando..."
+                                          buttonClassName="w-full border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                          wrapperClassName="mt-2 space-y-2"
+                                        />
                                       ) : null}
                                     </div>
                                   ))}

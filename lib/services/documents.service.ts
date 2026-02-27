@@ -101,6 +101,7 @@ export async function uploadWorkerDocument(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "document_uploaded",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -173,6 +174,7 @@ export async function reviewWorkerDocument(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: payload.decision === "aprobado" ? "document_approved" : "document_rejected",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -238,6 +240,7 @@ export async function createDocumentDownloadUrl(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "document_downloaded",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -308,6 +311,7 @@ export async function createDocumentDownloadRequest(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "document_download_requested",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -345,7 +349,7 @@ export async function resolveDocumentDownloadRequest(
   }
 
   if (request.status !== "pendiente") {
-    return { ok: false, error: "La solicitud ya fue resuelta" };
+    return { ok: false, error: "La solicitud ya fue procesada" };
   }
 
   const nowIso = new Date().toISOString();
@@ -364,27 +368,34 @@ export async function resolveDocumentDownloadRequest(
         rejected_at: nowIso,
       };
 
-  const { error: updateError } = await context.supabase
+  const { data: updatedRequest, error: updateError } = await context.supabase
     .from("download_requests")
     .update(updatePayload)
     .eq("id", request.id)
-    .eq("status", "pendiente");
+    .eq("status", "pendiente")
+    .select("id, status, worker_id, document_id, requested_by")
+    .maybeSingle();
 
   if (updateError) {
     return { ok: false, error: "No se pudo actualizar la solicitud" };
   }
 
+  if (!updatedRequest) {
+    return { ok: false, error: "La solicitud ya fue procesada" };
+  }
+
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: isApproved ? "document_download_request_approved" : "document_download_request_rejected",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
     entityType: "document",
-    entityId: request.document_id,
+    entityId: updatedRequest.document_id,
     metadata: {
-      workerId: payload.workerId,
-      requestId: request.id,
-      requestedBy: request.requested_by,
+      workerId: updatedRequest.worker_id,
+      requestId: updatedRequest.id,
+      requestedBy: updatedRequest.requested_by,
     },
   });
 
@@ -459,6 +470,7 @@ export async function createApprovedDownloadUrl(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "document_downloaded",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,

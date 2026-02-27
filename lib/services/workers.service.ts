@@ -90,49 +90,46 @@ async function linkWorkerProfileWithRole(params: {
   fullName: string | null;
   workerId: string;
 }): Promise<ServiceResult<void>> {
-  if (params.context.actorRole === "admin") {
-    const { error: profileBaseError } = await params.adminClient.from("profiles").upsert(
-      {
-        id: params.authUserId,
-        full_name: params.fullName,
-      },
-      { onConflict: "id" },
-    );
-
-    if (profileBaseError) {
-      return { ok: false, error: "No se pudo preparar el perfil del trabajador" };
-    }
-
-    const { error: assignmentError } = await params.context.supabase.rpc("admin_set_profile_role_and_worker", {
-      profile_user_id: params.authUserId,
-      new_role: "trabajador",
-      new_worker_id: params.workerId,
-    });
-
-    if (assignmentError) {
-      console.error("admin_set_profile_role_and_worker failed for worker profile", {
-        actorRole: params.context.actorRole,
-        authUserId: params.authUserId,
-        workerId: params.workerId,
-        error: assignmentError,
-      });
-      return { ok: false, error: "No se pudo vincular la cuenta al trabajador" };
-    }
-
-    return { ok: true, data: undefined };
-  }
-
-  const { error: profileError } = await params.adminClient.from("profiles").upsert(
+  const { error: profileBaseError } = await params.adminClient.from("profiles").upsert(
     {
       id: params.authUserId,
-      role: "trabajador",
       full_name: params.fullName,
-      worker_id: params.workerId,
     },
     { onConflict: "id" },
   );
 
-  if (profileError) {
+  if (profileBaseError) {
+    return { ok: false, error: "No se pudo preparar el perfil del trabajador" };
+  }
+
+  let assignmentFn: "admin_set_profile_role_and_worker" | "assign_worker_to_user";
+  let assignmentArgs: Record<string, unknown>;
+
+  if (params.context.actorRole === "admin") {
+    assignmentFn = "admin_set_profile_role_and_worker";
+    assignmentArgs = {
+      profile_user_id: params.authUserId,
+      new_role: "trabajador",
+      new_worker_id: params.workerId,
+    };
+  } else if (params.context.actorRole === "rrhh") {
+    assignmentFn = "assign_worker_to_user";
+    assignmentArgs = {
+      profile_user_id: params.authUserId,
+      target_worker_id: params.workerId,
+    };
+  } else {
+    return { ok: false, error: "No tienes permisos para vincular acceso de trabajadores" };
+  }
+
+  const { error: assignmentError } = await params.context.supabase.rpc(assignmentFn, assignmentArgs);
+  if (assignmentError) {
+    console.error(`${assignmentFn} failed for worker profile`, {
+      actorRole: params.context.actorRole,
+      authUserId: params.authUserId,
+      workerId: params.workerId,
+      error: assignmentError,
+    });
     return { ok: false, error: "No se pudo vincular la cuenta al trabajador" };
   }
 
@@ -168,6 +165,7 @@ export async function createWorkerRecord(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_created",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -226,6 +224,7 @@ export async function updateWorkerRecord(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_updated",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -329,6 +328,7 @@ export async function createWorkerAccess(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_access_created",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -455,7 +455,8 @@ export async function createMissingWorkerAccesses(
 
     await logAuditEvent({
       supabase: context.supabase,
-      action: "worker_access_created",
+    adminClient: context.adminClient,
+    action: "worker_access_created",
       actorUserId: context.actorUserId,
       actorRole: context.actorRole,
       entityType: "worker",
@@ -470,6 +471,7 @@ export async function createMissingWorkerAccesses(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_access_bulk_created",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -538,6 +540,7 @@ export async function suspendWorkerAccess(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_access_suspended",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -596,6 +599,7 @@ export async function activateWorkerAccess(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_access_activated",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -648,6 +652,7 @@ export async function toggleWorkerStatus(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_status_changed",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -731,6 +736,7 @@ export async function archiveWorker(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_archived",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -822,6 +828,7 @@ export async function deleteWorkerPermanently(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_deleted",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -889,6 +896,7 @@ export async function unarchiveWorker(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "worker_unarchived",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,

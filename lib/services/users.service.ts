@@ -93,6 +93,7 @@ export async function createCoreUser(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "user_created",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -151,6 +152,7 @@ export async function updateCoreUserProfile(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "user_updated",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -183,6 +185,7 @@ export async function resetCoreUserPassword(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "user_password_reset",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
@@ -238,6 +241,7 @@ export async function deleteCoreUser(
 
   await logAuditEvent({
     supabase: context.supabase,
+    adminClient: context.adminClient,
     action: "user_deleted",
     actorUserId: context.actorUserId,
     actorRole: context.actorRole,
