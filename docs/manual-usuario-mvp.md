@@ -50,7 +50,7 @@ Menu lateral / superior (segun dispositivo):
 
 - `Inicio`
 - `Acceso y roles`
-- `Usuarios` (solo `admin`)
+- `Usuarios nucleo` (solo `admin`)
 - `Trabajadores`
 - `Notificaciones` (solo `admin`)
 - `Auditoria` (solo `admin`)
@@ -63,8 +63,9 @@ Referencia completa: `docs/permissions-matrix.md`.
 - `rrhh`: gestion de trabajadores y documentos, sin auditoria.
 - `contabilidad`: lectura documental (ver/descargar) + carga solo en `Liquidaciones`, sin revisar.
 - `visitante`: acceso autenticado limitado, visualizacion documental restringida + solicitud de descarga.
+- `trabajador`: acceso de autoservicio a `Mi documentacion` (solo su `worker_id` asociado).
 
-## Modulo: Usuarios (solo admin)
+## Modulo: Usuarios nucleo (solo admin)
 
 Ruta: `/dashboard/users`
 
@@ -74,6 +75,7 @@ Ruta: `/dashboard/users`
 - Asignar rol (`admin`, `rrhh`, `contabilidad`, `visitante`)
 - Editar nombre/rol de usuarios existentes
 - Resetear contrasena de un usuario
+- Vincular/ajustar perfiles del nucleo sin mezclar cuentas de `trabajador`
 
 ### Crear usuario
 
@@ -108,6 +110,9 @@ Ruta: `/dashboard/workers`
   - `Nuevo trabajador`
   - `Editar`
   - `Activar` / `Desactivar`
+  - `Archivar` (soft delete)
+- Segun rol (`admin`):
+  - `Desarchivar`
 
 ### Buscar trabajador
 
@@ -141,6 +146,15 @@ Ruta: `/dashboard/workers`
 1. Desde el listado o la ficha, presionar `Activar` o `Desactivar`.
 2. El estado cambia sin eliminar datos ni documentos historicos.
 
+### Archivar / Desarchivar trabajador
+
+- `Archivar` oculta el registro por defecto (sin borrado fisico de DB).
+- `Desarchivar` vuelve a dejar el registro como activo.
+- En vistas con filtro de archivado puedes alternar:
+  - `Solo activos`
+  - `Solo archivados`
+  - `Todos`
+
 ## Ficha del trabajador y carpetas
 
 Ruta: `/dashboard/workers/:workerId`
@@ -153,7 +167,7 @@ La ficha muestra:
 
 ### Carpetas fijas (12)
 
-- El MVP usa una estructura fija de 12 carpetas (`Carpeta 01` ... `Carpeta 12`).
+- El MVP usa una estructura documental fija de 12 carpetas (labels de negocio definidos en sistema).
 - La vista puede alternarse entre `Lista` y `Cuadricula` (por defecto `Lista`).
 
 ### Accesos desde la ficha
@@ -164,6 +178,12 @@ Segun rol, se pueden ver botones:
 - `Activar` / `Desactivar`
 - `Subir documento`
 - `Ver documentos`
+
+Adicional para gestion interna (`admin`):
+
+- estado de acceso al portal del trabajador (`Sin acceso`, `Activo`, `Suspendido`)
+- creacion de acceso inicial
+- suspension/reactivacion de acceso
 
 ## Modulo: Documentos del trabajador
 
@@ -185,6 +205,12 @@ Ruta: `/dashboard/workers/:workerId/documents`
 2. Usar filtros `Carpeta` y/o `Estado`.
 3. Presionar `Aplicar`.
 4. Usar `Limpiar` para quitar filtros.
+
+### Paginacion de documentos
+
+- El listado se muestra por paginas.
+- Usa `Anterior` y `Siguiente` para navegar.
+- La pagina actual conserva filtros activos (`Carpeta`, `Estado`).
 
 ### Subir documento PDF (`admin` / `rrhh` / `contabilidad` en `Liquidaciones`)
 
@@ -226,6 +252,8 @@ Al solicitar:
 
 - se registra una notificacion interna para el equipo administrador/RRHH
 - se registra auditoria de la solicitud
+- cuando una solicitud es aprobada, aparece `Descargar aprobado (5 min)` para obtener un link temporal
+- la URL firmada se genera server-side y expira en 5 minutos
 
 ## Regla MVP: trabajador inactivo
 
@@ -242,12 +270,14 @@ Ruta: `/dashboard/notifications`
 ### Uso
 
 - Muestra eventos documentales recientes (carga, aprobacion, rechazo).
+- Incluye solicitudes de descarga (`document_download_requested`) para revision del equipo autorizado.
 - Incluye:
   - tipo de evento
   - fecha
   - destino (`user_id`)
   - resumen del payload
   - estado de email (`Enviado` / `No enviado`)
+- navegacion por paginas (`Anterior` / `Siguiente`)
 
 ### Alcance por rol
 
@@ -265,7 +295,7 @@ Ruta: `/dashboard/audit`
 
 ### Que muestra
 
-- eventos criticos del sistema (ultimos 200 registros)
+- eventos criticos del sistema (paginados)
 - actor (usuario/rol)
 - accion
 - entidad afectada
@@ -281,6 +311,11 @@ Pasos:
 1. Completar uno o ambos filtros.
 2. Presionar `Aplicar`.
 3. Usar `Limpiar` para volver a la vista general.
+
+### Paginacion de auditoria
+
+- Usa `Anterior` y `Siguiente` para recorrer resultados.
+- Los filtros (`Accion`, `Entidad`) se conservan entre paginas.
 
 ## Mensajes y validaciones frecuentes
 
@@ -336,13 +371,20 @@ Pasos:
 
 ### Visitante
 
-1. Entrar a `Trabajadores`.
-2. Buscar trabajador.
-3. Abrir `Ver documentos`.
-4. Revisar listado/documento requerido (sin descarga directa).
-5. Presionar `Solicitar descarga` en el documento correspondiente.
-6. Esperar gestion del equipo administrador / RRHH.
-7. Cerrar sesion.
+1. Entrar a `Trabajadores` y abrir `Ver documentos` del trabajador.
+2. Revisar listado/documento requerido (sin descarga directa).
+3. Presionar `Solicitar descarga` en el documento correspondiente.
+4. Esperar aprobacion del equipo administrador / RRHH.
+5. Si se aprueba, usar `Descargar aprobado (5 min)` antes de expirar.
+6. Cerrar sesion.
+
+### Trabajador
+
+1. Entrar con cuenta de rol `trabajador`.
+2. Ir a `Mi documentacion`.
+3. Revisar/filtrar documentos de su carpeta personal.
+4. Descargar segun permisos de su flujo asignado.
+5. Cerrar sesion.
 
 ### Admin (control)
 

@@ -59,8 +59,8 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
       ? [
           {
             href: "/dashboard/users",
-            label: "Usuarios",
-            description: "Crear accesos y asignar roles",
+            label: "Usuarios nucleo",
+            description: "Gestion de cuentas internas y permisos",
           },
         ]
       : []),

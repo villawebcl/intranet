@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { loginWithPasswordAction } from "@/app/(auth)/actions";
 import { LoginForm } from "@/components/auth/login-form";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -23,6 +24,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
   const reason = params.reason;
+  const errorCode = typeof params.error === "string" ? params.error : null;
+  const errorMessage =
+    errorCode === "invalid_credentials" ? "No se pudo iniciar sesion. Revisa tus credenciales." : null;
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -89,7 +93,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           ) : null}
 
           <div className="mt-5">
-            <LoginForm nextPath={nextPath} />
+            <LoginForm nextPath={nextPath} errorMessage={errorMessage} action={loginWithPasswordAction} />
           </div>
         </section>
       </div>

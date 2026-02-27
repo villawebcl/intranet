@@ -16,10 +16,25 @@ function optionalName(maxLength: number) {
   );
 }
 
+function optionalWorkerId() {
+  return z.preprocess(
+    (value) => {
+      if (typeof value !== "string") {
+        return undefined;
+      }
+
+      const trimmed = value.trim();
+      return trimmed.length ? trimmed : undefined;
+    },
+    z.string().uuid("Trabajador asociado invalido").optional(),
+  );
+}
+
 export const createUserAdminSchema = z.object({
   email: z.string().trim().email("Correo invalido").transform((value) => value.toLowerCase()),
   fullName: optionalName(120),
   role: z.enum(appRoles, "Rol invalido"),
+  workerId: optionalWorkerId(),
   password: z
     .string()
     .min(8, "La contrasena debe tener al menos 8 caracteres")
@@ -30,6 +45,7 @@ export const updateUserAdminSchema = z.object({
   userId: z.string().uuid("Usuario invalido"),
   fullName: optionalName(120),
   role: z.enum(appRoles, "Rol invalido"),
+  workerId: optionalWorkerId(),
   returnTo: z.string().trim().optional(),
 });
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AlertBanner } from "@/components/ui/alert-banner";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import {
   canManageWorkers,
@@ -230,7 +231,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role, full_name, worker_id")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -241,6 +242,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const canSeeAudit = canViewAudit(role);
   const isAdmin = role === "admin";
   const canSeeNotificationsPanel = isAdmin;
+  const workerAssignmentMissing = role === "trabajador" && !profile?.worker_id;
 
   const workersTotalPromise = supabase.from("workers").select("id", { count: "exact", head: true });
   const workersActivePromise = supabase
@@ -477,9 +479,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   return (
     <section className="space-y-5">
       <FlashMessages error={errorMessage} success={successMessage} />
+      {workerAssignmentMissing ? (
+        <AlertBanner variant="warning">
+          Tu cuenta tiene rol trabajador, pero no tiene un trabajador asociado. Solicita a un admin asignar
+          tu trabajador en Usuarios.
+        </AlertBanner>
+      ) : null}
 
       <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Inicio</h1>
+        <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
+          Inicio
+        </h1>
         <p className="mt-1 text-sm text-slate-600">Vista rapida del estado actual y actividad reciente.</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
@@ -527,7 +537,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <MetricCard
             label="Documentos"
             value={documentsTotal}
-            hint={canReview ? "Total visibles" : "Documentos visibles"}
+            hint={canReview ? `Pendientes: ${documentsPending}` : "Documentos visibles"}
             tone="default"
             href={documentsMetricHref}
           />

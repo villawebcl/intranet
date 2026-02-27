@@ -30,8 +30,22 @@ npm run dev
 ```bash
 npm run lint
 npm run typecheck
+npm run test:unit
+npm run build:ci
 npm run format:check
 ```
+
+## 4.1) Certificacion de release candidate (RC)
+
+Comando unico recomendado antes de congelar/taggear:
+
+```bash
+npm run rc
+```
+
+Referencia operativa completa:
+
+- `docs/RELEASE.md`
 
 ## 5) Base de datos (Supabase)
 
@@ -41,9 +55,19 @@ npm run format:check
 
 Pasos recomendados:
 
-1. Aplicar `20260220_000001_init_schema.sql` en Supabase SQL Editor (o CLI).
+1. Aplicar todas las migraciones en orden de nombre desde `supabase/migrations/`.
 2. Verificar tablas y RLS habilitado.
 3. Verificar bucket privado `documents` (solo PDF, max 5MB).
+4. Verificar migracion de performance:
+   - `20260227_000012_performance_indexes_pagination.sql`
+5. Verificar hardening de seguridad:
+   - `20260227_000013_profiles_sensitive_fields_hardening.sql`
+   - `20260227_000014_notifications_download_request_spoof_hardening.sql`
+6. Revisar rapidamente listados paginados:
+   - `/dashboard/workers`
+   - `/dashboard/workers/:workerId/documents`
+   - `/dashboard/notifications`
+   - `/dashboard/audit`
 
 ## 6) Flujo obligatorio por ticket
 
@@ -55,7 +79,14 @@ Pasos recomendados:
 6. Abrir PR pequeno con checklist.
 7. Merge a `main` al aprobar.
 
+Recomendado antes de merge:
+
+- `npm run test:unit`
+- `npm run e2e:smoke` (si hay cambios de permisos/rutas)
+- `npm run rc` (antes de release/tag)
+
 Regla:
+
 - No desarrollar features directo sobre `main`.
 - Excepcion: hotfix minimo y urgente.
 

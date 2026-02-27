@@ -1,3 +1,5 @@
+import "server-only";
+
 import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { type AppRole } from "@/lib/constants/domain";
@@ -22,6 +24,8 @@ export type InsertedNotification = {
   id: string;
   user_id: string;
 };
+
+type SupabaseAdminClient = ReturnType<typeof createSupabaseAdminClient>;
 
 const REVIEW_NOTIFICATION_ROLES: AppRole[] = ["admin", "rrhh"];
 
@@ -102,16 +106,30 @@ export async function getUserEmailsByIds(userIds: string[]) {
   return emails;
 }
 
-export async function markNotificationsSent(supabase: SupabaseClient, notificationIds: string[]) {
+export async function markNotificationsSent(
+  notificationIds: string[],
+  options?: { adminClient?: SupabaseAdminClient },
+) {
   const uniqueIds = [...new Set(notificationIds.filter(Boolean))];
   if (!uniqueIds.length) {
     return;
   }
 
-  const { error } = await supabase
+  let adminClient = options?.adminClient;
+  if (!adminClient) {
+    try {
+      adminClient = createSupabaseAdminClient();
+    } catch (error) {
+      console.error("admin client unavailable for mark notifications sent", error);
+      return;
+    }
+  }
+
+  const { error } = await adminClient
     .from("notifications")
     .update({ sent_at: new Date().toISOString() })
-    .in("id", uniqueIds);
+    .in("id", uniqueIds)
+    .is("sent_at", null);
 
   if (error) {
     console.error("mark notifications sent failed", error);

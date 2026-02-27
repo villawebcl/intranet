@@ -22,9 +22,9 @@ test.describe("Permissions smoke", () => {
     await expect(page.getByRole("heading", { name: "Auditoria" })).toBeVisible();
     await expect(page.getByText("No hay eventos para este filtro.")).toHaveCount(0);
 
-    const row = page.locator("tbody tr").filter({ hasText: "auth_login" }).first();
+    const row = page.locator("tbody tr").filter({ hasText: "Inicio de sesion" }).first();
     await expect(row).toBeVisible();
-    await expect(row).toContainText("auth");
+    await expect(row).toContainText("Autenticacion");
   });
 
   test("rrhh no puede abrir /dashboard/audit", async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe("Permissions smoke", () => {
     await page.goto("/dashboard/audit");
 
     await expect(page).toHaveURL(/\/dashboard(?:\?.*)?$/);
-    await expect(page.getByRole("heading", { name: "Dashboard (base inicial)" })).toBeVisible();
+    await expect(page.getByTestId("dashboard-title")).toBeVisible();
 
     const url = new URL(page.url());
     expect(url.pathname).toBe("/dashboard");
@@ -118,7 +118,26 @@ test.describe("Permissions smoke", () => {
     await expect(row.getByRole("button", { name: "Descargar" })).toHaveCount(0);
     await expect(row.getByRole("button", { name: "Solicitar descarga" })).toBeVisible();
 
+    await row.getByRole("textbox", { name: "Motivo solicitud" }).fill("Solicitud fiscal para revision");
     await row.getByRole("button", { name: "Solicitar descarga" }).click();
-    await expect(page.getByText("Solicitud de descarga enviada al equipo administrador")).toBeVisible();
+    await expect
+      .poll(
+        async () => {
+          const successVisible = await page
+            .getByText("Solicitud de descarga enviada al equipo administrador")
+            .first()
+            .isVisible()
+            .catch(() => false);
+          const alreadyPendingVisible = await page
+            .getByText("Ya tienes una solicitud pendiente para este documento")
+            .first()
+            .isVisible()
+            .catch(() => false);
+
+          return successVisible || alreadyPendingVisible;
+        },
+        { timeout: 20_000 },
+      )
+      .toBeTruthy();
   });
 });

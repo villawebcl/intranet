@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
 import { ModalButton } from "@/components/ui/modal-button";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { canViewAudit } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
@@ -22,6 +23,7 @@ const notificationEventOptions = [
 ] as const;
 
 type NotificationEventFilter = (typeof notificationEventOptions)[number] | "all";
+const NOTIFICATIONS_PAGE_SIZE = 25;
 
 function getStringParam(value: string | string[] | undefined) {
   if (typeof value !== "string") {
@@ -46,6 +48,31 @@ function getEmailFilter(value: string | string[] | undefined): EmailFilterValue 
     return normalized;
   }
   return "all";
+}
+
+function getPageParam(value: string | string[] | undefined) {
+  if (typeof value !== "string") {
+    return 1;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function buildNotificationsPath(eventFilter: NotificationEventFilter, emailFilter: EmailFilterValue, page: number) {
+  const search = new URLSearchParams();
+  if (eventFilter !== "all") {
+    search.set("event", eventFilter);
+  }
+  if (emailFilter !== "all") {
+    search.set("email", emailFilter);
+  }
+  if (page > 1) {
+    search.set("page", String(page));
+  }
+
+  const query = search.toString();
+  return query ? `/dashboard/notifications?${query}` : "/dashboard/notifications";
 }
 
 function eventLabel(eventType: string) {
@@ -315,6 +342,9 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   const urlParams = await searchParams;
   const eventFilter = getEventFilter(urlParams.event);
   const emailFilter = getEmailFilter(urlParams.email);
+  const currentPage = getPageParam(urlParams.page);
+  const pageFrom = (currentPage - 1) * NOTIFICATIONS_PAGE_SIZE;
+  const pageTo = pageFrom + NOTIFICATIONS_PAGE_SIZE - 1;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -328,8 +358,9 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
   let query = supabase
     .from("notifications")
-    .select("id, user_id, event_type, payload, sent_at, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, user_id, event_type, payload, sent_at, created_at", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(pageFrom, pageTo);
 
   if (eventFilter !== "all") {
     query = query.eq("event_type", eventFilter);
@@ -343,10 +374,21 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     query = query.is("sent_at", null);
   }
 
-  query = query.limit(100);
-
-  const { data: notifications, error } = await query;
+  const { data: notifications, error, count } = await query;
   const notificationRows = notifications ?? [];
+  const totalNotificationsCount = count ?? 0;
+
+  if (!error && currentPage > 1 && notificationRows.length === 0 && totalNotificationsCount > 0) {
+    const lastPage = Math.max(1, Math.ceil(totalNotificationsCount / NOTIFICATIONS_PAGE_SIZE));
+    redirect(buildNotificationsPath(eventFilter, emailFilter, lastPage));
+  }
+
+  const hasNextPage = !error && currentPage * NOTIFICATIONS_PAGE_SIZE < totalNotificationsCount;
+  const previousPageHref =
+    currentPage > 1 ? buildNotificationsPath(eventFilter, emailFilter, currentPage - 1) : null;
+  const nextPageHref = hasNextPage
+    ? buildNotificationsPath(eventFilter, emailFilter, currentPage + 1)
+    : null;
 
   return (
     <section className="space-y-5">
@@ -374,7 +416,10 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           <>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-                {notificationRows.length} registros
+                {notificationRows.length} registros en esta pagina
+              </span>
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+                {totalNotificationsCount} registros totales
               </span>
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
                 Vista admin
@@ -463,6 +508,14 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
 
       {!error && notificationRows.length ? (
         <>
+          <PaginationControls
+            currentPage={currentPage}
+            previousHref={previousPageHref}
+            nextHref={nextPageHref}
+            showingCount={notificationRows.length}
+            totalCount={totalNotificationsCount}
+          />
+
           <div className="space-y-3 md:hidden">
             {notificationRows.map((notification) => (
               <article
@@ -563,6 +616,14 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
               </tbody>
             </table>
           </div>
+
+          <PaginationControls
+            currentPage={currentPage}
+            previousHref={previousPageHref}
+            nextHref={nextPageHref}
+            showingCount={notificationRows.length}
+            totalCount={totalNotificationsCount}
+          />
         </>
       ) : null}
     </section>

@@ -5,7 +5,27 @@ import { redirect } from "next/navigation";
 import { canManageWorkers } from "@/lib/auth/roles";
 import { type AppRole } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { deleteWorkerSchema, toggleWorkerStatusSchema, workerFormSchema } from "@/lib/validators/workers";
+import {
+  activateWorkerAccessSchema,
+  createMissingWorkerAccessesSchema,
+  createWorkerAccessSchema,
+  deactivateWorkerSchema,
+  reactivateWorkerSchema,
+  suspendWorkerAccessSchema,
+  toggleWorkerStatusSchema,
+  workerFormSchema,
+} from "@/lib/validators/workers";
+import {
+  activateWorkerAccess,
+  archiveWorker,
+  createMissingWorkerAccesses,
+  createWorkerAccess,
+  createWorkerRecord,
+  suspendWorkerAccess,
+  toggleWorkerStatus,
+  unarchiveWorker,
+  updateWorkerRecord,
+} from "@/lib/services/workers.service";
 
 const WORKERS_BASE_PATH = "/dashboard/workers";
 
@@ -51,39 +71,7 @@ async function getRoleContext() {
   return { supabase, user, role: profile?.role ?? "visitante" };
 }
 
-async function insertAuditLog(params: {
-  action: string;
-  actorUserId: string;
-  actorRole: AppRole;
-  entityId?: string;
-  metadata?: Record<string, unknown>;
-}) {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("audit_logs").insert({
-    actor_user_id: params.actorUserId,
-    actor_role: params.actorRole,
-    action: params.action,
-    entity_type: "worker",
-    entity_id: params.entityId,
-    metadata: params.metadata ?? {},
-  });
-
-  if (error) {
-    console.error("audit log insert failed", error);
-  }
-}
-
 export async function createWorkerAction(formData: FormData) {
-  const context = await getRoleContext();
-
-  if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
-  }
-
-  if (!canManageWorkers(context.role)) {
-    redirect(withMessage(WORKERS_BASE_PATH, { error: "No tienes permisos para crear trabajadores" }));
-  }
-
   const parsed = workerFormSchema.safeParse({
     rut: formData.get("rut"),
     firstName: formData.get("firstName"),
@@ -102,46 +90,6 @@ export async function createWorkerAction(formData: FormData) {
     );
   }
 
-  const payload = parsed.data;
-  const { data: worker, error } = await context.supabase
-    .from("workers")
-    .insert({
-      rut: payload.rut,
-      first_name: payload.firstName,
-      last_name: payload.lastName,
-      position: payload.position ?? null,
-      area: payload.area ?? null,
-      email: payload.email ?? null,
-      phone: payload.phone ?? null,
-      status: "activo",
-      created_by: context.user.id,
-      updated_by: context.user.id,
-    })
-    .select("id")
-    .single();
-
-  if (error) {
-    const message =
-      error.code === "23505"
-        ? "Ya existe un trabajador con ese RUT"
-        : "No se pudo crear el trabajador";
-    redirect(withMessage(`${WORKERS_BASE_PATH}/new`, { error: message }));
-  }
-
-  await insertAuditLog({
-    action: "worker_created",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: worker.id,
-    metadata: {
-      rut: payload.rut,
-    },
-  });
-
-  redirect(withMessage(WORKERS_BASE_PATH, { success: "Trabajador creado correctamente" }));
-}
-
-export async function updateWorkerAction(workerId: string, formData: FormData) {
   const context = await getRoleContext();
 
   if (!context.user) {
@@ -149,9 +97,26 @@ export async function updateWorkerAction(workerId: string, formData: FormData) {
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(WORKERS_BASE_PATH, { error: "No tienes permisos para editar trabajadores" }));
+    redirect(withMessage(WORKERS_BASE_PATH, { error: "No tienes permisos para crear trabajadores" }));
   }
 
+  const result = await createWorkerRecord(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    parsed.data,
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(`${WORKERS_BASE_PATH}/new`, { error: result.error }));
+  }
+
+  redirect(withMessage(WORKERS_BASE_PATH, { success: "Trabajador creado correctamente" }));
+}
+
+export async function updateWorkerAction(workerId: string, formData: FormData) {
   const parsed = workerFormSchema.safeParse({
     rut: formData.get("rut"),
     firstName: formData.get("firstName"),
@@ -170,37 +135,210 @@ export async function updateWorkerAction(workerId: string, formData: FormData) {
     );
   }
 
-  const payload = parsed.data;
-  const { error } = await context.supabase
-    .from("workers")
-    .update({
-      rut: payload.rut,
-      first_name: payload.firstName,
-      last_name: payload.lastName,
-      position: payload.position ?? null,
-      area: payload.area ?? null,
-      email: payload.email ?? null,
-      phone: payload.phone ?? null,
-      updated_by: context.user.id,
-    })
-    .eq("id", workerId);
+  const context = await getRoleContext();
 
-  if (error) {
-    const message =
-      error.code === "23505"
-        ? "Ya existe un trabajador con ese RUT"
-        : "No se pudo actualizar el trabajador";
-    redirect(withMessage(`${WORKERS_BASE_PATH}/${workerId}`, { error: message }));
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
 
-  await insertAuditLog({
-    action: "worker_updated",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: workerId,
-  });
+  if (!canManageWorkers(context.role)) {
+    redirect(withMessage(WORKERS_BASE_PATH, { error: "No tienes permisos para editar trabajadores" }));
+  }
+
+  const result = await updateWorkerRecord(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId,
+      data: parsed.data,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(`${WORKERS_BASE_PATH}/${workerId}`, { error: result.error }));
+  }
 
   redirect(withMessage(`${WORKERS_BASE_PATH}/${workerId}`, { success: "Datos actualizados" }));
+}
+
+export async function createWorkerAccessAction(formData: FormData) {
+  const parsed = createWorkerAccessSchema.safeParse({
+    workerId: formData.get("workerId"),
+    temporaryPassword: formData.get("temporaryPassword"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(
+      withMessage(returnPath, {
+        error: parsed.error.issues[0]?.message ?? "Solicitud invalida para crear acceso",
+      }),
+    );
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (!canManageWorkers(context.role)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para crear accesos de trabajadores" }));
+  }
+
+  const result = await createWorkerAccess(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+      temporaryPassword: parsed.data.temporaryPassword,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(withMessage(returnPath, { success: "Acceso trabajador creado correctamente" }));
+}
+
+export async function createMissingWorkerAccessesAction(formData: FormData) {
+  const parsed = createMissingWorkerAccessesSchema.safeParse({
+    confirmCreate: formData.get("confirmCreate"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Debes confirmar la creacion masiva de accesos" }));
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (!canManageWorkers(context.role)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para crear accesos de trabajadores" }));
+  }
+
+  const result = await createMissingWorkerAccesses({
+    supabase: context.supabase,
+    actorUserId: context.user.id,
+    actorRole: context.role,
+  });
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  if (result.data.createdCount === 0) {
+    redirect(
+      withMessage(returnPath, {
+        error: `No se crearon accesos. Omitidos: ${result.data.skippedCount}. Errores: ${result.data.errorCount}.`,
+      }),
+    );
+  }
+
+  redirect(
+    withMessage(returnPath, {
+      success: `Invitaciones enviadas: ${result.data.createdCount}. Omitidos: ${result.data.skippedCount}. Errores: ${result.data.errorCount}.`,
+    }),
+  );
+}
+
+export async function suspendWorkerAccessAction(formData: FormData) {
+  const parsed = suspendWorkerAccessSchema.safeParse({
+    workerId: formData.get("workerId"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Solicitud invalida para suspender acceso" }));
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (!canManageWorkers(context.role)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para suspender accesos" }));
+  }
+
+  const result = await suspendWorkerAccess(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(withMessage(returnPath, { success: "Acceso trabajador suspendido" }));
+}
+
+export async function activateWorkerAccessAction(formData: FormData) {
+  const parsed = activateWorkerAccessSchema.safeParse({
+    workerId: formData.get("workerId"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Solicitud invalida para activar acceso" }));
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (!canManageWorkers(context.role)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para activar accesos" }));
+  }
+
+  const result = await activateWorkerAccess(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(withMessage(returnPath, { success: "Acceso trabajador activado" }));
 }
 
 export async function toggleWorkerStatusAction(formData: FormData) {
@@ -227,37 +365,28 @@ export async function toggleWorkerStatusAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para cambiar estado" }));
   }
 
-  const nextStatus = parsed.data.currentStatus === "activo" ? "inactivo" : "activo";
-
-  const { error } = await context.supabase
-    .from("workers")
-    .update({
-      status: nextStatus,
-      updated_by: context.user.id,
-    })
-    .eq("id", parsed.data.workerId);
-
-  if (error) {
-    redirect(withMessage(returnPath, { error: "No se pudo cambiar el estado" }));
-  }
-
-  await insertAuditLog({
-    action: "worker_status_changed",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: parsed.data.workerId,
-    metadata: {
-      nextStatus,
+  const result = await toggleWorkerStatus(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
     },
-  });
+    {
+      workerId: parsed.data.workerId,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
 
   redirect(withMessage(returnPath, { success: "Estado actualizado" }));
 }
 
-export async function deleteWorkerAction(formData: FormData) {
-  const parsed = deleteWorkerSchema.safeParse({
+export async function deactivateWorkerAction(formData: FormData) {
+  const parsed = deactivateWorkerSchema.safeParse({
     workerId: formData.get("workerId"),
-    confirmDelete: formData.get("confirmDelete"),
+    confirmArchive: formData.get("confirmArchive"),
     returnTo: formData.get("returnTo"),
   });
 
@@ -265,7 +394,7 @@ export async function deleteWorkerAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Debes confirmar la eliminacion del trabajador" }));
+    redirect(withMessage(returnPath, { error: "Debes confirmar el archivado del trabajador" }));
   }
 
   const context = await getRoleContext();
@@ -275,46 +404,64 @@ export async function deleteWorkerAction(formData: FormData) {
   }
 
   if (context.role !== "admin") {
-    redirect(withMessage(returnPath, { error: "Solo admin puede eliminar trabajadores" }));
+    redirect(withMessage(returnPath, { error: "Solo admin puede archivar trabajadores" }));
   }
 
-  const { data: worker, error: workerError } = await context.supabase
-    .from("workers")
-    .select("id, rut, first_name, last_name")
-    .eq("id", parsed.data.workerId)
-    .maybeSingle();
-
-  if (workerError) {
-    redirect(withMessage(returnPath, { error: "No se pudo validar el trabajador" }));
-  }
-
-  if (!worker) {
-    redirect(withMessage(returnPath, { error: "El trabajador no existe o ya fue eliminado" }));
-  }
-
-  const { error: deleteError } = await context.supabase
-    .from("workers")
-    .delete()
-    .eq("id", parsed.data.workerId);
-
-  if (deleteError) {
-    const message =
-      deleteError.code === "23503"
-        ? "No se puede eliminar: el trabajador tiene documentos u otros registros asociados"
-        : "No se pudo eliminar el trabajador";
-    redirect(withMessage(returnPath, { error: message }));
-  }
-
-  await insertAuditLog({
-    action: "worker_deleted",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: parsed.data.workerId,
-    metadata: {
-      rut: worker.rut,
-      workerName: `${worker.first_name} ${worker.last_name}`.trim(),
+  const result = await archiveWorker(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
     },
+    {
+      workerId: parsed.data.workerId,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(withMessage(returnPath, { success: "Trabajador archivado" }));
+}
+
+export async function reactivateWorkerAction(formData: FormData) {
+  const parsed = reactivateWorkerSchema.safeParse({
+    workerId: formData.get("workerId"),
+    returnTo: formData.get("returnTo"),
   });
 
-  redirect(withMessage(returnPath, { success: "Trabajador eliminado" }));
+  const fallbackPath = `${WORKERS_BASE_PATH}?archive=archived`;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Solicitud invalida para desarchivar trabajador" }));
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (context.role !== "admin") {
+    redirect(withMessage(returnPath, { error: "Solo admin puede desarchivar trabajadores" }));
+  }
+
+  const result = await unarchiveWorker(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(withMessage(returnPath, { success: "Trabajador desarchivado en estado inactivo" }));
 }

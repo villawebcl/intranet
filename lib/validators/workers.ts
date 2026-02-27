@@ -39,9 +39,38 @@ export const toggleWorkerStatusSchema = z.object({
   returnTo: z.string().trim().optional(),
 });
 
-export const deleteWorkerSchema = z.object({
+export const deactivateWorkerSchema = z.object({
   workerId: z.string().uuid("Trabajador invalido"),
-  confirmDelete: z.literal("yes", "Debes confirmar la eliminacion"),
+  confirmArchive: z.literal("yes", "Debes confirmar el archivado"),
+  returnTo: z.string().trim().optional(),
+});
+
+export const reactivateWorkerSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  returnTo: z.string().trim().optional(),
+});
+
+export const createWorkerAccessSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  temporaryPassword: z
+    .string()
+    .min(8, "La contrasena temporal debe tener al menos 8 caracteres")
+    .max(128, "La contrasena temporal es demasiado larga"),
+  returnTo: z.string().trim().optional(),
+});
+
+export const suspendWorkerAccessSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  returnTo: z.string().trim().optional(),
+});
+
+export const activateWorkerAccessSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  returnTo: z.string().trim().optional(),
+});
+
+export const createMissingWorkerAccessesSchema = z.object({
+  confirmCreate: z.literal("yes", "Debes confirmar la creacion masiva de accesos"),
   returnTo: z.string().trim().optional(),
 });
 

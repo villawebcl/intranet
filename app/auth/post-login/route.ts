@@ -1,14 +1,19 @@
-"use server";
-
-import { redirect } from "next/navigation";
+import { NextRequest, NextResponse } from "next/server";
 
 import { type AppRole } from "@/lib/constants/domain";
 import { insertAuditLog } from "@/lib/audit/log";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
-async function signOutWithAudit(reason: "manual" | "timeout") {
-  const supabase = await createSupabaseServerClient();
+function getSafeNextPath(nextPath: string | null) {
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
+    return "/dashboard";
+  }
 
+  return nextPath;
+}
+
+export async function GET(request: NextRequest) {
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,25 +31,14 @@ async function signOutWithAudit(reason: "manual" | "timeout") {
       supabase,
       actorUserId: user.id,
       actorRole,
-      action: "auth_logout",
+      action: "auth_login",
       entityType: "auth",
-      metadata: { reason },
+      metadata: {
+        method: "password",
+      },
     });
   }
 
-  await supabase.auth.signOut();
-
-  if (reason === "timeout") {
-    redirect("/login?reason=timeout");
-  }
-
-  redirect("/login");
-}
-
-export async function signOutAction() {
-  await signOutWithAudit("manual");
-}
-
-export async function signOutByTimeoutAction() {
-  await signOutWithAudit("timeout");
+  const nextPath = getSafeNextPath(request.nextUrl.searchParams.get("next"));
+  return NextResponse.redirect(new URL(nextPath, request.url));
 }

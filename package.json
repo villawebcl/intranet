@@ -12,6 +12,7 @@
     "test:unit": "NODE_OPTIONS='--require=./tests/unit/register-server-only.cjs' playwright test -c tests/unit/playwright.unit.config.ts",
     "e2e:smoke": "playwright test tests/e2e",
     "e2e:smoke:headed": "playwright test tests/e2e --headed",
+    "rc": "npm run lint && npm run typecheck && npm run test:unit && npm run build:ci && npm run e2e:smoke",
     "supabase:provision-trabajador": "node scripts/provision-trabajador-demo.mjs",
     "supabase:reset-users": "node scripts/reset-supabase-users.mjs --yes",
     "format": "prettier --write .",

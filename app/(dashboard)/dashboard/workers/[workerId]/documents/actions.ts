@@ -1,42 +1,39 @@
 "use server";
 
-import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 
 import {
   canAccessAssignedWorker,
-  canUploadDocumentToFolder,
   canDownloadDocuments,
   canRequestDocumentDownload,
   canReviewDocuments,
+  canUploadDocumentToFolder,
   canUploadDocuments,
   isWorkerScopedRole,
 } from "@/lib/auth/roles";
+import { DOCUMENT_MAX_SIZE_BYTES, DOCUMENT_MAX_SIZE_MB } from "@/lib/constants/documents";
+import { type AppRole } from "@/lib/constants/domain";
 import {
-  BLOCK_UPLOAD_FOR_INACTIVE_WORKERS,
-  DOCUMENT_MAX_SIZE_BYTES,
-  DOCUMENT_MAX_SIZE_MB,
-} from "@/lib/constants/documents";
-import { type AppRole, type FolderType } from "@/lib/constants/domain";
-import {
-  buildDocumentReviewedEmail,
-  buildDocumentUploadedEmail,
-} from "@/lib/notifications/email-templates";
-import {
-  getDefaultReviewerUserIds,
-  getUserEmailsByIds,
-  insertNotifications,
-  markNotificationsSent,
-  sendResendEmail,
-} from "@/lib/notifications/service";
+  createApprovedDownloadUrl,
+  createDocumentDownloadRequest,
+  createDocumentDownloadUrl,
+  resolveDocumentDownloadRequest,
+  reviewWorkerDocument,
+  uploadWorkerDocument,
+} from "@/lib/services/documents.service";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import {
+  createDownloadRequestSchema,
+  downloadApprovedRequestSchema,
   downloadDocumentSchema,
+  resolveDownloadRequestSchema,
   reviewDocumentSchema,
   uploadDocumentSchema,
 } from "@/lib/validators/documents";
 
 const WORKERS_BASE_PATH = "/dashboard/workers";
+const DIRECT_DOWNLOAD_SIGNED_URL_SECONDS = 60;
+const APPROVED_DOWNLOAD_SIGNED_URL_SECONDS = 300;
 
 function getSafePath(path: string | undefined, fallback: string) {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
@@ -59,15 +56,6 @@ function withMessage(path: string, params: Record<string, string>) {
 
   const search = url.searchParams.toString();
   return search ? `${url.pathname}?${search}` : url.pathname;
-}
-
-function sanitizeFileName(fileName: string) {
-  return fileName
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
 }
 
 async function getRoleContext() {
@@ -116,39 +104,12 @@ function ensureWorkerScopeOrRedirect(params: {
   }
 }
 
-async function insertAuditLog(params: {
-  action: string;
-  actorUserId: string;
-  actorRole: AppRole;
-  entityId?: string;
-  metadata?: Record<string, unknown>;
-}) {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("audit_logs").insert({
-    actor_user_id: params.actorUserId,
-    actor_role: params.actorRole,
-    action: params.action,
-    entity_type: "document",
-    entity_id: params.entityId,
-    metadata: params.metadata ?? {},
-  });
-
-  if (error) {
-    console.error("audit log insert failed", error);
-  }
-}
-
 function isValidPdfFile(file: File) {
   if (file.type === "application/pdf") {
     return true;
   }
 
   return file.name.toLowerCase().endsWith(".pdf");
-}
-
-function buildWorkerName(firstName: string | null | undefined, lastName: string | null | undefined, fallback: string) {
-  const fullName = [firstName ?? "", lastName ?? ""].join(" ").trim();
-  return fullName || fallback;
 }
 
 export async function uploadDocumentAction(formData: FormData) {
@@ -191,123 +152,32 @@ export async function uploadDocumentAction(formData: FormData) {
     redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
   }
 
-  const workerId = parsed.data.workerId;
-  const folderType = parsed.data.folderType;
-
   ensureWorkerScopeOrRedirect({
     role: context.role,
     profileWorkerId: context.profileWorkerId,
-    targetWorkerId: workerId,
+    targetWorkerId: parsed.data.workerId,
   });
 
-  if (!canUploadDocuments(context.role) || !canUploadDocumentToFolder(context.role, folderType)) {
+  if (!canUploadDocuments(context.role) || !canUploadDocumentToFolder(context.role, parsed.data.folderType)) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para subir documentos" }));
   }
 
-  const { data: worker } = await context.supabase
-    .from("workers")
-    .select("id, status, first_name, last_name")
-    .eq("id", workerId)
-    .maybeSingle();
-
-  if (!worker) {
-    redirect(withMessage(returnPath, { error: "Trabajador no encontrado" }));
-  }
-
-  if (BLOCK_UPLOAD_FOR_INACTIVE_WORKERS && worker.status !== "activo") {
-    redirect(
-      withMessage(returnPath, {
-        error: "No se permiten cargas para trabajadores inactivos",
-      }),
-    );
-  }
-
-  const originalName = sanitizeFileName(fileValue.name) || `documento-${Date.now()}.pdf`;
-  const storagePath = `${workerId}/${folderType}/${Date.now()}-${randomUUID()}-${originalName}`;
-
-  const { error: uploadError } = await context.supabase.storage.from("documents").upload(storagePath, fileValue, {
-    contentType: "application/pdf",
-    upsert: false,
-  });
-
-  if (uploadError) {
-    redirect(withMessage(returnPath, { error: "No se pudo subir el archivo a storage" }));
-  }
-
-  const { data: document, error: insertError } = await context.supabase
-    .from("documents")
-    .insert({
-      worker_id: workerId,
-      folder_type: folderType,
-      status: "pendiente",
-      file_name: fileValue.name,
-      file_path: storagePath,
-      file_size_bytes: fileValue.size,
-      mime_type: "application/pdf",
-      uploaded_by: context.user.id,
-    })
-    .select("id")
-    .single();
-
-  if (insertError) {
-    await context.supabase.storage.from("documents").remove([storagePath]);
-    redirect(withMessage(returnPath, { error: "No se pudo registrar el documento" }));
-  }
-
-  await insertAuditLog({
-    action: "document_uploaded",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: document.id,
-    metadata: {
-      workerId,
-      folderType,
-      fileSizeBytes: fileValue.size,
+  const result = await uploadWorkerDocument(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
     },
-  });
-
-  const reviewerUserIds = await getDefaultReviewerUserIds();
-  const insertedNotifications = await insertNotifications({
-    supabase: context.supabase,
-    recipientUserIds: [...reviewerUserIds, context.user.id],
-    eventType: "document_uploaded",
-    payload: {
-      workerId,
-      documentId: document.id,
-      folderType,
-      fileName: fileValue.name,
-      status: "pendiente",
+    {
+      workerId: parsed.data.workerId,
+      folderType: parsed.data.folderType,
+      file: fileValue,
     },
-    createdBy: context.user.id,
-  });
+  );
 
-  const workerName = buildWorkerName(worker.first_name, worker.last_name, workerId);
-  const uploadedTemplate = buildDocumentUploadedEmail({
-    fileName: fileValue.name,
-    workerName,
-    folderType,
-  });
-  const emailsByUserId = await getUserEmailsByIds(insertedNotifications.map((notification) => notification.user_id));
-  const sentNotificationIds = (
-    await Promise.all(
-      insertedNotifications.map(async (notification) => {
-        const recipientEmail = emailsByUserId[notification.user_id];
-        if (!recipientEmail) {
-          return null;
-        }
-
-        const sent = await sendResendEmail({
-          to: recipientEmail,
-          subject: uploadedTemplate.subject,
-          html: uploadedTemplate.html,
-        });
-
-        return sent ? notification.id : null;
-      }),
-    )
-  ).filter((notificationId): notificationId is string => Boolean(notificationId));
-
-  await markNotificationsSent(context.supabase, sentNotificationIds);
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
 
   redirect(
     withMessage(returnPath, {
@@ -352,97 +222,23 @@ export async function reviewDocumentAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para revisar documentos" }));
   }
 
-  const { data: document, error: documentError } = await context.supabase
-    .from("documents")
-    .select("id, status, worker_id, uploaded_by, file_name, folder_type")
-    .eq("id", parsed.data.documentId)
-    .eq("worker_id", parsed.data.workerId)
-    .maybeSingle();
-
-  if (documentError || !document) {
-    redirect(withMessage(returnPath, { error: "Documento no encontrado" }));
-  }
-
-  if (document.status !== "pendiente") {
-    redirect(withMessage(returnPath, { error: "Solo se pueden revisar documentos pendientes" }));
-  }
-
-  const { data: worker } = await context.supabase
-    .from("workers")
-    .select("first_name, last_name")
-    .eq("id", parsed.data.workerId)
-    .maybeSingle();
-
-  const { error: updateError } = await context.supabase
-    .from("documents")
-    .update({
-      status: parsed.data.decision,
-      reviewed_by: context.user.id,
-      reviewed_at: new Date().toISOString(),
-      rejection_reason: parsed.data.decision === "rechazado" ? rejectionReason : null,
-    })
-    .eq("id", document.id);
-
-  if (updateError) {
-    redirect(withMessage(returnPath, { error: "No se pudo actualizar el estado del documento" }));
-  }
-
-  await insertAuditLog({
-    action: parsed.data.decision === "aprobado" ? "document_approved" : "document_rejected",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: document.id,
-    metadata: {
-      workerId: parsed.data.workerId,
-      rejectionReason: parsed.data.decision === "rechazado" ? rejectionReason : null,
+  const result = await reviewWorkerDocument(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
     },
-  });
-
-  const reviewerUserIds = await getDefaultReviewerUserIds();
-  const insertedNotifications = await insertNotifications({
-    supabase: context.supabase,
-    recipientUserIds: [...reviewerUserIds, document.uploaded_by].filter(Boolean),
-    eventType: parsed.data.decision === "aprobado" ? "document_approved" : "document_rejected",
-    payload: {
+    {
       workerId: parsed.data.workerId,
-      documentId: document.id,
-      folderType: document.folder_type,
-      fileName: document.file_name,
+      documentId: parsed.data.documentId,
       decision: parsed.data.decision,
       rejectionReason: parsed.data.decision === "rechazado" ? rejectionReason : null,
     },
-    createdBy: context.user.id,
-  });
+  );
 
-  const workerName = buildWorkerName(worker?.first_name, worker?.last_name, parsed.data.workerId);
-  const reviewedTemplate = buildDocumentReviewedEmail({
-    fileName: document.file_name,
-    workerName,
-    folderType: document.folder_type as FolderType,
-    decision: parsed.data.decision,
-    rejectionReason: parsed.data.decision === "rechazado" ? rejectionReason : null,
-  });
-  const emailsByUserId = await getUserEmailsByIds(insertedNotifications.map((notification) => notification.user_id));
-  const sentNotificationIds = (
-    await Promise.all(
-      insertedNotifications.map(async (notification) => {
-        const recipientEmail = emailsByUserId[notification.user_id];
-        if (!recipientEmail) {
-          return null;
-        }
-
-        const sent = await sendResendEmail({
-          to: recipientEmail,
-          subject: reviewedTemplate.subject,
-          html: reviewedTemplate.html,
-        });
-
-        return sent ? notification.id : null;
-      }),
-    )
-  ).filter((notificationId): notificationId is string => Boolean(notificationId));
-
-  await markNotificationsSent(context.supabase, sentNotificationIds);
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
 
   redirect(
     withMessage(returnPath, {
@@ -481,42 +277,32 @@ export async function downloadDocumentAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para descargar documentos" }));
   }
 
-  const { data: document, error: documentError } = await context.supabase
-    .from("documents")
-    .select("id, file_path, worker_id")
-    .eq("id", parsed.data.documentId)
-    .eq("worker_id", parsed.data.workerId)
-    .maybeSingle();
-
-  if (documentError || !document) {
-    redirect(withMessage(returnPath, { error: "Documento no encontrado" }));
-  }
-
-  const { data, error } = await context.supabase.storage
-    .from("documents")
-    .createSignedUrl(document.file_path, 60);
-
-  if (error || !data?.signedUrl) {
-    redirect(withMessage(returnPath, { error: "No se pudo generar la descarga del documento" }));
-  }
-
-  await insertAuditLog({
-    action: "document_downloaded",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: document.id,
-    metadata: {
-      workerId: parsed.data.workerId,
+  const result = await createDocumentDownloadUrl(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
     },
-  });
+    {
+      workerId: parsed.data.workerId,
+      documentId: parsed.data.documentId,
+      expiresInSeconds: DIRECT_DOWNLOAD_SIGNED_URL_SECONDS,
+      source: "direct",
+    },
+  );
 
-  redirect(data.signedUrl);
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(result.data.signedUrl);
 }
 
 export async function requestDocumentDownloadAction(formData: FormData) {
-  const parsed = downloadDocumentSchema.safeParse({
+  const parsed = createDownloadRequestSchema.safeParse({
     workerId: formData.get("workerId"),
     documentId: formData.get("documentId"),
+    requestReason: formData.get("requestReason"),
     returnTo: formData.get("returnTo"),
   });
 
@@ -542,47 +328,135 @@ export async function requestDocumentDownloadAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "No tienes permisos para solicitar descargas" }));
   }
 
-  const { data: document, error: documentError } = await context.supabase
-    .from("documents")
-    .select("id, worker_id, file_name, folder_type")
-    .eq("id", parsed.data.documentId)
-    .eq("worker_id", parsed.data.workerId)
-    .maybeSingle();
+  const result = await createDocumentDownloadRequest(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+      documentId: parsed.data.documentId,
+      requestReason: parsed.data.requestReason,
+    },
+  );
 
-  if (documentError || !document) {
-    redirect(withMessage(returnPath, { error: "Documento no encontrado" }));
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
   }
-
-  const reviewerUserIds = await getDefaultReviewerUserIds();
-  await insertNotifications({
-    supabase: context.supabase,
-    recipientUserIds: reviewerUserIds,
-    eventType: "document_download_requested",
-    payload: {
-      workerId: parsed.data.workerId,
-      documentId: document.id,
-      folderType: document.folder_type,
-      fileName: document.file_name,
-      requestedBy: context.user.id,
-    },
-    createdBy: context.user.id,
-  });
-
-  await insertAuditLog({
-    action: "document_download_requested",
-    actorUserId: context.user.id,
-    actorRole: context.role,
-    entityId: document.id,
-    metadata: {
-      workerId: parsed.data.workerId,
-      fileName: document.file_name,
-      folderType: document.folder_type,
-    },
-  });
 
   redirect(
     withMessage(returnPath, {
       success: "Solicitud de descarga enviada al equipo administrador",
     }),
   );
+}
+
+export async function resolveDownloadRequestAction(formData: FormData) {
+  const parsed = resolveDownloadRequestSchema.safeParse({
+    requestId: formData.get("requestId"),
+    workerId: formData.get("workerId"),
+    decision: formData.get("decision"),
+    decisionNote: formData.get("decisionNote"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Solicitud invalida para resolver descarga" }));
+  }
+
+  const context = await getRoleContext();
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  ensureWorkerScopeOrRedirect({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: parsed.data.workerId,
+  });
+
+  if (!canReviewDocuments(context.role)) {
+    redirect(withMessage(returnPath, { error: "No tienes permisos para aprobar solicitudes" }));
+  }
+
+  const result = await resolveDocumentDownloadRequest(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+      requestId: parsed.data.requestId,
+      decision: parsed.data.decision,
+      decisionNote: parsed.data.decisionNote?.trim() ?? null,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(
+    withMessage(returnPath, {
+      success:
+        parsed.data.decision === "aprobado"
+          ? "Solicitud aprobada. Ya se puede generar un enlace temporal de 5 minutos."
+          : "Solicitud rechazada",
+    }),
+  );
+}
+
+export async function downloadApprovedRequestAction(formData: FormData) {
+  const parsed = downloadApprovedRequestSchema.safeParse({
+    requestId: formData.get("requestId"),
+    workerId: formData.get("workerId"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = WORKERS_BASE_PATH;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(withMessage(returnPath, { error: "Solicitud invalida de descarga aprobada" }));
+  }
+
+  const context = await getRoleContext();
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  ensureWorkerScopeOrRedirect({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: parsed.data.workerId,
+  });
+
+  const canReview = canReviewDocuments(context.role);
+  const canConsumeApproved = canRequestDocumentDownload(context.role);
+
+  const result = await createApprovedDownloadUrl(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+      requestId: parsed.data.requestId,
+      canReview,
+      canConsumeApproved,
+      expiresInSeconds: APPROVED_DOWNLOAD_SIGNED_URL_SECONDS,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  redirect(result.data.signedUrl);
 }
