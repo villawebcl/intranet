@@ -106,9 +106,13 @@ function createAdminClientStub(options?: {
   const calls: {
     updateUserByIdPayloads: Array<Record<string, unknown>>;
     deleteUserCalls: Array<{ userId: string; shouldSoftDelete: boolean }>;
+    rpcArgs: Array<{ fn: string; args: Record<string, unknown> }>;
+    profileUpsertPayloads: Array<Record<string, unknown>>;
   } = {
     updateUserByIdPayloads: [],
     deleteUserCalls: [],
+    rpcArgs: [],
+    profileUpsertPayloads: [],
   };
 
   const adminClient = {
@@ -123,7 +127,10 @@ function createAdminClientStub(options?: {
               }),
             }),
           }),
-          upsert: async () => ({ error: null }),
+          upsert: async (payload: Record<string, unknown>) => {
+            calls.profileUpsertPayloads.push(payload);
+            return { error: null };
+          },
         };
       }
 
@@ -165,6 +172,10 @@ function createAdminClientStub(options?: {
         },
       },
     },
+    rpc: async (fn: string, args: Record<string, unknown>) => {
+      calls.rpcArgs.push({ fn, args });
+      return { error: null };
+    },
   };
 
   return { adminClient, calls };
@@ -175,20 +186,22 @@ test("toggleWorkerStatus cambia activo a inactivo y audita", async () => {
     selectResults: [{ data: { id: "w1", status: "activo", is_active: true }, error: null }],
     updateResults: [{ data: { id: "w1" }, error: null }],
   });
+  const { adminClient, calls: adminCalls } = createAdminClientStub();
 
   const result = await toggleWorkerStatus(
     {
       supabase: supabase as never,
       actorUserId: "admin-id",
       actorRole: "admin",
+      adminClient: adminClient as never,
     },
     { workerId: "w1" },
   );
 
   expect(result).toEqual({ ok: true, data: undefined });
   expect(calls.updatePayloads[0]).toMatchObject({ status: "inactivo", updated_by: "admin-id" });
-  expect(calls.rpcArgs[0]?.fn).toBe("insert_audit_log");
-  expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_status_changed");
+  expect(adminCalls.rpcArgs[0]?.fn).toBe("insert_audit_log");
+  expect(adminCalls.rpcArgs[0]?.args.p_action).toBe("worker_status_changed");
 });
 
 test("toggleWorkerStatus bloquea trabajadores archivados", async () => {
@@ -252,7 +265,7 @@ test("archiveWorker archiva y suspende acceso trabajador", async () => {
     updated_by: "admin-id",
   });
   expect(adminCalls.updateUserByIdPayloads[0]).toMatchObject({ ban_duration: "876000h" });
-  expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_archived");
+  expect(adminCalls.rpcArgs[0]?.args.p_action).toBe("worker_archived");
 });
 
 test("unarchiveWorker restaura trabajador archivado", async () => {
@@ -271,12 +284,14 @@ test("unarchiveWorker restaura trabajador archivado", async () => {
     ],
     updateResults: [{ data: { id: "w1" }, error: null }],
   });
+  const { adminClient, calls: adminCalls } = createAdminClientStub();
 
   const result = await unarchiveWorker(
     {
       supabase: supabase as never,
       actorUserId: "admin-id",
       actorRole: "admin",
+      adminClient: adminClient as never,
     },
     { workerId: "w1" },
   );
@@ -289,7 +304,7 @@ test("unarchiveWorker restaura trabajador archivado", async () => {
     status: "inactivo",
     updated_by: "admin-id",
   });
-  expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_unarchived");
+  expect(adminCalls.rpcArgs[0]?.args.p_action).toBe("worker_unarchived");
 });
 
 test("deleteWorkerPermanently exige que el trabajador este archivado", async () => {
@@ -326,7 +341,7 @@ test("deleteWorkerPermanently exige que el trabajador este archivado", async () 
 });
 
 test("deleteWorkerPermanently elimina trabajador archivado y su acceso vinculado", async () => {
-  const { supabase, calls } = createWorkersSupabaseStub({
+  const { supabase } = createWorkersSupabaseStub({
     selectResults: [
       {
         data: {
@@ -366,7 +381,7 @@ test("deleteWorkerPermanently elimina trabajador archivado y su acceso vinculado
     userId: "auth-worker",
     shouldSoftDelete: true,
   });
-  expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_deleted");
+  expect(adminCalls.rpcArgs[0]?.args.p_action).toBe("worker_deleted");
 });
 
 test("createWorkerAccess valida correo requerido", async () => {
@@ -405,6 +420,88 @@ test("createWorkerAccess valida correo requerido", async () => {
   });
 });
 
+test("createWorkerAccess (admin) asigna rol/worker solo via RPC", async () => {
+  const { supabase, calls } = createWorkersSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "w1",
+          first_name: "Ana",
+          last_name: "Rojas",
+          email: "ana@empresa.local",
+          is_active: true,
+        },
+        error: null,
+      },
+    ],
+  });
+  const { adminClient, calls: adminCalls } = createAdminClientStub();
+
+  const result = await createWorkerAccess(
+    {
+      supabase: supabase as never,
+      actorUserId: "admin-id",
+      actorRole: "admin",
+      adminClient: adminClient as never,
+    },
+    {
+      workerId: "w1",
+      temporaryPassword: "Password123",
+    },
+  );
+
+  expect(result).toEqual({ ok: true, data: undefined });
+  expect(calls.rpcArgs.some((rpcCall) => rpcCall.fn === "admin_set_profile_role_and_worker")).toBeTruthy();
+  const firstProfileUpsert = adminCalls.profileUpsertPayloads[0];
+  expect(firstProfileUpsert).toMatchObject({
+    id: "auth-worker-id",
+    full_name: "Ana Rojas",
+  });
+  expect(Object.prototype.hasOwnProperty.call(firstProfileUpsert, "role")).toBeFalsy();
+  expect(Object.prototype.hasOwnProperty.call(firstProfileUpsert, "worker_id")).toBeFalsy();
+});
+
+test("createWorkerAccess (rrhh) usa RPC assign_worker_to_user", async () => {
+  const { supabase, calls } = createWorkersSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "w1",
+          first_name: "Ana",
+          last_name: "Rojas",
+          email: "ana@empresa.local",
+          is_active: true,
+        },
+        error: null,
+      },
+    ],
+  });
+  const { adminClient, calls: adminCalls } = createAdminClientStub();
+
+  const result = await createWorkerAccess(
+    {
+      supabase: supabase as never,
+      actorUserId: "rrhh-id",
+      actorRole: "rrhh",
+      adminClient: adminClient as never,
+    },
+    {
+      workerId: "w1",
+      temporaryPassword: "Password123",
+    },
+  );
+
+  expect(result).toEqual({ ok: true, data: undefined });
+  expect(calls.rpcArgs.some((rpcCall) => rpcCall.fn === "assign_worker_to_user")).toBeTruthy();
+  const firstProfileUpsert = adminCalls.profileUpsertPayloads[0];
+  expect(firstProfileUpsert).toMatchObject({
+    id: "auth-worker-id",
+    full_name: "Ana Rojas",
+  });
+  expect(Object.prototype.hasOwnProperty.call(firstProfileUpsert, "role")).toBeFalsy();
+  expect(Object.prototype.hasOwnProperty.call(firstProfileUpsert, "worker_id")).toBeFalsy();
+});
+
 test("suspendWorkerAccess detecta cuenta ya suspendida", async () => {
   const { supabase } = createRpcOnlySupabaseStub();
   const { adminClient } = createAdminClientStub({
@@ -429,7 +526,7 @@ test("suspendWorkerAccess detecta cuenta ya suspendida", async () => {
 });
 
 test("activateWorkerAccess reactiva acceso suspendido y audita", async () => {
-  const { supabase, calls } = createRpcOnlySupabaseStub();
+  const { supabase } = createRpcOnlySupabaseStub();
   const { adminClient, calls: adminCalls } = createAdminClientStub({
     profileData: { id: "auth-worker", role: "trabajador", worker_id: "w1" },
     getUserByIdData: { user: { banned_until: "2999-01-01T00:00:00.000Z" } },
@@ -447,5 +544,5 @@ test("activateWorkerAccess reactiva acceso suspendido y audita", async () => {
 
   expect(result).toEqual({ ok: true, data: undefined });
   expect(adminCalls.updateUserByIdPayloads[0]).toMatchObject({ ban_duration: "none" });
-  expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_access_activated");
+  expect(adminCalls.rpcArgs[0]?.args.p_action).toBe("worker_access_activated");
 });

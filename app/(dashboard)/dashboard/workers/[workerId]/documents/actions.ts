@@ -30,6 +30,7 @@ import {
   reviewDocumentSchema,
   uploadDocumentSchema,
 } from "@/lib/validators/documents";
+import { getApprovedDownloadErrorMessage } from "./download-errors";
 
 const WORKERS_BASE_PATH = "/dashboard/workers";
 const DIRECT_DOWNLOAD_SIGNED_URL_SECONDS = 60;
@@ -56,6 +57,26 @@ function withMessage(path: string, params: Record<string, string>) {
 
   const search = url.searchParams.toString();
   return search ? `${url.pathname}?${search}` : url.pathname;
+}
+
+function getWorkerScopeError(params: {
+  role: AppRole;
+  profileWorkerId: string | null;
+  targetWorkerId: string;
+}) {
+  if (!isWorkerScopedRole(params.role)) {
+    return null;
+  }
+
+  if (!params.profileWorkerId) {
+    return "Tu cuenta trabajador no tiene trabajador asignado";
+  }
+
+  if (!canAccessAssignedWorker(params.role, params.profileWorkerId, params.targetWorkerId)) {
+    return "Solo puedes ver tu documentacion";
+  }
+
+  return null;
 }
 
 async function getRoleContext() {
@@ -87,21 +108,77 @@ function ensureWorkerScopeOrRedirect(params: {
   profileWorkerId: string | null;
   targetWorkerId: string;
 }) {
-  if (!isWorkerScopedRole(params.role)) {
+  const scopeError = getWorkerScopeError(params);
+  if (!scopeError) {
     return;
   }
 
-  if (!params.profileWorkerId) {
-    redirect(withMessage("/dashboard", { error: "Tu cuenta trabajador no tiene trabajador asignado" }));
-  }
-
-  if (!canAccessAssignedWorker(params.role, params.profileWorkerId, params.targetWorkerId)) {
+  if (scopeError === "Tu cuenta trabajador no tiene trabajador asignado") {
+    redirect(withMessage("/dashboard", { error: scopeError }));
+  } else {
     redirect(
       withMessage(`/dashboard/workers/${params.profileWorkerId}/documents`, {
-        error: "Solo puedes ver tu documentacion",
+        error: scopeError,
       }),
     );
   }
+}
+
+type ApprovedDownloadActionInput = {
+  requestId: string;
+  workerId: string;
+  returnTo?: string;
+};
+
+export type ApprovedDownloadActionResult =
+  | { ok: true; signedUrl: string }
+  | { ok: false; error: string };
+
+export async function getApprovedDownloadUrlAction(
+  input: ApprovedDownloadActionInput,
+): Promise<ApprovedDownloadActionResult> {
+  const parsed = downloadApprovedRequestSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return { ok: false, error: "Solicitud invalida de descarga aprobada" };
+  }
+
+  const context = await getRoleContext();
+  if (!context.user) {
+    return { ok: false, error: "Debes iniciar sesion" };
+  }
+
+  const scopeError = getWorkerScopeError({
+    role: context.role,
+    profileWorkerId: context.profileWorkerId,
+    targetWorkerId: parsed.data.workerId,
+  });
+  if (scopeError) {
+    return { ok: false, error: scopeError };
+  }
+
+  const canReview = canReviewDocuments(context.role);
+  const canConsumeApproved = canRequestDocumentDownload(context.role);
+  const result = await createApprovedDownloadUrl(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+      requestId: parsed.data.requestId,
+      canReview,
+      canConsumeApproved,
+      expiresInSeconds: APPROVED_DOWNLOAD_SIGNED_URL_SECONDS,
+    },
+  );
+
+  if (!result.ok) {
+    return { ok: false, error: getApprovedDownloadErrorMessage(result.error) };
+  }
+
+  return { ok: true, signedUrl: result.data.signedUrl };
 }
 
 function isValidPdfFile(file: File) {
@@ -425,38 +502,11 @@ export async function downloadApprovedRequestAction(formData: FormData) {
     redirect(withMessage(returnPath, { error: "Solicitud invalida de descarga aprobada" }));
   }
 
-  const context = await getRoleContext();
-  if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
-  }
-
-  ensureWorkerScopeOrRedirect({
-    role: context.role,
-    profileWorkerId: context.profileWorkerId,
-    targetWorkerId: parsed.data.workerId,
-  });
-
-  const canReview = canReviewDocuments(context.role);
-  const canConsumeApproved = canRequestDocumentDownload(context.role);
-
-  const result = await createApprovedDownloadUrl(
-    {
-      supabase: context.supabase,
-      actorUserId: context.user.id,
-      actorRole: context.role,
-    },
-    {
-      workerId: parsed.data.workerId,
-      requestId: parsed.data.requestId,
-      canReview,
-      canConsumeApproved,
-      expiresInSeconds: APPROVED_DOWNLOAD_SIGNED_URL_SECONDS,
-    },
-  );
+  const result = await getApprovedDownloadUrlAction(parsed.data);
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    redirect(withMessage(returnPath, { error: getApprovedDownloadErrorMessage(result.error) }));
   }
 
-  redirect(result.data.signedUrl);
+  redirect(result.signedUrl);
 }
