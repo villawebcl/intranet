@@ -36,7 +36,7 @@ export function SidebarNav({ items, compact = false }: SidebarNavProps) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={[
-                "dashboard-nav-link dashboard-nav-link-compact whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition",
+                "dashboard-nav-link dashboard-nav-link-compact whitespace-nowrap rounded-sm border px-3 py-2 text-xs font-semibold shadow-sm transition",
                 active
                   ? "dashboard-nav-link-active border-blue-200 bg-blue-50 text-blue-800"
                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
@@ -60,7 +60,7 @@ export function SidebarNav({ items, compact = false }: SidebarNavProps) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={[
-              "dashboard-nav-link block rounded-2xl border px-3.5 py-3 transition",
+              "dashboard-nav-link block rounded-sm border px-3.5 py-3 transition",
               active
                 ? "dashboard-nav-link-active border-slate-200 bg-white text-slate-900 shadow-sm"
                 : "border-transparent text-slate-700 hover:border-slate-200/80 hover:bg-white/80",

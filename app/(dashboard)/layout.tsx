@@ -102,9 +102,9 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link
               href="/dashboard"
-              className="dashboard-shell-brand inline-flex items-center gap-3 rounded-xl px-1 py-1 hover:bg-white/70"
+              className="dashboard-shell-brand inline-flex items-center gap-3 rounded-sm px-1 py-1 hover:bg-white/70"
             >
-              <span className="dashboard-shell-logo inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-sm">
+              <span className="dashboard-shell-logo inline-flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-sm">
                 A
               </span>
               <span>
@@ -118,7 +118,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
             </Link>
 
             <div className="flex items-center gap-3">
-              <div className="dashboard-shell-usercard rounded-xl border border-slate-200/80 bg-white/90 px-3 py-2 text-right shadow-sm">
+              <div className="dashboard-shell-usercard rounded-sm border border-slate-200/80 bg-white/90 px-3 py-2 text-right shadow-sm">
                 <p className="dashboard-shell-userrole text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                   {role}
                 </p>
@@ -138,7 +138,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           </div>
 
           <div className="mt-3 md:hidden">
-            <div className="dashboard-shell-mobile-nav rounded-2xl border border-slate-200/80 bg-white/90 p-2 shadow-sm">
+            <div className="dashboard-shell-mobile-nav rounded-sm border border-slate-200/80 bg-white/90 p-2 shadow-sm">
               <SidebarNav items={navItems} compact />
             </div>
           </div>
@@ -147,7 +147,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
 
       <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:grid-cols-[272px_minmax(0,1fr)]">
         <aside className="hidden md:block">
-          <div className="dashboard-shell-sidebar sticky top-24 rounded-3xl border border-white/80 bg-white/75 p-3 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+          <div className="dashboard-shell-sidebar sticky top-24 rounded-sm border border-white/80 bg-white/75 p-3 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.45)] backdrop-blur-sm">
             <div className="mb-2 px-2 pt-1">
               <p className="dashboard-shell-navtitle text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                 Navegacion

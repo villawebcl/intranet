@@ -10,6 +10,7 @@ import {
   createMissingWorkerAccessesSchema,
   createWorkerAccessSchema,
   deactivateWorkerSchema,
+  deleteWorkerSchema,
   reactivateWorkerSchema,
   suspendWorkerAccessSchema,
   toggleWorkerStatusSchema,
@@ -21,6 +22,7 @@ import {
   createMissingWorkerAccesses,
   createWorkerAccess,
   createWorkerRecord,
+  deleteWorkerPermanently,
   suspendWorkerAccess,
   toggleWorkerStatus,
   unarchiveWorker,
@@ -81,6 +83,11 @@ export async function createWorkerAction(formData: FormData) {
     email: formData.get("email"),
     phone: formData.get("phone"),
   });
+  const createAccessNow = formData.get("createAccessNow") === "yes";
+  const temporaryPasswordInput =
+    typeof formData.get("temporaryPassword") === "string"
+      ? (formData.get("temporaryPassword") as string)
+      : "";
 
   if (!parsed.success) {
     redirect(
@@ -88,6 +95,27 @@ export async function createWorkerAction(formData: FormData) {
         error: parsed.error.issues[0]?.message ?? "Datos invalidos",
       }),
     );
+  }
+
+  if (createAccessNow && !parsed.data.email) {
+    redirect(
+      withMessage(`${WORKERS_BASE_PATH}/new`, {
+        error: "Debes ingresar correo para crear acceso a intranet",
+      }),
+    );
+  }
+
+  if (createAccessNow) {
+    const passwordValidation = createWorkerAccessSchema.shape.temporaryPassword.safeParse(
+      temporaryPasswordInput,
+    );
+    if (!passwordValidation.success) {
+      redirect(
+        withMessage(`${WORKERS_BASE_PATH}/new`, {
+          error: passwordValidation.error.issues[0]?.message ?? "Contrasena temporal invalida",
+        }),
+      );
+    }
   }
 
   const context = await getRoleContext();
@@ -113,7 +141,33 @@ export async function createWorkerAction(formData: FormData) {
     redirect(withMessage(`${WORKERS_BASE_PATH}/new`, { error: result.error }));
   }
 
-  redirect(withMessage(WORKERS_BASE_PATH, { success: "Trabajador creado correctamente" }));
+  const workerDetailPath = `${WORKERS_BASE_PATH}/${result.data.workerId}`;
+
+  if (createAccessNow) {
+    const accessResult = await createWorkerAccess(
+      {
+        supabase: context.supabase,
+        actorUserId: context.user.id,
+        actorRole: context.role,
+      },
+      {
+        workerId: result.data.workerId,
+        temporaryPassword: temporaryPasswordInput,
+      },
+    );
+
+    if (!accessResult.ok) {
+      redirect(
+        withMessage(workerDetailPath, {
+          error: `Trabajador creado, pero no se pudo crear acceso: ${accessResult.error}`,
+        }),
+      );
+    }
+
+    redirect(withMessage(workerDetailPath, { success: "Trabajador y acceso creados correctamente" }));
+  }
+
+  redirect(withMessage(workerDetailPath, { success: "Trabajador creado correctamente" }));
 }
 
 export async function updateWorkerAction(workerId: string, formData: FormData) {
@@ -464,4 +518,59 @@ export async function reactivateWorkerAction(formData: FormData) {
   }
 
   redirect(withMessage(returnPath, { success: "Trabajador desarchivado en estado inactivo" }));
+}
+
+export async function deleteWorkerAction(formData: FormData) {
+  const parsed = deleteWorkerSchema.safeParse({
+    workerId: formData.get("workerId"),
+    confirmDelete: formData.get("confirmDelete"),
+    returnTo: formData.get("returnTo"),
+  });
+
+  const fallbackPath = `${WORKERS_BASE_PATH}?archive=archived`;
+  const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
+
+  if (!parsed.success) {
+    redirect(
+      withMessage(returnPath, {
+        error: "Debes confirmar la eliminacion definitiva del trabajador",
+      }),
+    );
+  }
+
+  const context = await getRoleContext();
+
+  if (!context.user) {
+    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+  }
+
+  if (context.role !== "admin") {
+    redirect(withMessage(returnPath, { error: "Solo admin puede eliminar trabajadores" }));
+  }
+
+  const result = await deleteWorkerPermanently(
+    {
+      supabase: context.supabase,
+      actorUserId: context.user.id,
+      actorRole: context.role,
+    },
+    {
+      workerId: parsed.data.workerId,
+    },
+  );
+
+  if (!result.ok) {
+    redirect(withMessage(returnPath, { error: result.error }));
+  }
+
+  if (result.data.hadLinkedAccess && !result.data.linkedAccessDeleted) {
+    redirect(
+      withMessage(returnPath, {
+        success:
+          "Trabajador eliminado. No se pudo eliminar su acceso asociado; revisa Usuarios nucleo.",
+      }),
+    );
+  }
+
+  redirect(withMessage(returnPath, { success: "Trabajador eliminado definitivamente" }));
 }

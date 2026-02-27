@@ -309,7 +309,7 @@ export default async function WorkerDocumentsPage({
           success={getStringParam(urlParams.success)}
         />
 
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -348,7 +348,7 @@ export default async function WorkerDocumentsPage({
               {!isWorkerScopedRole(role) ? (
                 <Link
                   href={`/dashboard/workers/${worker.id}`}
-                  className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Volver a trabajador
                 </Link>
@@ -358,7 +358,7 @@ export default async function WorkerDocumentsPage({
                   href={`/dashboard/workers/${worker.id}/documents/new${
                     hasSingleUploadFolder ? `?folder=${primaryUploadFolder}` : ""
                   }`}
-                  className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   {primaryUploadFolder === ACCOUNTING_UPLOAD_FOLDER_TYPE
                     ? "Subir liquidacion"
@@ -384,7 +384,7 @@ export default async function WorkerDocumentsPage({
         ) : null}
 
         <form
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+          className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
           method="get"
         >
           <p className="text-sm font-medium text-slate-900">Filtros</p>
@@ -400,7 +400,7 @@ export default async function WorkerDocumentsPage({
                 id="folder"
                 name="folder"
                 defaultValue={folderFilter}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
               >
                 <option value="">Todas</option>
                 {folderTypes.map((folderType) => (
@@ -422,7 +422,7 @@ export default async function WorkerDocumentsPage({
                 id="status"
                 name="status"
                 defaultValue={statusFilter}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
               >
                 <option value="">Todos</option>
                 {documentStatuses.map((status) => (
@@ -436,13 +436,13 @@ export default async function WorkerDocumentsPage({
             <div className="flex items-end gap-2.5">
               <button
                 type="submit"
-                className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Aplicar
               </button>
               <Link
                 href={basePath}
-                className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Limpiar
               </Link>
@@ -534,7 +534,7 @@ export default async function WorkerDocumentsPage({
                 return (
                   <article
                     key={document.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                    className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -564,7 +564,7 @@ export default async function WorkerDocumentsPage({
                         </dd>
                       </div>
                       {document.rejection_reason ? (
-                        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                        <div className="rounded-sm border border-red-200 bg-red-50 px-3 py-2">
                           <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-red-700">
                             Motivo de rechazo
                           </dt>
@@ -607,7 +607,7 @@ export default async function WorkerDocumentsPage({
                               </FormSubmitButton>
                             </form>
                           ) : pendingDownloadRequest ? (
-                            <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                            <div className="rounded-sm border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                               Solicitud pendiente de aprobacion.
                             </div>
                           ) : (
@@ -627,7 +627,7 @@ export default async function WorkerDocumentsPage({
                                 placeholder="Motivo de la solicitud"
                                 required
                                 maxLength={500}
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
                               />
                               <FormSubmitButton
                                 pendingLabel="Solicitando..."
@@ -639,7 +639,7 @@ export default async function WorkerDocumentsPage({
                           )}
 
                           {latestResolvedDownloadRequest ? (
-                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <div className="rounded-sm border border-slate-200 bg-slate-50 px-3 py-2">
                               <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">
                                 Ultima solicitud
                               </p>
@@ -669,7 +669,7 @@ export default async function WorkerDocumentsPage({
                       ) : null}
 
                       {canReview && documentRequests.length ? (
-                        <details className="rounded-lg border border-slate-200 bg-slate-50">
+                        <details className="rounded-sm border border-slate-200 bg-slate-50">
                           <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-slate-700">
                             Solicitudes ({documentRequests.length})
                           </summary>
@@ -677,7 +677,7 @@ export default async function WorkerDocumentsPage({
                             {documentRequests.slice(0, 3).map((request) => (
                               <div
                                 key={request.id}
-                                className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                                className="rounded-sm border border-slate-200 bg-white px-3 py-2"
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <span
@@ -710,7 +710,7 @@ export default async function WorkerDocumentsPage({
                                         name="decisionNote"
                                         placeholder="Nota opcional"
                                         maxLength={500}
-                                        className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                        className="w-full rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                                       />
                                       <FormSubmitButton
                                         pendingLabel="Aprobando..."
@@ -731,7 +731,7 @@ export default async function WorkerDocumentsPage({
                                         name="decisionNote"
                                         placeholder="Motivo de rechazo"
                                         maxLength={500}
-                                        className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                        className="w-full rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                                       />
                                       <FormSubmitButton
                                         pendingLabel="Rechazando..."
@@ -793,7 +793,7 @@ export default async function WorkerDocumentsPage({
                               placeholder="Motivo rechazo"
                               required
                               maxLength={500}
-                              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
                             />
                             <FormSubmitButton
                               pendingLabel="Rechazando..."
@@ -810,7 +810,7 @@ export default async function WorkerDocumentsPage({
               })}
             </div>
 
-            <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
+            <div className="hidden overflow-x-auto rounded-sm border border-slate-200 bg-white shadow-sm md:block">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50">
                   <tr>
@@ -899,7 +899,7 @@ export default async function WorkerDocumentsPage({
                                     </FormSubmitButton>
                                   </form>
                                 ) : pendingDownloadRequest ? (
-                                  <p className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
+                                  <p className="rounded-sm border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs text-blue-700">
                                     Solicitud pendiente
                                   </p>
                                 ) : (
@@ -915,7 +915,7 @@ export default async function WorkerDocumentsPage({
                                       placeholder="Motivo solicitud"
                                       required
                                       maxLength={500}
-                                      className="w-52 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                      className="w-52 rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                                     />
                                     <FormSubmitButton
                                       pendingLabel="Solicitando..."
@@ -929,7 +929,7 @@ export default async function WorkerDocumentsPage({
                             ) : null}
 
                             {canReview && documentRequests.length ? (
-                              <details className="rounded-lg border border-slate-200 bg-slate-50">
+                              <details className="rounded-sm border border-slate-200 bg-slate-50">
                                 <summary className="cursor-pointer list-none px-2.5 py-1.5 text-xs font-semibold text-slate-700">
                                   Solicitudes ({documentRequests.length})
                                 </summary>
@@ -937,7 +937,7 @@ export default async function WorkerDocumentsPage({
                                   {documentRequests.slice(0, 3).map((request) => (
                                     <div
                                       key={request.id}
-                                      className="rounded-md border border-slate-200 bg-white px-2 py-2"
+                                      className="rounded-sm border border-slate-200 bg-white px-2 py-2"
                                     >
                                       <div className="flex items-center justify-between gap-2">
                                         <span
@@ -984,7 +984,7 @@ export default async function WorkerDocumentsPage({
                                               name="decisionNote"
                                               placeholder="Nota opcional"
                                               maxLength={500}
-                                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                              className="w-full rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                                             />
                                             <FormSubmitButton
                                               pendingLabel="Aprobando..."
@@ -1021,7 +1021,7 @@ export default async function WorkerDocumentsPage({
                                               name="decisionNote"
                                               placeholder="Motivo rechazo"
                                               maxLength={500}
-                                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                              className="w-full rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                                             />
                                             <FormSubmitButton
                                               pendingLabel="Rechazando..."
@@ -1097,7 +1097,7 @@ export default async function WorkerDocumentsPage({
                                     placeholder="Motivo rechazo"
                                     required
                                     maxLength={500}
-                                    className="w-48 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                    className="w-48 rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
                                   />
                                   <FormSubmitButton
                                     pendingLabel="Rechazando..."

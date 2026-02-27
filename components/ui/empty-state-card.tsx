@@ -25,7 +25,7 @@ export function EmptyStateCard({ title, description, actions, className }: Empty
   return (
     <div
       className={[
-        "rounded-2xl border border-dashed border-slate-300/90 bg-white/90 px-5 py-8 text-center shadow-sm",
+        "rounded-sm border border-dashed border-slate-300/90 bg-white/90 px-5 py-8 text-center shadow-sm",
         className ?? "",
       ].join(" ")}
     >
@@ -38,7 +38,7 @@ export function EmptyStateCard({ title, description, actions, className }: Empty
             <Link
               key={`${action.href}:${action.label}`}
               href={action.href}
-              className={`inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold transition ${getActionClassName(action.variant)}`}
+              className={`inline-flex items-center rounded-sm px-3 py-2 text-sm font-semibold transition ${getActionClassName(action.variant)}`}
             >
               {action.label}
             </Link>

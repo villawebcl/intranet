@@ -4,6 +4,7 @@ import {
   activateWorkerAccess,
   archiveWorker,
   createWorkerAccess,
+  deleteWorkerPermanently,
   suspendWorkerAccess,
   toggleWorkerStatus,
   unarchiveWorker,
@@ -95,33 +96,56 @@ function createRpcOnlySupabaseStub() {
 function createAdminClientStub(options?: {
   profileData?: { id: string; role: string; worker_id?: string | null } | null;
   profileError?: unknown;
+  deleteWorkerData?: { id: string } | null;
+  deleteWorkerError?: unknown;
   getUserByIdData?: { user: { banned_until: string | null } | null };
   getUserByIdError?: unknown;
   updateUserByIdError?: unknown;
+  deleteUserError?: unknown;
 }) {
   const calls: {
     updateUserByIdPayloads: Array<Record<string, unknown>>;
+    deleteUserCalls: Array<{ userId: string; shouldSoftDelete: boolean }>;
   } = {
     updateUserByIdPayloads: [],
+    deleteUserCalls: [],
   };
 
   const adminClient = {
     from: (table: string) => {
-      if (table !== "profiles") {
-        throw new Error(`unexpected admin table: ${table}`);
-      }
-
-      return {
-        select: () => ({
-          eq: () => ({
-            maybeSingle: async () => ({
-              data: options?.profileData ?? null,
-              error: options?.profileError ?? null,
+      if (table === "profiles") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({
+                data: options?.profileData ?? null,
+                error: options?.profileError ?? null,
+              }),
             }),
           }),
-        }),
-        upsert: async () => ({ error: null }),
-      };
+          upsert: async () => ({ error: null }),
+        };
+      }
+
+      if (table === "workers") {
+        return {
+          delete: () => {
+            const deleteChain = {
+              eq: () => deleteChain,
+              select: () => ({
+                maybeSingle: async () => ({
+                  data: options?.deleteWorkerData ?? { id: "w1" },
+                  error: options?.deleteWorkerError ?? null,
+                }),
+              }),
+            };
+
+            return deleteChain;
+          },
+        };
+      }
+
+      throw new Error(`unexpected admin table: ${table}`);
     },
     auth: {
       admin: {
@@ -135,7 +159,10 @@ function createAdminClientStub(options?: {
           calls.updateUserByIdPayloads.push(payload);
           return { error: options?.updateUserByIdError ?? null };
         },
-        deleteUser: async () => ({ error: null }),
+        deleteUser: async (userId: string, shouldSoftDelete = false) => {
+          calls.deleteUserCalls.push({ userId, shouldSoftDelete });
+          return { error: options?.deleteUserError ?? null };
+        },
       },
     },
   };
@@ -263,6 +290,83 @@ test("unarchiveWorker restaura trabajador archivado", async () => {
     updated_by: "admin-id",
   });
   expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_unarchived");
+});
+
+test("deleteWorkerPermanently exige que el trabajador este archivado", async () => {
+  const { supabase } = createWorkersSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "w1",
+          rut: "11.111.111-1",
+          first_name: "Ana",
+          last_name: "Rojas",
+          is_active: true,
+        },
+        error: null,
+      },
+    ],
+  });
+  const { adminClient } = createAdminClientStub();
+
+  const result = await deleteWorkerPermanently(
+    {
+      supabase: supabase as never,
+      actorUserId: "admin-id",
+      actorRole: "admin",
+      adminClient: adminClient as never,
+    },
+    { workerId: "w1" },
+  );
+
+  expect(result).toEqual({
+    ok: false,
+    error: "Solo puedes eliminar definitivamente trabajadores archivados",
+  });
+});
+
+test("deleteWorkerPermanently elimina trabajador archivado y su acceso vinculado", async () => {
+  const { supabase, calls } = createWorkersSupabaseStub({
+    selectResults: [
+      {
+        data: {
+          id: "w1",
+          rut: "11.111.111-1",
+          first_name: "Ana",
+          last_name: "Rojas",
+          is_active: false,
+        },
+        error: null,
+      },
+    ],
+  });
+  const { adminClient, calls: adminCalls } = createAdminClientStub({
+    profileData: { id: "auth-worker", role: "trabajador", worker_id: "w1" },
+    deleteWorkerData: { id: "w1" },
+  });
+
+  const result = await deleteWorkerPermanently(
+    {
+      supabase: supabase as never,
+      actorUserId: "admin-id",
+      actorRole: "admin",
+      adminClient: adminClient as never,
+    },
+    { workerId: "w1" },
+  );
+
+  expect(result).toEqual({
+    ok: true,
+    data: {
+      hadLinkedAccess: true,
+      linkedAccessDeleted: true,
+    },
+  });
+  expect(adminCalls.deleteUserCalls[0]).toEqual({
+    userId: "auth-worker",
+    shouldSoftDelete: true,
+  });
+  expect(calls.rpcArgs[0]?.args.p_action).toBe("worker_deleted");
 });
 
 test("createWorkerAccess valida correo requerido", async () => {

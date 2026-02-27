@@ -71,7 +71,7 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
     <section className="space-y-5">
       <FlashMessages error={errorMessage} success={successMessage} />
 
-      <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Acceso y roles</h1>
@@ -81,7 +81,7 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
           </div>
           <Link
             href="/dashboard"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             Volver al dashboard
           </Link>
@@ -91,7 +91,7 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
         </div>
       </header>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-950">Uso recomendado</h2>
@@ -103,7 +103,7 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
           {currentRole === "admin" ? (
             <Link
               href="/dashboard/users"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Ir a Usuarios
             </Link>
@@ -111,7 +111,7 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
         </div>
       </section>
 
-      <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm md:block">
+      <div className="hidden overflow-x-auto rounded-sm border border-slate-200 bg-white shadow-sm md:block">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50">
             <tr>
@@ -157,7 +157,7 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
             <article
               key={row.role}
               className={[
-                "rounded-xl border bg-white p-4 shadow-sm",
+                "rounded-sm border bg-white p-4 shadow-sm",
                 isCurrent ? "border-blue-200" : "border-slate-200",
               ].join(" ")}
             >

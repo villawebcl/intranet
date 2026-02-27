@@ -50,6 +50,12 @@ export const reactivateWorkerSchema = z.object({
   returnTo: z.string().trim().optional(),
 });
 
+export const deleteWorkerSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  confirmDelete: z.literal("yes", "Debes confirmar la eliminacion definitiva"),
+  returnTo: z.string().trim().optional(),
+});
+
 export const createWorkerAccessSchema = z.object({
   workerId: z.string().uuid("Trabajador invalido"),
   temporaryPassword: z

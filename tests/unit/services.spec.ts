@@ -56,12 +56,15 @@ function createUsersSupabaseStub(options?: {
 function createAdminClientStub(options: {
   createUserResult?: { data: { user: { id: string } | null }; error: { message: string } | null };
   getUserByIdResult?: { data: { user: { email?: string | null } | null }; error: unknown };
-  deleteUserResult?: { error: unknown };
+  deleteUserResults?: Array<{ error: unknown }>;
   profileUpsertError?: unknown;
 }) {
   const calls: {
     profileUpsertPayload?: Record<string, unknown>;
-  } = {};
+    deleteUserInputs: Array<{ userId: string; shouldSoftDelete: boolean }>;
+  } = {
+    deleteUserInputs: [],
+  };
 
   const adminClient = {
     auth: {
@@ -76,7 +79,11 @@ function createAdminClientStub(options: {
             data: { user: { email: "target@example.com" } },
             error: null,
           },
-        deleteUser: async () => options.deleteUserResult ?? { error: null },
+        deleteUser: async (userId: string, shouldSoftDelete = false) => {
+          calls.deleteUserInputs.push({ userId, shouldSoftDelete });
+          const currentCallIndex = calls.deleteUserInputs.length - 1;
+          return options.deleteUserResults?.[currentCallIndex] ?? { error: null };
+        },
       },
     },
     from: (table: string) => {
@@ -288,6 +295,59 @@ test("deleteCoreUser protege cuentas admin", async () => {
     ok: false,
     error: "Las cuentas admin estan protegidas y no se pueden eliminar",
   });
+});
+
+test("deleteCoreUser usa hard delete cuando Auth lo permite", async () => {
+  const { supabase } = createUsersSupabaseStub({
+    profileRole: "visitante",
+    profileFullName: "Usuario Demo",
+  });
+  const { adminClient, calls } = createAdminClientStub({});
+
+  const result = await deleteCoreUser(
+    {
+      supabase: supabase as never,
+      adminClient: adminClient as never,
+      actorUserId: "admin-id",
+      actorRole: "admin",
+    },
+    {
+      targetUserId: "target-id",
+      protectAdminAccounts: true,
+    },
+  );
+
+  expect(result).toEqual({ ok: true, data: undefined });
+  expect(calls.deleteUserInputs).toEqual([{ userId: "target-id", shouldSoftDelete: false }]);
+});
+
+test("deleteCoreUser usa soft delete como fallback si falla hard delete", async () => {
+  const { supabase } = createUsersSupabaseStub({
+    profileRole: "visitante",
+    profileFullName: "Usuario Demo",
+  });
+  const { adminClient, calls } = createAdminClientStub({
+    deleteUserResults: [{ error: { message: "fk violation" } }, { error: null }],
+  });
+
+  const result = await deleteCoreUser(
+    {
+      supabase: supabase as never,
+      adminClient: adminClient as never,
+      actorUserId: "admin-id",
+      actorRole: "admin",
+    },
+    {
+      targetUserId: "target-id",
+      protectAdminAccounts: true,
+    },
+  );
+
+  expect(result).toEqual({ ok: true, data: undefined });
+  expect(calls.deleteUserInputs).toEqual([
+    { userId: "target-id", shouldSoftDelete: false },
+    { userId: "target-id", shouldSoftDelete: true },
+  ]);
 });
 
 test("createApprovedDownloadUrl bloquea sin permisos", async () => {

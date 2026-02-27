@@ -21,15 +21,18 @@ type WorkerFormProps = {
   values: WorkerFormValues;
   errorMessage?: string;
   successMessage?: string;
+  showAccessSetup?: boolean;
 };
 
 function inputClassName() {
-  return "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2";
+  return "w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2";
 }
 
 export function WorkerForm(props: WorkerFormProps) {
+  const showAccessSetup = props.showAccessSetup ?? false;
+
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-950">{props.title}</h1>
         <p className="mt-1 text-sm text-slate-600">{props.description}</p>
@@ -141,6 +144,47 @@ export function WorkerForm(props: WorkerFormProps) {
           />
         </div>
 
+        {showAccessSetup ? (
+          <section className="rounded-sm border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-start gap-2">
+              <input
+                id="create-access-now"
+                type="checkbox"
+                name="createAccessNow"
+                value="yes"
+                defaultChecked
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-400"
+              />
+              <div>
+                <label
+                  htmlFor="create-access-now"
+                  className="text-sm font-semibold text-slate-900"
+                >
+                  Crear acceso a intranet al guardar
+                </label>
+                <p className="mt-1 text-xs text-slate-600">
+                  Usa el correo del trabajador para crear su cuenta de acceso en el mismo flujo.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-1.5">
+              <label htmlFor="temporaryPassword" className="text-sm font-medium text-slate-900">
+                Contrasena temporal de acceso
+              </label>
+              <input
+                id="temporaryPassword"
+                name="temporaryPassword"
+                type="password"
+                minLength={8}
+                autoComplete="new-password"
+                className={inputClassName()}
+                placeholder="Minimo 8 caracteres"
+              />
+            </div>
+          </section>
+        ) : null}
+
         <div className="flex items-center gap-3 pt-2">
           <FormSubmitButton
             pendingLabel="Guardando..."
@@ -150,7 +194,7 @@ export function WorkerForm(props: WorkerFormProps) {
           </FormSubmitButton>
           <Link
             href="/dashboard/workers"
-            className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             Volver al listado
           </Link>

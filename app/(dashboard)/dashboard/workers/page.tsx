@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardPageContainer } from "@/components/dashboard/page-container";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { ActionMenu } from "@/components/ui/action-menu";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
@@ -14,6 +15,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import {
   createMissingWorkerAccessesAction,
   deactivateWorkerAction,
+  deleteWorkerAction,
   reactivateWorkerAction,
   toggleWorkerStatusAction,
 } from "./actions";
@@ -170,7 +172,6 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
 
   const canManage = canManageWorkers(role);
   const isAdmin = role === "admin";
-
   let workersQuery = supabase
     .from("workers")
     .select(
@@ -281,7 +282,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
   return (
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Trabajadores</h1>
@@ -314,26 +315,26 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                 {archiveFilter === "archived" ? (
                   <Link
                     href={buildWorkersPath(query, statusFilter, "active", 1)}
-                    className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     Ver activos
                   </Link>
                 ) : (
                   <Link
                     href={buildWorkersPath(query, statusFilter, "archived", 1)}
-                    className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     Ver archivados
                   </Link>
                 )}
                 <Link
                   href="/dashboard/workers/new"
-                  className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex items-center rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
                   Nuevo trabajador
                 </Link>
                 {!workerAccessError && missingAccessCandidatesCount > 0 ? (
-                  <details className="rounded-lg border border-blue-200 bg-blue-50">
+                  <details className="rounded-sm border border-blue-200 bg-blue-50">
                     <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-blue-700">
                       Crear accesos faltantes ({missingAccessCandidatesCount})
                     </summary>
@@ -365,7 +366,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                   </details>
                 ) : null}
                 {!workerAccessError && missingAccessCandidatesCount === 0 ? (
-                  <span className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                  <span className="inline-flex items-center rounded-sm border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
                     Sin accesos pendientes
                   </span>
                 ) : null}
@@ -380,7 +381,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
         ) : null}
 
         <form
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+          className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
           method="get"
         >
           <p className="text-sm font-medium text-slate-900">Busqueda</p>
@@ -395,14 +396,14 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               id="q"
               name="q"
               defaultValue={query}
-              className="min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="min-w-0 rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
               placeholder="Ej: 12.345.678-9 o Perez"
             />
             <select
               id="status"
               name="status"
               defaultValue={statusFilter}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
             >
               <option value="">Todos los estados</option>
               <option value="activo">Activos</option>
@@ -412,7 +413,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               id="archive"
               name="archive"
               defaultValue={archiveFilter}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
             >
               <option value="active">Solo activos</option>
               <option value="archived">Solo archivados</option>
@@ -420,14 +421,14 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
             </select>
             <button
               type="submit"
-              className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Buscar
             </button>
             {hasFilters ? (
               <Link
                 href="/dashboard/workers"
-                className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Limpiar
               </Link>
@@ -495,9 +496,10 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                 );
 
                 return (
-                  <article
+                  <Link
                     key={worker.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                    href={`/dashboard/workers/${worker.id}`}
+                    className="block rounded-sm border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50/40"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -539,99 +541,14 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                         </dd>
                       </div>
                     </dl>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Link
-                        href={`/dashboard/workers/${worker.id}`}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        Ver
-                      </Link>
-                      {canManage && worker.is_active ? (
-                        <>
-                          <Link
-                            href={`/dashboard/workers/${worker.id}/edit`}
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                          >
-                            Editar
-                          </Link>
-                          <form action={toggleWorkerStatusAction}>
-                            <input type="hidden" name="workerId" value={worker.id} />
-                            <input type="hidden" name="currentStatus" value={worker.status} />
-                            <input type="hidden" name="returnTo" value={currentPath} />
-                            <FormSubmitButton
-                              pendingLabel={
-                                worker.status === "activo" ? "Desactivando..." : "Activando..."
-                              }
-                              className="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                            >
-                              {worker.status === "activo" ? "Desactivar" : "Activar"}
-                            </FormSubmitButton>
-                          </form>
-                        </>
-                      ) : null}
-                      {!worker.is_active ? (
-                        <>
-                          <span className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                            Archivado
-                          </span>
-                          {isAdmin ? (
-                            <form action={reactivateWorkerAction}>
-                              <input type="hidden" name="workerId" value={worker.id} />
-                              <input type="hidden" name="returnTo" value={currentPath} />
-                              <FormSubmitButton
-                                pendingLabel="Desarchivando..."
-                                className="border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
-                              >
-                                Desarchivar
-                              </FormSubmitButton>
-                            </form>
-                          ) : null}
-                        </>
-                      ) : null}
-                    </div>
-
-                    {isAdmin && worker.is_active ? (
-                      <details className="mt-3 rounded-lg border border-red-200 bg-red-50">
-                        <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
-                          Confirmar archivado
-                        </summary>
-                        <form
-                          action={deactivateWorkerAction}
-                          className="space-y-3 border-t border-red-200 px-3 py-3"
-                        >
-                          <input type="hidden" name="workerId" value={worker.id} />
-                          <input type="hidden" name="returnTo" value={currentPath} />
-                          <p className="text-xs text-red-800">
-                            Archivar a {worker.first_name} {worker.last_name}. El registro quedara
-                            oculto por defecto.
-                          </p>
-                          <label className="flex items-start gap-2 text-xs text-red-900">
-                            <input
-                              type="checkbox"
-                              name="confirmArchive"
-                              value="yes"
-                              required
-                              className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
-                            />
-                            Confirmo que quiero archivar este trabajador
-                          </label>
-                          <FormSubmitButton
-                            pendingLabel="Archivando..."
-                            className="w-full border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
-                          >
-                            Archivar trabajador
-                          </FormSubmitButton>
-                        </form>
-                      </details>
-                    ) : null}
-                  </article>
+                  </Link>
                 );
               })}
             </div>
 
-            <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <div className="hidden rounded-sm border border-slate-200 bg-white shadow-sm md:block">
+              <div className="overflow-x-auto overflow-y-visible">
+                <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-4 py-4 text-left font-semibold text-slate-700">Trabajador</th>
@@ -645,7 +562,9 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                         Acceso portal
                       </th>
                     ) : null}
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Acciones</th>
+                    {canManage ? (
+                      <th className="px-4 py-4 text-left font-semibold text-slate-700">Acciones</th>
+                    ) : null}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -653,14 +572,21 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                     const accessState = getAccessState(
                       workerAccessByWorkerId.get(worker.id) ?? "sin_acceso",
                     );
+                    const canEdit = canManage && worker.is_active;
+                    const canToggleStatus = canManage && worker.is_active;
+                    const canArchive = isAdmin && worker.is_active;
+                    const canReactivate = isAdmin && !worker.is_active;
+                    const canDelete = isAdmin && !worker.is_active;
 
                     return (
-                      <tr key={worker.id} className="align-top">
+                      <tr key={worker.id} className="align-top hover:bg-slate-50/60">
                         <td className="px-4 py-4">
-                          <p className="font-medium text-slate-900">
-                            {worker.first_name} {worker.last_name}
-                          </p>
-                          <p className="text-xs text-slate-500">{worker.email ?? "Sin correo"}</p>
+                          <Link href={`/dashboard/workers/${worker.id}`} className="block">
+                            <p className="font-medium text-slate-900">
+                              {worker.first_name} {worker.last_name}
+                            </p>
+                            <p className="text-xs text-slate-500">{worker.email ?? "Sin correo"}</p>
+                          </Link>
                         </td>
                         <td className="px-4 py-4 text-slate-700">{worker.rut}</td>
                         <td className="px-4 py-4 text-slate-700">
@@ -682,41 +608,47 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                             </span>
                           </td>
                         ) : null}
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <Link
-                              href={`/dashboard/workers/${worker.id}`}
-                              className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                            >
-                              Ver
-                            </Link>
-
-                            {canManage && worker.is_active ? (
-                              <>
+                        {canManage ? (
+                          <td className="px-4 py-4">
+                            <ActionMenu>
+                              <div className="space-y-2">
                                 <Link
-                                  href={`/dashboard/workers/${worker.id}/edit`}
-                                  className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                  href={`/dashboard/workers/${worker.id}`}
+                                  className="block rounded-sm border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                                 >
-                                  Editar
+                                  Abrir ficha
                                 </Link>
-                                <form action={toggleWorkerStatusAction}>
-                                  <input type="hidden" name="workerId" value={worker.id} />
-                                  <input type="hidden" name="currentStatus" value={worker.status} />
-                                  <input type="hidden" name="returnTo" value={currentPath} />
-                                  <FormSubmitButton
-                                    pendingLabel={
-                                      worker.status === "activo"
-                                        ? "Desactivando..."
-                                        : "Activando..."
-                                    }
-                                    className="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+
+                                {canEdit ? (
+                                  <Link
+                                    href={`/dashboard/workers/${worker.id}/edit`}
+                                    className="block rounded-sm border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                                   >
-                                    {worker.status === "activo" ? "Desactivar" : "Activar"}
-                                  </FormSubmitButton>
-                                </form>
-                                {isAdmin ? (
-                                  <details className="rounded-lg border border-red-200 bg-red-50">
-                                    <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
+                                    Editar
+                                  </Link>
+                                ) : null}
+
+                                {canToggleStatus ? (
+                                  <form action={toggleWorkerStatusAction}>
+                                    <input type="hidden" name="workerId" value={worker.id} />
+                                    <input type="hidden" name="currentStatus" value={worker.status} />
+                                    <input type="hidden" name="returnTo" value={currentPath} />
+                                    <FormSubmitButton
+                                      pendingLabel={
+                                        worker.status === "activo"
+                                          ? "Desactivando..."
+                                          : "Activando..."
+                                      }
+                                      className="w-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                    >
+                                      {worker.status === "activo" ? "Desactivar" : "Activar"}
+                                    </FormSubmitButton>
+                                  </form>
+                                ) : null}
+
+                                {canArchive ? (
+                                  <details className="rounded-sm border border-red-200 bg-red-50">
+                                    <summary className="cursor-pointer list-none px-3 py-2 text-center text-xs font-semibold text-red-700">
                                       Archivar
                                     </summary>
                                     <form
@@ -725,7 +657,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                                     >
                                       <input type="hidden" name="workerId" value={worker.id} />
                                       <input type="hidden" name="returnTo" value={currentPath} />
-                                      <p className="max-w-56 text-xs text-red-800">
+                                      <p className="text-xs text-red-800">
                                         Archivar a {worker.first_name} {worker.last_name}.
                                       </p>
                                       <label className="flex items-start gap-2 text-xs text-red-900">
@@ -740,41 +672,71 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                                       </label>
                                       <FormSubmitButton
                                         pendingLabel="Archivando..."
-                                        className="border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                                        className="w-full border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
                                       >
                                         Archivar
                                       </FormSubmitButton>
                                     </form>
                                   </details>
                                 ) : null}
-                              </>
-                            ) : null}
-                            {canManage && !worker.is_active ? (
-                              <>
-                                <span className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                                  Archivado
-                                </span>
-                                {isAdmin ? (
+
+                                {canReactivate ? (
                                   <form action={reactivateWorkerAction}>
                                     <input type="hidden" name="workerId" value={worker.id} />
                                     <input type="hidden" name="returnTo" value={currentPath} />
                                     <FormSubmitButton
                                       pendingLabel="Desarchivando..."
-                                      className="border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+                                      className="w-full border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
                                     >
                                       Desarchivar
                                     </FormSubmitButton>
                                   </form>
                                 ) : null}
-                              </>
-                            ) : null}
-                          </div>
-                        </td>
+
+                                {canDelete ? (
+                                  <details className="rounded-sm border border-red-200 bg-red-50">
+                                    <summary className="cursor-pointer list-none px-3 py-2 text-center text-xs font-semibold text-red-700">
+                                      Eliminar definitivo
+                                    </summary>
+                                    <form
+                                      action={deleteWorkerAction}
+                                      className="space-y-2 border-t border-red-200 px-3 py-2"
+                                    >
+                                      <input type="hidden" name="workerId" value={worker.id} />
+                                      <input type="hidden" name="returnTo" value={currentPath} />
+                                      <p className="text-xs text-red-800">
+                                        Eliminaras permanentemente a {worker.first_name}{" "}
+                                        {worker.last_name}.
+                                      </p>
+                                      <label className="flex items-start gap-2 text-xs text-red-900">
+                                        <input
+                                          type="checkbox"
+                                          name="confirmDelete"
+                                          value="yes"
+                                          required
+                                          className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                                        />
+                                        Confirmar
+                                      </label>
+                                      <FormSubmitButton
+                                        pendingLabel="Eliminando..."
+                                        className="w-full border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
+                                      >
+                                        Eliminar
+                                      </FormSubmitButton>
+                                    </form>
+                                  </details>
+                                ) : null}
+                              </div>
+                            </ActionMenu>
+                          </td>
+                        ) : null}
                       </tr>
                     );
                   })}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
 
             <PaginationControls
