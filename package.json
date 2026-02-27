@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:unit": "NODE_OPTIONS='--require=./tests/unit/register-server-only.cjs' playwright test -c tests/unit/playwright.unit.config.ts",
     "e2e:smoke": "playwright test tests/e2e",
     "e2e:smoke:headed": "playwright test tests/e2e --headed",
     "supabase:provision-trabajador": "node scripts/provision-trabajador-demo.mjs",
@@ -26,7 +27,6 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
-    "@playwright/test": "^1.57.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
