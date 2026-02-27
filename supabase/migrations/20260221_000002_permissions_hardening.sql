@@ -1,4 +1,4 @@
--- Intranet Anagami - Permissions hardening (MVP)
+-- Intranet Base - Permissions hardening (MVP)
 
 -- Documents: visitante without access; contabilidad read-only.
 drop policy if exists documents_select_authenticated on public.documents;

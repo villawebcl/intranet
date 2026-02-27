@@ -1,4 +1,4 @@
-# AI_CONTEXT.md — Intranet Anagami (Gestión Documental)
+# AI_CONTEXT.md — Intranet Base (Gestión Documental)
 
 > Nota (2026-02-22): este archivo queda como contexto de referencia/legacy. La memoria persistente operativa se mantiene en `docs/system-overview.md`, `docs/architecture.md`, `docs/decisions.md`, `docs/progress.md` y `docs/tasks.md`.
 
@@ -9,7 +9,7 @@
 
 ## 1) Contexto del proyecto (qué estamos construyendo)
 
-Estamos construyendo una **intranet web de Gestión Documental** para **Anagami Seguridad**.
+Estamos construyendo una **intranet web de Gestión Documental** para **empresa cliente**.
 
 **MVP (Fase 1)**:
 

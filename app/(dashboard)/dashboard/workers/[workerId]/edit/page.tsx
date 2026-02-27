@@ -44,12 +44,16 @@ export default async function WorkerEditPage({ params, searchParams }: WorkerEdi
 
   const { data: worker, error } = await supabase
     .from("workers")
-    .select("id, rut, first_name, last_name, position, area, email, phone")
+    .select("id, rut, first_name, last_name, position, area, email, phone, is_active")
     .eq("id", workerId)
     .maybeSingle();
 
   if (error || !worker) {
     notFound();
+  }
+
+  if (!worker.is_active) {
+    redirect("/dashboard/workers?error=No+puedes+editar+un+trabajador+archivado");
   }
 
   const boundUpdateAction = updateWorkerAction.bind(null, worker.id);

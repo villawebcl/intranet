@@ -1,4 +1,4 @@
-export const appRoles = ["admin", "rrhh", "contabilidad", "visitante"] as const;
+export const appRoles = ["admin", "rrhh", "contabilidad", "trabajador", "visitante"] as const;
 export type AppRole = (typeof appRoles)[number];
 
 export const workerStatuses = ["activo", "inactivo"] as const;

@@ -250,6 +250,19 @@ export default async function globalSetup() {
     folderType: documentSeed.folderType,
   };
 
+  const smokeUserIds = Object.values(runtimeUsers).map((runtimeUser) => runtimeUser.id);
+  const { error: cleanupDownloadRequestsError } = await supabase
+    .from("download_requests")
+    .delete()
+    .eq("document_id", documentId)
+    .in("requested_by", smokeUserIds);
+
+  if (cleanupDownloadRequestsError) {
+    throw new Error(
+      `No se pudo limpiar solicitudes de descarga E2E para documento ${documentId}: ${cleanupDownloadRequestsError.message}`,
+    );
+  }
+
   await mkdir(path.dirname(smokeFixturesFilePath), { recursive: true });
   await writeFile(smokeFixturesFilePath, JSON.stringify(runtimeFixtures, null, 2), "utf8");
 }

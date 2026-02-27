@@ -24,7 +24,7 @@ Leer este archivo primero, luego revisar solo el ticket que se implementara.
   - mantiene acciones sugeridas contextuales (sin duplicar barra lateral)
 - Navegacion dashboard mejorada (2026-02-23):
   - sidebar en desktop + navegacion compacta en movil
-  - logo `Intranet Anagami` clickeable a `/dashboard`
+  - logo `Intranet Base` clickeable a `/dashboard`
   - pagina `/dashboard/access` para resumen de acceso y roles
 - UX de feedback/loading unificada (2026-02-23):
   - `AlertBanner` / `FlashMessages` para mensajes consistentes (error/exito/aviso)

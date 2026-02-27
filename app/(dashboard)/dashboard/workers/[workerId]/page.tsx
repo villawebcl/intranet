@@ -6,15 +6,25 @@ import { AlertBanner } from "@/components/ui/alert-banner";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import {
   ACCOUNTING_UPLOAD_FOLDER_TYPE,
+  canAccessAssignedWorker,
   canManageWorkers,
   canUploadDocuments,
   canUploadDocumentToFolder,
   canViewDocuments,
   getUploadableDocumentFolders,
+  isWorkerScopedRole,
 } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { deleteWorkerAction, toggleWorkerStatusAction } from "../actions";
+import {
+  activateWorkerAccessAction,
+  createWorkerAccessAction,
+  deactivateWorkerAction,
+  reactivateWorkerAction,
+  suspendWorkerAccessAction,
+  toggleWorkerStatusAction,
+} from "../actions";
 
 type WorkerDetailPageProps = {
   params: Promise<{ workerId: string }>;
@@ -33,12 +43,62 @@ function normalizeFoldersView(value: string) {
   return value === "grid" ? "grid" : "list";
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) {
+    return "Sin registro";
+  }
+
+  return new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 type FolderSummary = {
   total: number;
   pendiente: number;
   aprobado: number;
   rechazado: number;
 };
+
+type WorkerAccessState = "sin_acceso" | "activo" | "suspendido";
+
+function isUserSuspended(bannedUntil: string | null | undefined) {
+  if (!bannedUntil) {
+    return false;
+  }
+
+  const bannedUntilDate = new Date(bannedUntil);
+  if (Number.isNaN(bannedUntilDate.getTime())) {
+    return false;
+  }
+
+  return bannedUntilDate.getTime() > Date.now();
+}
+
+function getAccessBadgeClass(state: WorkerAccessState) {
+  if (state === "activo") {
+    return "bg-emerald-100 text-emerald-800 border-emerald-200";
+  }
+
+  if (state === "suspendido") {
+    return "bg-amber-100 text-amber-800 border-amber-200";
+  }
+
+  return "bg-slate-100 text-slate-700 border-slate-200";
+}
+
+function getAccessStateLabel(state: WorkerAccessState) {
+  if (state === "activo") {
+    return "Activo";
+  }
+
+  if (state === "suspendido") {
+    return "Suspendido";
+  }
+
+  return "Sin acceso";
+}
 
 export default async function WorkerDetailPage({ params, searchParams }: WorkerDetailPageProps) {
   const { workerId } = await params;
@@ -56,26 +116,79 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, worker_id")
     .eq("id", user.id)
     .maybeSingle();
 
-  const canManage = canManageWorkers(profile?.role);
-  const isAdmin = profile?.role === "admin";
-  const canUpload = canUploadDocuments(profile?.role);
-  const uploadableFolders = getUploadableDocumentFolders(profile?.role);
+  const role = profile?.role ?? "visitante";
+
+  if (isWorkerScopedRole(role)) {
+    if (!profile?.worker_id) {
+      redirect("/dashboard?error=Tu+cuenta+trabajador+no+tiene+trabajador+asignado");
+    }
+
+    if (!canAccessAssignedWorker(role, profile.worker_id, workerId)) {
+      redirect(`/dashboard/workers/${profile.worker_id}/documents?error=Solo+puedes+ver+tu+documentacion`);
+    }
+
+    redirect(`/dashboard/workers/${workerId}/documents`);
+  }
+
+  const canManage = canManageWorkers(role);
+  const isAdmin = role === "admin";
+  const canUpload = canUploadDocuments(role);
+  const uploadableFolders = getUploadableDocumentFolders(role);
   const primaryUploadFolder = uploadableFolders[0] ?? null;
   const hasSingleUploadFolder = uploadableFolders.length === 1;
-  const canReadDocuments = canViewDocuments(profile?.role);
+  const canReadDocuments = canViewDocuments(role);
 
   const { data: worker, error: workerError } = await supabase
     .from("workers")
-    .select("id, rut, first_name, last_name, position, area, email, phone, status")
+    .select("id, rut, first_name, last_name, position, area, email, phone, status, is_active")
     .eq("id", workerId)
     .maybeSingle();
 
   if (workerError || !worker) {
     notFound();
+  }
+
+  let workerAccessState: WorkerAccessState = "sin_acceso";
+  let workerAccessEmail: string | null = null;
+  let workerAccessUserId: string | null = null;
+  let workerAccessLastSignInAt: string | null = null;
+  let workerAccessError: string | null = null;
+
+  if (canManage) {
+    try {
+      const adminClient = createSupabaseAdminClient();
+      const { data: accessProfile, error: accessProfileError } = await adminClient
+        .from("profiles")
+        .select("id, role")
+        .eq("worker_id", worker.id)
+        .maybeSingle();
+
+      if (accessProfileError) {
+        workerAccessError = "No se pudo validar el acceso del trabajador";
+      } else if (accessProfile) {
+        workerAccessUserId = accessProfile.id;
+
+        if (accessProfile.role !== "trabajador") {
+          workerAccessError = "Existe una cuenta asociada con rol invalido para este trabajador";
+        } else {
+          const { data: authData, error: authError } = await adminClient.auth.admin.getUserById(accessProfile.id);
+
+          if (authError || !authData.user) {
+            workerAccessError = "No se encontro la cuenta de autenticacion asociada";
+          } else {
+            workerAccessEmail = authData.user.email ?? null;
+            workerAccessLastSignInAt = authData.user.last_sign_in_at ?? null;
+            workerAccessState = isUserSuspended(authData.user.banned_until) ? "suspendido" : "activo";
+          }
+        }
+      }
+    } catch {
+      workerAccessError = "Falta configuracion de servicio para administrar accesos";
+    }
   }
 
   let documents: Array<{ folder_type: string; status: string }> | null = null;
@@ -152,7 +265,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             >
               Volver
             </Link>
-            {canManage ? (
+            {canManage && worker.is_active ? (
               <>
                 <Link
                   href={`/dashboard/workers/${worker.id}/edit`}
@@ -173,7 +286,26 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 </form>
               </>
             ) : null}
-            {canUpload && primaryUploadFolder ? (
+            {!worker.is_active ? (
+              <>
+                <span className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+                  Registro archivado
+                </span>
+                {isAdmin ? (
+                  <form action={reactivateWorkerAction}>
+                    <input type="hidden" name="workerId" value={worker.id} />
+                    <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
+                    <FormSubmitButton
+                      pendingLabel="Desarchivando..."
+                      className="border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+                    >
+                      Desarchivar
+                    </FormSubmitButton>
+                  </form>
+                ) : null}
+              </>
+            ) : null}
+            {canUpload && primaryUploadFolder && worker.is_active ? (
               <Link
                 href={`/dashboard/workers/${worker.id}/documents/new${
                   hasSingleUploadFolder ? `?folder=${primaryUploadFolder}` : ""
@@ -194,10 +326,14 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           </div>
         </header>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Estado</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.status}</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+            <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Registro</p>
+            <p className="mt-1 font-semibold text-slate-900">{worker.is_active ? "Activo" : "Archivado"}</p>
           </div>
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Area</p>
@@ -213,35 +349,155 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           </div>
         </div>
 
-        {isAdmin ? (
+        {canManage ? (
+          <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <header className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold text-slate-900">Acceso al portal</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Gestiona la cuenta de ingreso del trabajador y su acceso a documentacion personal.
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${getAccessBadgeClass(workerAccessState)}`}
+              >
+                {getAccessStateLabel(workerAccessState)}
+              </span>
+            </header>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+                <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Correo acceso</p>
+                <p className="mt-1 truncate font-medium text-slate-900">{workerAccessEmail ?? "Sin cuenta"}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+                <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Ultimo login</p>
+                <p className="mt-1 font-medium text-slate-900">{formatDateTime(workerAccessLastSignInAt)}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+                <p className="text-xs uppercase tracking-[0.08em] text-slate-500">ID cuenta</p>
+                <p className="mt-1 truncate font-medium text-slate-900">{workerAccessUserId ?? "Sin cuenta"}</p>
+              </div>
+            </div>
+
+            {workerAccessError ? (
+              <AlertBanner className="mt-3" variant="warning">
+                {workerAccessError}
+              </AlertBanner>
+            ) : null}
+
+            {workerAccessState === "sin_acceso" && !workerAccessError ? (
+              <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+                {!worker.is_active ? (
+                  <AlertBanner variant="warning">Debes desarchivar el trabajador para crear su acceso.</AlertBanner>
+                ) : !worker.email ? (
+                  <AlertBanner variant="warning">
+                    Debes completar el correo del trabajador antes de crear su acceso.
+                  </AlertBanner>
+                ) : (
+                  <form action={createWorkerAccessAction} className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+                    <input type="hidden" name="workerId" value={worker.id} />
+                    <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
+                    <div className="space-y-1.5">
+                      <label htmlFor="temporary-password" className="text-sm font-medium text-slate-900">
+                        Contrasena temporal
+                      </label>
+                      <input
+                        id="temporary-password"
+                        name="temporaryPassword"
+                        type="password"
+                        minLength={8}
+                        required
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        placeholder="Minimo 8 caracteres"
+                      />
+                    </div>
+                    <FormSubmitButton
+                      pendingLabel="Creando acceso..."
+                      className="border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Crear acceso
+                    </FormSubmitButton>
+                  </form>
+                )}
+              </div>
+            ) : null}
+
+            {workerAccessState === "activo" ? (
+              <form action={suspendWorkerAccessAction} className="mt-3">
+                <input type="hidden" name="workerId" value={worker.id} />
+                <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
+                <FormSubmitButton
+                  pendingLabel="Suspendiendo..."
+                  className="border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50"
+                >
+                  Suspender acceso
+                </FormSubmitButton>
+              </form>
+            ) : null}
+
+            {workerAccessState === "suspendido" ? (
+              <form action={activateWorkerAccessAction} className="mt-3">
+                <input type="hidden" name="workerId" value={worker.id} />
+                <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
+                <FormSubmitButton
+                  pendingLabel="Activando..."
+                  className="border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+                >
+                  Reactivar acceso
+                </FormSubmitButton>
+              </form>
+            ) : null}
+          </section>
+        ) : null}
+
+        {isAdmin && worker.is_active ? (
           <details className="mt-4 rounded-xl border border-red-200 bg-red-50">
             <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-red-700">
-              Eliminar trabajador (solo admin)
+              Archivar trabajador (solo admin)
             </summary>
-            <form action={deleteWorkerAction} className="space-y-3 border-t border-red-200 px-4 py-4">
+            <form action={deactivateWorkerAction} className="space-y-3 border-t border-red-200 px-4 py-4">
               <input type="hidden" name="workerId" value={worker.id} />
               <input type="hidden" name="returnTo" value="/dashboard/workers" />
               <p className="text-sm text-red-800">
-                Vas a eliminar a {worker.first_name} {worker.last_name}. Esta accion no se puede deshacer.
+                Vas a archivar a {worker.first_name} {worker.last_name}. El registro no se elimina de la base.
               </p>
               <label className="flex items-start gap-2 text-sm text-red-900">
                 <input
                   type="checkbox"
-                  name="confirmDelete"
+                  name="confirmArchive"
                   value="yes"
                   required
                   className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
                 />
-                Confirmo que quiero eliminar este trabajador
+                Confirmo que quiero archivar este trabajador
               </label>
               <FormSubmitButton
-                pendingLabel="Eliminando..."
+                pendingLabel="Archivando..."
                 className="border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
               >
-                Eliminar trabajador
+                Archivar trabajador
               </FormSubmitButton>
             </form>
           </details>
+        ) : null}
+
+        {isAdmin && !worker.is_active ? (
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4">
+            <p className="text-sm text-emerald-800">
+              Este trabajador esta archivado y no aparece en el listado por defecto.
+            </p>
+            <form action={reactivateWorkerAction} className="mt-3">
+              <input type="hidden" name="workerId" value={worker.id} />
+              <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
+              <FormSubmitButton
+                pendingLabel="Desarchivando..."
+                className="border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+              >
+                Desarchivar trabajador
+              </FormSubmitButton>
+            </form>
+          </div>
         ) : null}
       </section>
 
@@ -329,7 +585,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                             Ver documentos
                           </Link>
                         ) : null}
-                        {canUpload && canUploadDocumentToFolder(profile?.role, folderType) ? (
+                        {canUpload && worker.is_active && canUploadDocumentToFolder(role, folderType) ? (
                           <Link
                             href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
                             className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -364,7 +620,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         Ver documentos
                       </Link>
                     ) : null}
-                    {canUpload && canUploadDocumentToFolder(profile?.role, folderType) ? (
+                    {canUpload && worker.is_active && canUploadDocumentToFolder(role, folderType) ? (
                       <Link
                         href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
                         className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"

@@ -35,3 +35,28 @@ export const downloadDocumentSchema = z.object({
   documentId: z.string().uuid("Documento invalido"),
   returnTo: optionalFormString(300),
 });
+
+export const createDownloadRequestSchema = z.object({
+  workerId: z.string().uuid("Trabajador invalido"),
+  documentId: z.string().uuid("Documento invalido"),
+  requestReason: z
+    .string()
+    .trim()
+    .min(3, "Debes indicar un motivo")
+    .max(500, "El motivo no puede superar 500 caracteres"),
+  returnTo: optionalFormString(300),
+});
+
+export const resolveDownloadRequestSchema = z.object({
+  requestId: z.string().uuid("Solicitud invalida"),
+  workerId: z.string().uuid("Trabajador invalido"),
+  decision: z.enum(["aprobado", "rechazado"], "Decision invalida"),
+  decisionNote: optionalFormString(500),
+  returnTo: optionalFormString(300),
+});
+
+export const downloadApprovedRequestSchema = z.object({
+  requestId: z.string().uuid("Solicitud invalida"),
+  workerId: z.string().uuid("Trabajador invalido"),
+  returnTo: optionalFormString(300),
+});

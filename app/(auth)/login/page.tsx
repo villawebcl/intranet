@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { loginWithPasswordAction } from "@/app/(auth)/actions";
 import { LoginForm } from "@/components/auth/login-form";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -23,6 +24,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
   const reason = params.reason;
+  const errorCode = typeof params.error === "string" ? params.error : null;
+  const errorMessage =
+    errorCode === "invalid_credentials" ? "No se pudo iniciar sesion. Revisa tus credenciales." : null;
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -45,7 +49,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               Panel interno
             </p>
             <h1 className="mt-4 max-w-xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              Intranet Anagami
+              Intranet Base
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
               Gestion documental interna con acceso por roles, trazabilidad y panel operativo para
@@ -89,7 +93,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           ) : null}
 
           <div className="mt-5">
-            <LoginForm nextPath={nextPath} />
+            <LoginForm nextPath={nextPath} errorMessage={errorMessage} action={loginWithPasswordAction} />
           </div>
         </section>
       </div>

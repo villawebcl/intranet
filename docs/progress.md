@@ -9,17 +9,53 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Leer este archivo antes de cambios importantes para entender el estado actual.
 - Actualizar este archivo al cerrar cualquier bloque relevante de trabajo.
 
-## Estado actual (2026-02-23)
+## Estado actual (2026-02-27)
 
-- MVP funcional en desarrollo avanzado con auth, workers, documentos, notificaciones y auditoria base.
-- QA manual por rol y verificacion de auditoria reportados OK, con evidencia visual base adjunta y PR de cierre mergeado.
-- Se detecto y corrigio un bug de login (requeria recarga y no registraba `auth_login` de forma confiable).
-- Ticket `feature/permissions-e2e-smoke` completado y mergeado en `main` via PR `#3` (suite smoke auth/permisos OK local, 10 casos).
-- Ticket `feature/acceptance-delivery-closeout` deja checklists de acceptance/entrega normalizados y pendientes clasificados por tipo/responsable para handoff.
-- Politicas MVP del modulo documental ya formalizadas en memoria/ADR: trabajador `inactivo` bloquea carga (mantiene lectura/descarga por rol) y PDF max `5MB`.
-- Bloqueo actual de cierre del MVP: datos operativos/cliente (URLs, credenciales por canal seguro, backup/export, capacitacion, aprobacion formal).
+- Seguridad de auditoria endurecida: insercion via RPC `SECURITY DEFINER` y bloqueo de insert directo no confiable.
+- Seguridad de descargas endurecida: `visitante` sin lectura directa de `storage.objects`, flujo por `download_requests` + aprobacion + signed URL temporal.
+- Workers en soft-delete operativo (`archivar` / `desarchivar`) sin borrado fisico.
+- Separacion funcional consolidada:
+  - `Usuarios nucleo`: admin/rrhh/contabilidad/visitante.
+  - `Trabajadores`: gestion de personal y acceso al portal trabajador.
+- Listados principales con paginacion real y filtros persistentes en URL:
+  - users/workers/documents/notifications/audit.
+- Se agregan indices DB para consultas frecuentes y filtros de paginacion (`20260227_000012_performance_indexes_pagination.sql`).
+- Se incorpora comando unico de certificacion `npm run rc` (lint + typecheck + unit + build:ci + smoke).
+- Se crea runbook de release en `docs/RELEASE.md` (freeze/tag, verificacion SQL post-deploy, bootstrap admin inicial).
+- Se aplica pass de espaciado UI en pantallas densas (`workers`, `documents`, `users`, `audit`) con contenedor consistente reusable.
+- Validaciones tecnicas recientes en verde:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run test:unit`
 
 ## Progreso diario
+
+### 2026-02-27
+
+#### Hecho
+
+- Se corrige inconsistencia de borrado de workers implementando `soft delete` (archivado/desarchivado) con soporte de UI.
+- Se agrega asignacion de `profiles.worker_id` desde UI admin y validaciones de unicidad.
+- Se mueve el login a flujo server-side y se estabiliza registro de auditoria de autenticacion.
+- Se refactoriza a capa de servicios (`lib/services/*`) y se dejan server actions mas delgadas.
+- Se incorpora suite de tests unitarios para servicios criticos (`users`, `workers`, `documents`).
+- Se fortalecen smoke tests e2e para login/permisos y flujos de descarga por solicitud.
+- Se implementa paginacion real en:
+  - `/dashboard/users`
+  - `/dashboard/workers`
+  - `/dashboard/workers/:workerId/documents`
+  - `/dashboard/notifications`
+  - `/dashboard/audit`
+- Se agrega migracion `20260227_000012_performance_indexes_pagination.sql` con indices para workers/documents/download_requests/notifications/audit.
+- Se actualiza documentacion operativa (`README`, `RUNBOOK`, manual de usuario) con paginacion y verificaciones post-deploy.
+- Se agrega `rc` en `package.json` como comando unico de salida para release candidate.
+- Se agrega `docs/RELEASE.md` como runbook minimo para congelar/taggear y verificar RLS/routines tras despliegue.
+- Se alinea UX de espaciado global en modulos densos (`users`, `workers`, `documents`, `audit`) sin cambios de logica de negocio.
+
+#### Falta / arrastrado
+
+- Ejecutar smoke e2e completo en entorno conectado a Supabase antes de release final.
+- Completar acceptance operativo/cliente (credenciales, responsables, backup inicial, capacitacion y aprobacion formal).
 
 ### 2026-02-23
 
@@ -49,7 +85,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - vista responsive (cards en movil, tabla en escritorio)
 - Se mejora navegacion global del dashboard:
   - sidebar en desktop + navegacion compacta en movil
-  - logo `Intranet Anagami` clickeable hacia `/dashboard`
+  - logo `Intranet Base` clickeable hacia `/dashboard`
   - nueva vista `/dashboard/access` para resumen de acceso y roles (corrige acceso roto desde dashboard)
 - Se aplica pulido UI/UX en `/dashboard/audit` (sin tocar logica):
   - resumen en lenguaje claro por evento (que paso, actor y contexto)

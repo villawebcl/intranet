@@ -27,6 +27,7 @@ function roleLabel(role: (typeof appRoles)[number]) {
   if (role === "admin") return "Admin";
   if (role === "rrhh") return "RRHH";
   if (role === "contabilidad") return "Contabilidad";
+  if (role === "trabajador") return "Trabajador";
   return "Visitante";
 }
 

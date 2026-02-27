@@ -1,4 +1,4 @@
-# ACCEPTANCE_CHECKLIST.md — Intranet Anagami (MVP Fase 1)
+# ACCEPTANCE_CHECKLIST.md — Intranet Base (MVP Fase 1)
 
 ## Propósito
 
@@ -135,7 +135,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## H) Entrega (Obligatorio)
 
 > Nota: pendientes operativos/cliente detallados con responsable/estado en `docs/delivery-checklist.md`.
-> Nota URL: `intranet@anagami.cl` es un correo; para produccion se debe registrar una URL (ej. `https://intranet.anagami.cl`).
+> Nota URL: `intranet@empresa.cl` es un correo; para produccion se debe registrar una URL (ej. `https://intranet.empresa.cl`).
 
 - [ ] Repo GitHub privado compartido con el cliente (si corresponde)
 - [x] README con pasos de instalación/despliegue y variables de entorno
@@ -150,7 +150,7 @@ Se considera **aceptado** cuando TODOS los ítems “Obligatorio” están OK.
 ## Registro de aceptación
 
 - Fecha de entrega: `PENDIENTE` (estimada `2026-03-31`)
-- URL Staging / Producción: `https://intranet-lovat-delta.vercel.app` / `PENDIENTE` (produccion sugerida: `https://intranet.anagami.cl`)
+- URL Staging / Producción: `https://intranet-lovat-delta.vercel.app` / `PENDIENTE` (produccion sugerida: `https://intranet.empresa.cl`)
 - Responsable tecnico (proveedor): `Cristian Villalobos`
 - Responsable cliente (aprobacion): `PENDIENTE`
 - Canal seguro de credenciales: `email`

@@ -5,8 +5,8 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Intranet Anagami",
-  description: "Gestion documental interna para Anagami Seguridad",
+  title: "Intranet Base",
+  description: "Gestion documental interna para empresa cliente",
 };
 
 export default function RootLayout({

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { type AppRole } from "@/lib/constants/domain";
+import { insertAuditLog } from "@/lib/audit/log";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 async function signOutWithAudit(reason: "manual" | "timeout") {
@@ -21,17 +22,14 @@ async function signOutWithAudit(reason: "manual" | "timeout") {
 
     const actorRole: AppRole = profile?.role ?? "visitante";
 
-    const { error } = await supabase.from("audit_logs").insert({
-      actor_user_id: user.id,
-      actor_role: actorRole,
+    await insertAuditLog({
+      supabase,
+      actorUserId: user.id,
+      actorRole,
       action: "auth_logout",
-      entity_type: "auth",
+      entityType: "auth",
       metadata: { reason },
     });
-
-    if (error) {
-      console.error("auth logout audit insert failed", error);
-    }
   }
 
   await supabase.auth.signOut();

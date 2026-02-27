@@ -21,24 +21,23 @@ function getInitialTheme(): ThemeMode {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<ThemeMode>("light");
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const initialTheme = getInitialTheme();
-    setTheme(initialTheme);
-    applyTheme(initialTheme);
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) {
-      return;
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") {
+      return "light";
     }
 
+    const datasetTheme = document.documentElement.dataset.theme;
+    if (datasetTheme === "light" || datasetTheme === "soft-dark") {
+      return datasetTheme;
+    }
+
+    return getInitialTheme();
+  });
+
+  useEffect(() => {
     applyTheme(theme);
     window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme, ready]);
+  }, [theme]);
 
   function toggleTheme() {
     const root = document.documentElement;
@@ -54,12 +53,11 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      aria-pressed={theme === "soft-dark"}
-      aria-label={theme === "soft-dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro suave"}
+      aria-label="Alternar tema"
       className="theme-toggle-button fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg shadow-slate-900/10 backdrop-blur-sm hover:bg-white"
     >
       <span className="inline-flex h-2 w-2 rounded-full bg-slate-400" aria-hidden />
-      <span>{theme === "soft-dark" ? "Modo claro" : "Modo oscuro suave"}</span>
+      <span>Tema</span>
     </button>
   );
 }

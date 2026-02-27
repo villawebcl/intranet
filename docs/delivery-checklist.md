@@ -24,7 +24,7 @@ Preparar el cierre de entrega del MVP sin depender del chat, aunque falten captu
 - Fecha estimada de entrega: `2026-03-31`
 - Fecha real de entrega: `PENDIENTE`
 - URL staging: `https://intranet-lovat-delta.vercel.app` (Vercel alias temporal; deploy 2026-02-23, `/login` responde HTTP 200)
-- URL produccion: `PENDIENTE` (dominio/subdominio por comprar; formato sugerido: `https://intranet.anagami.cl`)
+- URL produccion: `PENDIENTE` (dominio/subdominio por comprar; formato sugerido: `https://intranet.empresa.cl`)
 - Responsable tecnico (proveedor): `Cristian Villalobos`
 - Responsable operativo (proveedor): `Cristian Villalobos`
 - Responsable cliente (aprobacion): `PENDIENTE`
