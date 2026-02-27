@@ -24,7 +24,7 @@ export function FormSubmitButton({
       disabled={isDisabled}
       aria-busy={pending}
       className={[
-        "inline-flex items-center justify-center rounded-lg transition focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center rounded-sm transition focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60",
         className ?? "",
       ].join(" ")}
     >

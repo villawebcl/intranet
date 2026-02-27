@@ -359,7 +359,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
   return (
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Auditoria</h1>
@@ -369,7 +369,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
             </div>
             <Link
               href="/dashboard"
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Volver al dashboard
             </Link>
@@ -397,7 +397,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
         </header>
 
         <form
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+          className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
           method="get"
         >
           <p className="text-sm font-medium text-slate-900">Filtros</p>
@@ -414,7 +414,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 name="action"
                 defaultValue={actionFilter}
                 placeholder="document_uploaded"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="space-y-1.5">
@@ -429,19 +429,19 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 name="entity"
                 defaultValue={entityFilter}
                 placeholder="document o worker"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="flex items-end gap-2.5 lg:pb-0.5">
               <button
                 type="submit"
-                className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Aplicar
               </button>
               <Link
                 href="/dashboard/audit"
-                className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Limpiar
               </Link>
@@ -450,7 +450,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
         </form>
 
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+          <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
             No se pudieron cargar logs: {error.message}
           </div>
         ) : null}
@@ -478,7 +478,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
               {rows.map((log) => (
                 <article
                   key={log.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                  className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -504,14 +504,14 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                     </div>
                   </div>
 
-                  <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="mt-3 rounded-sm border border-slate-200 bg-slate-50 p-3">
                     <MetadataSummary metadataValue={log.metadata} />
                   </div>
                 </article>
               ))}
             </div>
 
-            <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm xl:block">
+            <div className="hidden overflow-x-auto rounded-sm border border-slate-200 bg-white shadow-sm xl:block">
               <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
                 <colgroup>
                   <col className="w-[16%]" />
@@ -548,7 +548,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                           {log.actor_user_id ? (
                             <span
                               title={log.actor_user_id}
-                              className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                              className="inline-block max-w-full truncate rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                             >
                               {truncateMiddle(log.actor_user_id)}
                             </span>
@@ -563,7 +563,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                           {log.entity_id ? (
                             <span
                               title={log.entity_id}
-                              className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                              className="inline-block max-w-full truncate rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                             >
                               {truncateMiddle(log.entity_id)}
                             </span>
@@ -571,7 +571,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="max-w-full rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <div className="max-w-full rounded-sm border border-slate-200 bg-slate-50 p-3">
                           <MetadataSummary metadataValue={log.metadata} />
                         </div>
                       </td>

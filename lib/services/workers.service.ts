@@ -746,6 +746,105 @@ export async function archiveWorker(
   return { ok: true, data: undefined };
 }
 
+export async function deleteWorkerPermanently(
+  context: WorkerServiceContext,
+  payload: {
+    workerId: string;
+  },
+): Promise<ServiceResult<{ hadLinkedAccess: boolean; linkedAccessDeleted: boolean }>> {
+  const { data: worker, error: workerError } = await context.supabase
+    .from("workers")
+    .select("id, rut, first_name, last_name, is_active")
+    .eq("id", payload.workerId)
+    .maybeSingle();
+
+  if (workerError) {
+    return { ok: false, error: "No se pudo validar el trabajador" };
+  }
+
+  if (!worker) {
+    return { ok: false, error: "El trabajador no existe" };
+  }
+
+  if (worker.is_active) {
+    return {
+      ok: false,
+      error: "Solo puedes eliminar definitivamente trabajadores archivados",
+    };
+  }
+
+  const adminClientResult = getAdminClient(context);
+  if (!adminClientResult.ok) {
+    return { ok: false, error: adminClientResult.error };
+  }
+  const adminClient = adminClientResult.client;
+
+  const { data: linkedProfile, error: linkedProfileError } = await adminClient
+    .from("profiles")
+    .select("id, role")
+    .eq("worker_id", payload.workerId)
+    .maybeSingle();
+
+  if (linkedProfileError) {
+    return { ok: false, error: "No se pudo validar acceso asociado al trabajador" };
+  }
+
+  const hadLinkedAccess = linkedProfile?.role === "trabajador";
+
+  const { data: deletedWorker, error: deleteWorkerError } = await adminClient
+    .from("workers")
+    .delete()
+    .eq("id", payload.workerId)
+    .eq("is_active", false)
+    .select("id")
+    .maybeSingle();
+
+  if (deleteWorkerError || !deletedWorker) {
+    return { ok: false, error: "No se pudo eliminar definitivamente el trabajador" };
+  }
+
+  let linkedAccessDeleted = !hadLinkedAccess;
+
+  if (hadLinkedAccess && linkedProfile) {
+    const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(linkedProfile.id, true);
+
+    if (deleteUserError) {
+      linkedAccessDeleted = false;
+      console.error("worker linked access soft delete failed", {
+        workerId: payload.workerId,
+        authUserId: linkedProfile.id,
+        error: deleteUserError,
+      });
+    } else {
+      linkedAccessDeleted = true;
+    }
+  }
+
+  await logAuditEvent({
+    supabase: context.supabase,
+    action: "worker_deleted",
+    actorUserId: context.actorUserId,
+    actorRole: context.actorRole,
+    entityType: "worker",
+    entityId: payload.workerId,
+    metadata: {
+      rut: worker.rut,
+      workerName: `${worker.first_name} ${worker.last_name}`.trim(),
+      permanent: true,
+      hadLinkedAccess,
+      linkedAccessDeleted,
+    },
+  });
+
+  return {
+    ok: true,
+    data: {
+      hadLinkedAccess,
+      linkedAccessDeleted,
+    },
+  };
+}
+
 export async function unarchiveWorker(
   context: WorkerServiceContext,
   payload: {

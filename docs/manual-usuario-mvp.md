@@ -75,6 +75,7 @@ Ruta: `/dashboard/users`
 - Asignar rol (`admin`, `rrhh`, `contabilidad`, `visitante`)
 - Editar nombre/rol de usuarios existentes
 - Resetear contrasena de un usuario
+- Eliminar usuarios del nucleo con confirmacion
 - Vincular/ajustar perfiles del nucleo sin mezclar cuentas de `trabajador`
 
 ### Crear usuario
@@ -93,9 +94,16 @@ Ruta: `/dashboard/users`
 1. Ingresar `Nueva contrasena` en la fila del usuario.
 2. Presionar `Resetear`.
 
+### Eliminar usuario
+
+1. En la fila del usuario, abrir `Eliminar`.
+2. Marcar la confirmacion.
+3. Presionar `Eliminar`.
+
 Nota:
 
 - El admin no puede quitarse a si mismo el rol `admin` desde esta pantalla (proteccion para no bloquear acceso).
+- Las cuentas con rol `admin` no se pueden eliminar desde esta pantalla.
 
 ## Modulo: Trabajadores
 
@@ -105,14 +113,17 @@ Ruta: `/dashboard/workers`
 
 - Ver listado de trabajadores.
 - Buscar por `RUT` o nombre.
-- Abrir ficha del trabajador.
+- Abrir ficha del trabajador haciendo click en su nombre (o tarjeta en movil).
+- Usar menu de acciones (`⋯`) por trabajador en la tabla de escritorio.
 - Segun rol (`admin` / `rrhh`):
   - `Nuevo trabajador`
   - `Editar`
   - `Activar` / `Desactivar`
-  - `Archivar` (soft delete)
+  - `Crear acceso a intranet` al crear el trabajador (opcional, con contrasena temporal)
 - Segun rol (`admin`):
+  - `Archivar` (soft delete)
   - `Desarchivar`
+  - `Eliminar definitivo` (solo trabajadores archivados)
 
 ### Buscar trabajador
 
@@ -133,23 +144,25 @@ Ruta: `/dashboard/workers`
    - `Area`
    - `Telefono`
    - `Correo`
-4. Presionar `Guardar` (o boton de submit equivalente).
+4. Opcional: dejar marcado `Crear acceso a intranet al guardar` y completar `Contrasena temporal`.
+5. Presionar `Crear trabajador`.
 
 ### Editar trabajador (`admin` / `rrhh`)
 
-1. Desde el listado o la ficha, abrir `Editar` / `Editar datos`.
+1. Desde el listado, abrir el menu `⋯` y elegir `Editar`, o usar `Editar datos` dentro de la ficha.
 2. Actualizar campos.
 3. Presionar `Guardar`.
 
 ### Activar / Desactivar trabajador (`admin` / `rrhh`)
 
-1. Desde el listado o la ficha, presionar `Activar` o `Desactivar`.
+1. Desde el menu `⋯` del listado o desde la ficha, presionar `Activar` o `Desactivar`.
 2. El estado cambia sin eliminar datos ni documentos historicos.
 
-### Archivar / Desarchivar trabajador
+### Archivar / Desarchivar / Eliminar definitivo (`admin`)
 
 - `Archivar` oculta el registro por defecto (sin borrado fisico de DB).
 - `Desarchivar` vuelve a dejar el registro como activo.
+- `Eliminar definitivo` solo se habilita para registros archivados y requiere confirmacion explicita.
 - En vistas con filtro de archivado puedes alternar:
   - `Solo activos`
   - `Solo archivados`
@@ -176,6 +189,8 @@ Segun rol, se pueden ver botones:
 
 - `Editar datos`
 - `Activar` / `Desactivar`
+- `Archivar` / `Desarchivar` (solo `admin`)
+- `Eliminar definitivo` (solo `admin` y solo en archivados)
 - `Subir documento`
 - `Ver documentos`
 
@@ -363,20 +378,22 @@ Pasos:
 
 1. Entrar a `Trabajadores`.
 2. Buscar trabajador.
-3. Abrir `Ver documentos`.
-4. Opcional: usar `Subir liquidacion` para cargar PDF en carpeta `Liquidaciones`.
-5. Filtrar por carpeta/estado si corresponde.
-6. `Descargar` documentos necesarios.
-7. Cerrar sesion.
+3. Abrir ficha del trabajador (click en nombre/tarjeta).
+4. Abrir `Ver documentos`.
+5. Opcional: usar `Subir liquidacion` para cargar PDF en carpeta `Liquidaciones`.
+6. Filtrar por carpeta/estado si corresponde.
+7. `Descargar` documentos necesarios.
+8. Cerrar sesion.
 
 ### Visitante
 
-1. Entrar a `Trabajadores` y abrir `Ver documentos` del trabajador.
-2. Revisar listado/documento requerido (sin descarga directa).
-3. Presionar `Solicitar descarga` en el documento correspondiente.
-4. Esperar aprobacion del equipo administrador / RRHH.
-5. Si se aprueba, usar `Descargar aprobado (5 min)` antes de expirar.
-6. Cerrar sesion.
+1. Entrar a `Trabajadores` y abrir ficha del trabajador.
+2. Abrir `Ver documentos`.
+3. Revisar listado/documento requerido (sin descarga directa).
+4. Presionar `Solicitar descarga` en el documento correspondiente.
+5. Esperar aprobacion del equipo administrador / RRHH.
+6. Si se aprueba, usar `Descargar aprobado (5 min)` antes de expirar.
+7. Cerrar sesion.
 
 ### Trabajador
 
@@ -421,3 +438,4 @@ Referencia de evidencia existente: `docs/manual-qa-evidence.md`.
 ## Historial
 
 - 2026-02-23: borrador inicial del manual de usuario MVP (base operativa de entrega).
+- 2026-02-27: actualizacion de flujos `Trabajadores` y `Usuarios` (menu `⋯`, alta con acceso opcional, archivado y eliminacion definitiva admin).

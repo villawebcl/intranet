@@ -217,10 +217,23 @@ export async function deleteCoreUser(
   const { data: authUserResult } = await context.adminClient.auth.admin.getUserById(payload.targetUserId);
   const targetEmail = authUserResult?.user?.email ?? null;
 
-  const { error: deleteError } = await context.adminClient.auth.admin.deleteUser(payload.targetUserId);
+  const { error: hardDeleteError } = await context.adminClient.auth.admin.deleteUser(
+    payload.targetUserId,
+    false,
+  );
+  let deletionMode: "hard" | "soft" = "hard";
 
-  if (deleteError) {
-    return serviceError("No se pudo eliminar el usuario");
+  if (hardDeleteError) {
+    const { error: softDeleteError } = await context.adminClient.auth.admin.deleteUser(
+      payload.targetUserId,
+      true,
+    );
+
+    if (softDeleteError) {
+      return serviceError("No se pudo eliminar el usuario");
+    }
+
+    deletionMode = "soft";
   }
 
   await logAuditEvent({
@@ -234,6 +247,7 @@ export async function deleteCoreUser(
       email: targetEmail,
       role: targetProfile?.role ?? "visitante",
       fullName: targetProfile?.full_name ?? null,
+      deletionMode,
     },
   });
 

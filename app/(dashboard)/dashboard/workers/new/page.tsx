@@ -43,10 +43,11 @@ export default async function NewWorkerPage({ searchParams }: NewWorkerPageProps
   return (
     <WorkerForm
       title="Nuevo trabajador"
-      description="Completa los datos basicos para registrar un trabajador activo."
+      description="Completa los datos basicos y, si corresponde, crea su acceso a intranet en el mismo paso."
       submitLabel="Crear trabajador"
       action={createWorkerAction}
       errorMessage={getStringParam(params.error)}
+      showAccessSetup
       values={{
         rut: "",
         firstName: "",

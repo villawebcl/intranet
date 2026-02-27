@@ -34,6 +34,29 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 
 #### Hecho
 
+- Se implementa menu de acciones por trabajador (`⋯`) en tabla desktop:
+  - acciones centradas y ordenadas (abrir ficha, editar, activar/desactivar, archivar, desarchivar, eliminar)
+  - cierre por click fuera o `Esc`
+  - render via portal para evitar cortes por overflow en tablas
+- Se ajusta UX de listado de trabajadores:
+  - se elimina boton `Ver` en tabla
+  - la ficha se abre por click en el trabajador
+  - tarjetas moviles y tabla escritorio quedan alineadas al mismo patron
+- Se refuerza flujo de ciclo de vida de trabajador:
+  - `archivar`/`desarchivar` solo admin
+  - `eliminar definitivo` solo admin y solo sobre trabajadores archivados
+  - eliminacion definitiva intenta remover tambien acceso `trabajador` asociado
+- Se mejora alta de trabajador:
+  - opcion para crear acceso de intranet en el mismo formulario de creacion
+  - validacion de correo + contrasena temporal al habilitar creacion de acceso inmediata
+- Se corrige eliminacion de usuarios de nucleo:
+  - intento de eliminacion fisica en Auth y fallback a baja logica si aplica
+  - registro de modo de eliminacion en auditoria (`hard` / `soft`)
+- Se estandariza estilo visual global con esquinas mas rectas (`rounded-sm`) para mayor consistencia en toda la intranet.
+- Se actualiza documentacion operativa para reflejar flujos actuales:
+  - `docs/manual-usuario-mvp.md`
+  - `docs/permissions-matrix.md`
+
 - Se corrige inconsistencia de borrado de workers implementando `soft delete` (archivado/desarchivado) con soporte de UI.
 - Se agrega asignacion de `profiles.worker_id` desde UI admin y validaciones de unicidad.
 - Se mueve el login a flujo server-side y se estabiliza registro de auditoria de autenticacion.

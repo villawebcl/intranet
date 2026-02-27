@@ -21,6 +21,7 @@ import {
   activateWorkerAccessAction,
   createWorkerAccessAction,
   deactivateWorkerAction,
+  deleteWorkerAction,
   reactivateWorkerAction,
   suspendWorkerAccessAction,
   toggleWorkerStatusAction,
@@ -142,13 +143,27 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
   const hasSingleUploadFolder = uploadableFolders.length === 1;
   const canReadDocuments = canViewDocuments(role);
 
-  const { data: worker, error: workerError } = await supabase
-    .from("workers")
-    .select("id, rut, first_name, last_name, position, area, email, phone, status, is_active")
-    .eq("id", workerId)
-    .maybeSingle();
+  async function fetchWorkerRecord() {
+    return supabase
+      .from("workers")
+      .select("id, rut, first_name, last_name, position, area, email, phone, status, is_active")
+      .eq("id", workerId)
+      .maybeSingle();
+  }
 
-  if (workerError || !worker) {
+  let { data: worker, error: workerError } = await fetchWorkerRecord();
+
+  if (workerError) {
+    const retryResult = await fetchWorkerRecord();
+    worker = retryResult.data;
+    workerError = retryResult.error;
+  }
+
+  if (workerError) {
+    redirect("/dashboard/workers?error=No+se+pudo+cargar+el+trabajador");
+  }
+
+  if (!worker) {
     notFound();
   }
 
@@ -249,7 +264,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         success={getStringParam(urlParams.success)}
       />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -261,7 +276,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           <div className="flex flex-wrap gap-2">
             <Link
               href="/dashboard/workers"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Volver
             </Link>
@@ -269,7 +284,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
               <>
                 <Link
                   href={`/dashboard/workers/${worker.id}/edit`}
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Editar datos
                 </Link>
@@ -284,11 +299,44 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                     {worker.status === "activo" ? "Desactivar" : "Activar"}
                   </FormSubmitButton>
                 </form>
+                {isAdmin ? (
+                  <details className="rounded-sm border border-red-200 bg-red-50">
+                    <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-red-700">
+                      Archivar
+                    </summary>
+                    <form
+                      action={deactivateWorkerAction}
+                      className="space-y-3 border-t border-red-200 px-3 py-3"
+                    >
+                      <input type="hidden" name="workerId" value={worker.id} />
+                      <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
+                      <p className="text-sm text-red-800">
+                        Vas a archivar a {worker.first_name} {worker.last_name}. El registro no se elimina de la base.
+                      </p>
+                      <label className="flex items-start gap-2 text-sm text-red-900">
+                        <input
+                          type="checkbox"
+                          name="confirmArchive"
+                          value="yes"
+                          required
+                          className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                        />
+                        Confirmo que quiero archivar este trabajador
+                      </label>
+                      <FormSubmitButton
+                        pendingLabel="Archivando..."
+                        className="border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+                      >
+                        Archivar trabajador
+                      </FormSubmitButton>
+                    </form>
+                  </details>
+                ) : null}
               </>
             ) : null}
             {!worker.is_active ? (
               <>
-                <span className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+                <span className="inline-flex items-center rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
                   Registro archivado
                 </span>
                 {isAdmin ? (
@@ -303,54 +351,87 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                     </FormSubmitButton>
                   </form>
                 ) : null}
+                {isAdmin ? (
+                  <details className="rounded-sm border border-red-200 bg-red-50">
+                    <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-red-700">
+                      Eliminar definitivo
+                    </summary>
+                    <form
+                      action={deleteWorkerAction}
+                      className="space-y-3 border-t border-red-200 px-3 py-3"
+                    >
+                      <input type="hidden" name="workerId" value={worker.id} />
+                      <input type="hidden" name="returnTo" value="/dashboard/workers?archive=archived" />
+                      <p className="text-sm text-red-800">
+                        Esta accion elimina definitivamente el trabajador y su acceso asociado.
+                      </p>
+                      <label className="flex items-start gap-2 text-sm text-red-900">
+                        <input
+                          type="checkbox"
+                          name="confirmDelete"
+                          value="yes"
+                          required
+                          className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                        />
+                        Confirmo que quiero eliminar definitivamente este trabajador
+                      </label>
+                      <FormSubmitButton
+                        pendingLabel="Eliminando..."
+                        className="border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+                      >
+                        Eliminar definitivamente
+                      </FormSubmitButton>
+                    </form>
+                  </details>
+                ) : null}
               </>
+            ) : null}
+            {canReadDocuments ? (
+              <Link
+                href={`/dashboard/workers/${worker.id}/documents`}
+                className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Ver documentos
+              </Link>
             ) : null}
             {canUpload && primaryUploadFolder && worker.is_active ? (
               <Link
                 href={`/dashboard/workers/${worker.id}/documents/new${
                   hasSingleUploadFolder ? `?folder=${primaryUploadFolder}` : ""
                 }`}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 {primaryUploadFolder === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir documento"}
-              </Link>
-            ) : null}
-            {canReadDocuments ? (
-              <Link
-                href={`/dashboard/workers/${worker.id}/documents`}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Ver documentos
               </Link>
             ) : null}
           </div>
         </header>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Estado</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.status}</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Registro</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.is_active ? "Activo" : "Archivado"}</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Area</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.area ?? "Sin area"}</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Cargo</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.position ?? "Sin cargo"}</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Correo</p>
             <p className="mt-1 truncate font-semibold text-slate-900">{worker.email ?? "Sin correo"}</p>
           </div>
         </div>
 
         {canManage ? (
-          <section className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <section className="mt-4 rounded-sm border border-slate-200 bg-slate-50 p-4">
             <header className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-base font-semibold text-slate-900">Acceso al portal</h2>
@@ -366,15 +447,15 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             </header>
 
             <div className="mt-3 grid gap-3 md:grid-cols-3">
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm">
                 <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Correo acceso</p>
                 <p className="mt-1 truncate font-medium text-slate-900">{workerAccessEmail ?? "Sin cuenta"}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm">
                 <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Ultimo login</p>
                 <p className="mt-1 font-medium text-slate-900">{formatDateTime(workerAccessLastSignInAt)}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm">
                 <p className="text-xs uppercase tracking-[0.08em] text-slate-500">ID cuenta</p>
                 <p className="mt-1 truncate font-medium text-slate-900">{workerAccessUserId ?? "Sin cuenta"}</p>
               </div>
@@ -387,7 +468,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             ) : null}
 
             {workerAccessState === "sin_acceso" && !workerAccessError ? (
-              <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+              <div className="mt-3 rounded-sm border border-slate-200 bg-white p-3">
                 {!worker.is_active ? (
                   <AlertBanner variant="warning">Debes desarchivar el trabajador para crear su acceso.</AlertBanner>
                 ) : !worker.email ? (
@@ -408,7 +489,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         type="password"
                         minLength={8}
                         required
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
                         placeholder="Minimo 8 caracteres"
                       />
                     </div>
@@ -451,57 +532,9 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           </section>
         ) : null}
 
-        {isAdmin && worker.is_active ? (
-          <details className="mt-4 rounded-xl border border-red-200 bg-red-50">
-            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-red-700">
-              Archivar trabajador (solo admin)
-            </summary>
-            <form action={deactivateWorkerAction} className="space-y-3 border-t border-red-200 px-4 py-4">
-              <input type="hidden" name="workerId" value={worker.id} />
-              <input type="hidden" name="returnTo" value="/dashboard/workers" />
-              <p className="text-sm text-red-800">
-                Vas a archivar a {worker.first_name} {worker.last_name}. El registro no se elimina de la base.
-              </p>
-              <label className="flex items-start gap-2 text-sm text-red-900">
-                <input
-                  type="checkbox"
-                  name="confirmArchive"
-                  value="yes"
-                  required
-                  className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
-                />
-                Confirmo que quiero archivar este trabajador
-              </label>
-              <FormSubmitButton
-                pendingLabel="Archivando..."
-                className="border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
-              >
-                Archivar trabajador
-              </FormSubmitButton>
-            </form>
-          </details>
-        ) : null}
-
-        {isAdmin && !worker.is_active ? (
-          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4">
-            <p className="text-sm text-emerald-800">
-              Este trabajador esta archivado y no aparece en el listado por defecto.
-            </p>
-            <form action={reactivateWorkerAction} className="mt-3">
-              <input type="hidden" name="workerId" value={worker.id} />
-              <input type="hidden" name="returnTo" value={`/dashboard/workers/${worker.id}`} />
-              <FormSubmitButton
-                pendingLabel="Desarchivando..."
-                className="border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
-              >
-                Desarchivar trabajador
-              </FormSubmitButton>
-            </form>
-          </div>
-        ) : null}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
         <header>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -510,11 +543,11 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 Estructura fija de 12 carpetas para gestion documental del trabajador.
               </p>
             </div>
-            <div className="inline-flex rounded-lg border border-slate-300 bg-white p-1">
+            <div className="inline-flex rounded-sm border border-slate-300 bg-white p-1">
               <Link
                 href={`/dashboard/workers/${worker.id}?foldersView=list`}
                 className={[
-                  "rounded-md px-3 py-1.5 text-xs font-semibold transition",
+                  "rounded-sm px-3 py-1.5 text-xs font-semibold transition",
                   foldersView === "list"
                     ? "bg-slate-900 text-white"
                     : "text-slate-700 hover:bg-slate-50",
@@ -525,7 +558,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
               <Link
                 href={`/dashboard/workers/${worker.id}?foldersView=grid`}
                 className={[
-                  "rounded-md px-3 py-1.5 text-xs font-semibold transition",
+                  "rounded-sm px-3 py-1.5 text-xs font-semibold transition",
                   foldersView === "grid"
                     ? "bg-slate-900 text-white"
                     : "text-slate-700 hover:bg-slate-50",
@@ -550,7 +583,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         ) : null}
 
         {foldersView === "list" ? (
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+          <div className="mt-4 overflow-hidden rounded-sm border border-slate-200">
             <ul className="divide-y divide-slate-200 bg-white">
               {folderTypes.map((folderType) => {
                 const summary = folderSummary[folderType];
@@ -580,7 +613,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         {canReadDocuments ? (
                           <Link
                             href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
-                            className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="inline-flex rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             Ver documentos
                           </Link>
@@ -588,7 +621,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         {canUpload && worker.is_active && canUploadDocumentToFolder(role, folderType) ? (
                           <Link
                             href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
-                            className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="inline-flex rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir PDF"}
                           </Link>
@@ -601,31 +634,43 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             </ul>
           </div>
         ) : (
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {folderTypes.map((folderType) => {
               const summary = folderSummary[folderType];
               return (
-                <article key={folderType} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-900">{folderLabels[folderType]}</p>
-                  <p className="mt-2 text-xs text-slate-600">Total: {summary.total}</p>
-                  <p className="mt-1 text-xs text-slate-600">Pendientes: {summary.pendiente}</p>
-                  <p className="mt-1 text-xs text-slate-600">Aprobados: {summary.aprobado}</p>
-                  <p className="mt-1 text-xs text-slate-600">Rechazados: {summary.rechazado}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                <article key={folderType} className="rounded-sm border border-slate-200 bg-white p-3">
+                  <p className="truncate text-xs font-semibold uppercase tracking-[0.06em] text-slate-700">
+                    {folderLabels[folderType]}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                      T {summary.total}
+                    </span>
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                      P {summary.pendiente}
+                    </span>
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                      A {summary.aprobado}
+                    </span>
+                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium text-rose-700">
+                      R {summary.rechazado}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
                     {canReadDocuments ? (
                       <Link
                         href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
-                        className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        className="inline-flex rounded-sm border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
                       >
-                        Ver documentos
+                        Ver
                       </Link>
                     ) : null}
                     {canUpload && worker.is_active && canUploadDocumentToFolder(role, folderType) ? (
                       <Link
                         href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
-                        className="inline-flex rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        className="inline-flex rounded-sm border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
                       >
-                        {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir PDF"}
+                        {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir" : "PDF"}
                       </Link>
                     ) : null}
                   </div>

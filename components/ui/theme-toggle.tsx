@@ -54,7 +54,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label="Alternar tema"
-      className="theme-toggle-button fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg shadow-slate-900/10 backdrop-blur-sm hover:bg-white"
+      className="theme-toggle-button fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-sm border border-slate-200 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg shadow-slate-900/10 backdrop-blur-sm hover:bg-white"
     >
       <span className="inline-flex h-2 w-2 rounded-full bg-slate-400" aria-hidden />
       <span>Tema</span>

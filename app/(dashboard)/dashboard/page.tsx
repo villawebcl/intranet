@@ -131,7 +131,7 @@ function MetricCard({
         : "border-slate-200 bg-white";
 
   const cardClass = [
-    "rounded-xl border p-4 shadow-sm transition",
+    "rounded-sm border p-4 shadow-sm transition",
     toneClass,
     href ? "hover:-translate-y-0.5 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-200" : "",
   ].join(" ");
@@ -173,7 +173,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={["rounded-2xl border border-slate-200 bg-white p-5 shadow-sm", className ?? ""].join(" ")}>
+    <section id={id} className={["rounded-sm border border-slate-200 bg-white p-5 shadow-sm", className ?? ""].join(" ")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">{title}</h2>
@@ -182,7 +182,7 @@ function SectionCard({
         {actionHref && actionLabel ? (
           <Link
             href={actionHref}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             {actionLabel}
           </Link>
@@ -195,7 +195,7 @@ function SectionCard({
 
 function EmptyList({ message }: { message: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+    <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
       {message}
     </div>
   );
@@ -394,7 +394,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               {recentNotifications.map((notification) => (
                 <li
                   key={notification.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3"
                 >
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
@@ -428,7 +428,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               {recentAudit.map((log) => (
                 <li
                   key={log.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3"
                 >
                   <div>
                     <p className="text-sm font-semibold capitalize text-slate-900">{formatAuditAction(log.action)}</p>
@@ -458,7 +458,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                className="flex items-center justify-between rounded-sm border border-slate-200 bg-slate-50 px-3 py-2"
               >
                 <span className="text-sm text-slate-700">{item.label}</span>
                 <span
@@ -486,7 +486,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </AlertBanner>
       ) : null}
 
-      <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <header className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm">
         <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
           Inicio
         </h1>
@@ -504,7 +504,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </header>
 
       {queryErrors.length ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
+        <div className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
           Se cargo el dashboard con informacion parcial. Algunas secciones no pudieron actualizarse.
         </div>
       ) : null}
@@ -571,7 +571,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     <li key={document.id}>
                       <Link
                         href={getWorkerDocumentsHref(document)}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/70 bg-white px-3 py-3 transition hover:border-amber-300 hover:bg-amber-50/40"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-amber-200/70 bg-white px-3 py-3 transition hover:border-amber-300 hover:bg-amber-50/40"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
@@ -613,7 +613,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                         <li key={document.id}>
                           <Link
                             href={getWorkerDocumentsHref(document)}
-                            className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
+                            className="flex flex-wrap items-start justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
                           >
                             <div className="min-w-0">
                               <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
