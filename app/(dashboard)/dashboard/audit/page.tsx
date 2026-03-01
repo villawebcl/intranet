@@ -13,7 +13,6 @@ type AuditPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-type MetadataRecord = Record<string, unknown> | null;
 type AuditLogRow = {
   id: string;
   actor_user_id: string | null;

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DashboardPageContainer } from "@/components/dashboard/page-container";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
 import { ActionMenu } from "@/components/ui/action-menu";
 import { AlertBanner } from "@/components/ui/alert-banner";
@@ -9,11 +10,9 @@ import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { canManageWorkers, isWorkerScopedRole } from "@/lib/auth/roles";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import {
-  createMissingWorkerAccessesAction,
   deactivateWorkerAction,
   deleteWorkerAction,
   reactivateWorkerAction,
@@ -59,17 +58,6 @@ function getArchiveFilter(value: string | string[] | undefined) {
   return "active";
 }
 
-function getArchiveFilterLabel(value: string) {
-  if (value === "archived") {
-    return "Archivados";
-  }
-  if (value === "all") {
-    return "Todos";
-  }
-
-  return "Activos";
-}
-
 function getStatusPillClass(status: string) {
   if (status === "activo") {
     return "bg-emerald-100 text-emerald-800";
@@ -83,19 +71,6 @@ function getStatusLabel(status: string) {
 }
 
 type WorkerAccessState = "sin_acceso" | "activo" | "suspendido";
-
-function isUserSuspended(bannedUntil: string | null | undefined) {
-  if (!bannedUntil) {
-    return false;
-  }
-
-  const bannedUntilDate = new Date(bannedUntil);
-  if (Number.isNaN(bannedUntilDate.getTime())) {
-    return false;
-  }
-
-  return bannedUntilDate.getTime() > Date.now();
-}
 
 function getAccessState(workerAccessState: WorkerAccessState) {
   if (workerAccessState === "activo") {
@@ -214,70 +189,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
     : null;
   const hasFilters = query.length > 0 || Boolean(statusFilter) || archiveFilter !== "active";
   const workerAccessByWorkerId = new Map<string, WorkerAccessState>();
-  let workerAccessError: string | null = null;
-
-  if (!error && canManage && workersCount > 0) {
-    try {
-      const adminClient = createSupabaseAdminClient();
-      const workerIds = workers?.map((worker) => worker.id) ?? [];
-      const { data: profiles, error: profilesError } = await adminClient
-        .from("profiles")
-        .select("id, worker_id, role")
-        .in("worker_id", workerIds);
-
-      if (profilesError) {
-        workerAccessError = "No se pudo cargar estado de accesos";
-      } else {
-        const workerProfiles = (profiles ?? []).filter(
-          (profile): profile is { id: string; worker_id: string; role: string } =>
-            Boolean(profile.worker_id) && profile.role === "trabajador",
-        );
-
-        const workerIdByUserId = new Map(
-          workerProfiles.map((profile) => [profile.id, profile.worker_id]),
-        );
-
-        const { data: usersPage, error: usersError } = await adminClient.auth.admin.listUsers({
-          page: 1,
-          perPage: 1000,
-        });
-
-        if (usersError) {
-          workerAccessError = "No se pudo cargar estado de accesos";
-        } else {
-          const usersById = new Map(usersPage.users.map((authUser) => [authUser.id, authUser]));
-          workerProfiles.forEach((profile) => {
-            const authUser = usersById.get(profile.id);
-            if (!authUser) {
-              return;
-            }
-
-            const workerId = workerIdByUserId.get(profile.id);
-            if (!workerId) {
-              return;
-            }
-
-            workerAccessByWorkerId.set(
-              workerId,
-              isUserSuspended(authUser.banned_until) ? "suspendido" : "activo",
-            );
-          });
-        }
-      }
-    } catch {
-      workerAccessError = "Falta configuracion de servicio para estado de accesos";
-    }
-  }
-
-  const missingAccessCandidatesCount =
-    canManage && !workerAccessError
-      ? (workers ?? []).filter(
-          (worker) =>
-            worker.is_active &&
-            Boolean(worker.email?.trim().length) &&
-            !workerAccessByWorkerId.has(worker.id),
-        ).length
-      : 0;
+  const workerAccessError: string | null = null;
 
   return (
     <section className="space-y-6 lg:space-y-7">
@@ -596,6 +508,5 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
           </>
         ) : null}
       </section>
-    </DashboardPageContainer>
   );
 }

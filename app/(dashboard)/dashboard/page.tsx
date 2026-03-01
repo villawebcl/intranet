@@ -14,7 +14,6 @@ import {
   canViewDocuments,
 } from "@/lib/auth/roles";
 import type { AppRole } from "@/lib/constants/domain";
-import { folderLabels, type FolderType } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 type DashboardPageProps = {
@@ -252,7 +251,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const workersInactiveHref = "/dashboard/workers?status=inactivo";
   const workersActiveHref = "/dashboard/workers?status=activo";
   const documentsMetricHref = workersListHref;
-  const notificationsHref = isAdmin ? "/dashboard/notifications" : undefined;
 
   return (
     <section className="space-y-5">

@@ -2,10 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
-import { ModalButton } from "@/components/ui/modal-button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { canViewAudit } from "@/lib/auth/roles";
-import { folderLabels, folderTypes } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -15,7 +13,6 @@ type NotificationsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-type NotificationPayload = Record<string, unknown> | null;
 type EmailFilterValue = "all" | "sent" | "pending";
 
 const notificationEventOptions = [

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "./Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 interface StatCardProps {
     label: string;

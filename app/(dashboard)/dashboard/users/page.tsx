@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -14,9 +13,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import {
   createUserAdminAction,
-  deleteUserAdminAction,
-  resetUserPasswordAdminAction,
-  updateUserAdminAction,
 } from "./actions";
 
 type UsersPageProps = {
@@ -171,7 +167,6 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   const errorMessage = getStringParam(params.error);
   const filteredUsers = users.filter((row) => row.role !== "trabajador");
   const hiddenWorkersCount = users.length - filteredUsers.length;
-  const returnToPath = buildUsersPath(currentPage);
   const previousPageHref = currentPage > 1 ? buildUsersPath(currentPage - 1) : null;
   const nextPageHref = hasNextPage ? buildUsersPath(currentPage + 1) : null;
 
