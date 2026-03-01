@@ -1,14 +1,11 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 
+import AppShell from "@/components/layout/AppShell";
 import { IdleSessionWatcher } from "@/components/auth/idle-session-watcher";
-import { SidebarNav } from "@/components/dashboard/sidebar-nav";
-import { FormSubmitButton } from "@/components/forms/form-submit-button";
 import { canManageUsers, canManageWorkers, canViewAudit, isWorkerScopedRole } from "@/lib/auth/roles";
 import { getClientEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-
-import { signOutAction } from "./actions";
+import { type NavItem } from "@/components/dashboard/sidebar-nav";
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createSupabaseServerClient();
@@ -32,7 +29,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   const workerDocumentsHref =
     isWorkerScopedRole(role) && profile?.worker_id ? `/dashboard/workers/${profile.worker_id}/documents` : null;
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       href: "/dashboard",
       label: "Inicio",
@@ -96,70 +93,11 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   ];
 
   return (
-    <div className="dashboard-shell min-h-screen">
-      <header className="dashboard-shell-header sticky top-0 z-20 border-b border-white/70 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link
-              href="/dashboard"
-              className="dashboard-shell-brand inline-flex items-center gap-3 rounded-sm px-1 py-1 hover:bg-white/70"
-            >
-              <span className="dashboard-shell-logo inline-flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-sm">
-                A
-              </span>
-              <span>
-                <span className="dashboard-shell-brand-title block text-sm font-semibold text-slate-900">
-                  Intranet Base
-                </span>
-                <span className="dashboard-shell-brand-subtitle block text-xs text-slate-500">
-                  Gestion documental interna
-                </span>
-              </span>
-            </Link>
-
-            <div className="flex items-center gap-3">
-              <div className="dashboard-shell-usercard rounded-sm border border-slate-200/80 bg-white/90 px-3 py-2 text-right shadow-sm">
-                <p className="dashboard-shell-userrole text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  {role}
-                </p>
-                <p className="dashboard-shell-username max-w-52 truncate text-sm text-slate-700">
-                  {displayName}
-                </p>
-              </div>
-              <form action={signOutAction}>
-                <FormSubmitButton
-                  pendingLabel="Cerrando..."
-                  className="dashboard-shell-signout border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
-                >
-                  Cerrar sesion
-                </FormSubmitButton>
-              </form>
-            </div>
-          </div>
-
-          <div className="mt-3 md:hidden">
-            <div className="dashboard-shell-mobile-nav rounded-sm border border-slate-200/80 bg-white/90 p-2 shadow-sm">
-              <SidebarNav items={navItems} compact />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:grid-cols-[272px_minmax(0,1fr)]">
-        <aside className="hidden md:block">
-          <div className="dashboard-shell-sidebar sticky top-24 rounded-sm border border-white/80 bg-white/75 p-3 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.45)] backdrop-blur-sm">
-            <div className="mb-2 px-2 pt-1">
-              <p className="dashboard-shell-navtitle text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                Navegacion
-              </p>
-            </div>
-            <SidebarNav items={navItems} />
-          </div>
-        </aside>
-        <main className="dashboard-content min-w-0 pb-8">{children}</main>
-      </div>
-
+    <>
+      <AppShell navItems={navItems} displayName={displayName} role={role}>
+        {children}
+      </AppShell>
       <IdleSessionWatcher timeoutMinutes={env.INACTIVITY_TIMEOUT_MINUTES} />
-    </div>
+    </>
   );
 }
