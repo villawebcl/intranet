@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { FlashMessages } from "@/components/ui/flash-messages";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { StatCard } from "@/components/dashboard/StatCard";
 import {
   canManageWorkers,
   canReviewDocuments,
@@ -77,128 +81,6 @@ function formatDocumentStatus(status: string) {
   if (status === "aprobado") return "Aprobado";
   if (status === "rechazado") return "Rechazado";
   return "Pendiente";
-}
-
-function documentStatusClass(status: string) {
-  if (status === "aprobado") return "bg-emerald-100 text-emerald-800";
-  if (status === "rechazado") return "bg-red-100 text-red-700";
-  return "bg-amber-100 text-amber-800";
-}
-
-function notificationEventLabel(eventType: string) {
-  if (eventType === "document_uploaded") return "Documento cargado";
-  if (eventType === "document_approved") return "Documento aprobado";
-  if (eventType === "document_rejected") return "Documento rechazado";
-  return eventType;
-}
-
-function notificationStatusClass(sentAt: string | null) {
-  if (sentAt) {
-    return "bg-emerald-100 text-emerald-800";
-  }
-  return "bg-slate-200 text-slate-700";
-}
-
-function formatAuditAction(action: string) {
-  return action.replaceAll("_", " ");
-}
-
-function auditActionClass(action: string) {
-  if (action.startsWith("auth_")) return "bg-blue-100 text-blue-800";
-  if (action.includes("document")) return "bg-emerald-100 text-emerald-800";
-  if (action.includes("worker")) return "bg-slate-200 text-slate-700";
-  return "bg-slate-200 text-slate-700";
-}
-
-function MetricCard({
-  label,
-  value,
-  hint,
-  tone = "default",
-  href,
-}: {
-  label: string;
-  value: string | number;
-  hint?: string;
-  tone?: "default" | "success" | "warning";
-  href?: string;
-}) {
-  const toneClass =
-    tone === "success"
-      ? "border-emerald-200 bg-emerald-50"
-      : tone === "warning"
-        ? "border-amber-200 bg-amber-50"
-        : "border-slate-200 bg-white";
-
-  const cardClass = [
-    "rounded-sm border p-4 shadow-sm transition",
-    toneClass,
-    href ? "hover:-translate-y-0.5 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-200" : "",
-  ].join(" ");
-
-  const content = (
-    <>
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-slate-600">{hint}</p> : null}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className={cardClass}>
-        {content}
-      </Link>
-    );
-  }
-
-  return <div className={cardClass}>{content}</div>;
-}
-
-function SectionCard({
-  title,
-  description,
-  actionHref,
-  actionLabel,
-  id,
-  className,
-  children,
-}: {
-  title: string;
-  description?: string;
-  actionHref?: string;
-  actionLabel?: string;
-  id?: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className={["rounded-sm border border-slate-200 bg-white p-5 shadow-sm", className ?? ""].join(" ")}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-950">{title}</h2>
-          {description ? <p className="mt-1 text-sm text-slate-600">{description}</p> : null}
-        </div>
-        {actionHref && actionLabel ? (
-          <Link
-            href={actionHref}
-            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            {actionLabel}
-          </Link>
-        ) : null}
-      </div>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-function EmptyList({ message }: { message: string }) {
-  return (
-    <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
-      {message}
-    </div>
-  );
 }
 
 function getWorkerName(worker: RecentDocumentRow["worker"]) {
@@ -371,110 +253,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const workersActiveHref = "/dashboard/workers?status=activo";
   const documentsMetricHref = workersListHref;
   const notificationsHref = isAdmin ? "/dashboard/notifications" : undefined;
-  const hasRecentNotifications = recentNotifications.length > 0;
-  const showNotificationsPanel = hasRecentNotifications || canSeeNotificationsPanel;
-  const showAuditPanel = canSeeAudit;
-  const secondaryPanels = (
-    <>
-      {showNotificationsPanel ? (
-        <SectionCard
-          title="Notificaciones recientes"
-          description={
-            canSeeNotificationsPanel
-              ? "Eventos documentales recientes y estado de envio."
-              : "Tus notificaciones mas recientes."
-          }
-          actionHref={notificationsHref}
-          actionLabel={notificationsHref ? "Abrir panel" : undefined}
-        >
-          {!recentNotifications.length ? (
-            <EmptyList message="No hay notificaciones recientes." />
-          ) : (
-            <ul className="space-y-2">
-              {recentNotifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {notificationEventLabel(notification.event_type)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-600">{formatDate(notification.created_at)}</p>
-                  </div>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${notificationStatusClass(notification.sent_at)}`}
-                  >
-                    {notification.sent_at ? "Enviado" : "Pendiente"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-      ) : null}
-
-      {showAuditPanel ? (
-        <SectionCard
-          title="Auditoria reciente"
-          description="Ultimos eventos criticos registrados."
-          actionHref="/dashboard/audit"
-          actionLabel="Ver auditoria"
-        >
-          {!recentAudit.length ? (
-            <EmptyList message="No hay eventos de auditoria recientes." />
-          ) : (
-            <ul className="space-y-2">
-              {recentAudit.map((log) => (
-                <li
-                  key={log.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-semibold capitalize text-slate-900">{formatAuditAction(log.action)}</p>
-                    <p className="mt-1 text-xs text-slate-600">
-                      {formatDate(log.created_at)}
-                      {log.actor_role ? ` • ${formatRole(log.actor_role)}` : ""}
-                    </p>
-                  </div>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${auditActionClass(log.action)}`}
-                  >
-                    {log.action}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-      ) : !showNotificationsPanel ? (
-        <SectionCard title="Acceso y permisos" description="Resumen rapido de capacidades de tu rol.">
-          <div className="grid gap-2 sm:grid-cols-2">
-            {[
-              { label: "Gestion de trabajadores", enabled: canManage },
-              { label: "Consulta documentos", enabled: canSeeDocuments },
-              { label: "Revision documentos", enabled: canReview },
-              { label: "Auditoria", enabled: canSeeAudit },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between rounded-sm border border-slate-200 bg-slate-50 px-3 py-2"
-              >
-                <span className="text-sm text-slate-700">{item.label}</span>
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                    item.enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"
-                  }`}
-                >
-                  {item.enabled ? "Activo" : "Sin acceso"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-      ) : null}
-    </>
-  );
 
   return (
     <section className="space-y-5">
@@ -486,167 +264,166 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </AlertBanner>
       ) : null}
 
-      <header className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
-          Inicio
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">Vista rapida del estado actual y actividad reciente.</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
-            Rol: {formatRole(role)}
-          </span>
-          {queryErrors.length ? (
-            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
-              Datos parciales
-            </span>
-          ) : null}
-        </div>
-      </header>
-
+      <SectionHeader 
+        title="Inicio"
+        description="Vista rapida del estado actual y actividad reciente."
+      />
+      
       {queryErrors.length ? (
         <div className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
           Se cargo el dashboard con informacion parcial. Algunas secciones no pudieron actualizarse.
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
           label="Trabajadores"
           value={workersTotal}
           hint="Total registrados"
           href={workersListHref}
         />
         {canManage ? (
-          <MetricCard
+          <StatCard
             label="Inactivos"
             value={workersInactive}
             hint="Ver listado filtrado"
-            tone={workersInactive > 0 ? "warning" : "default"}
             href={workersInactiveHref}
           />
         ) : (
-          <MetricCard
+          <StatCard
             label="Activos"
             value={workersActive}
             hint="Ver listado filtrado"
-            tone="success"
             href={workersActiveHref}
           />
         )}
         {canSeeDocuments ? (
-          <MetricCard
+          <StatCard
             label="Documentos"
             value={documentsTotal}
             hint={canReview ? `Pendientes: ${documentsPending}` : "Documentos visibles"}
-            tone="default"
             href={documentsMetricHref}
           />
         ) : null}
         {canSeeNotificationsPanel ? (
-          <MetricCard
+          <StatCard
             label="Email no enviado"
             value={notificationsPendingEmail}
             hint="Pendientes"
-            tone={notificationsPendingEmail > 0 ? "warning" : "default"}
             href="/dashboard/notifications"
           />
         ) : null}
       </div>
 
-      {canReview ? (
-        <>
-          <SectionCard
-            id="cola-revision"
-            title="Documentos pendientes"
-            description="Revision prioritaria. Haz click en un documento para abrir la ficha del trabajador."
-            className="border-amber-200 bg-amber-50/30"
-          >
-            {!pendingDocumentsList.length ? (
-              <EmptyList message="No hay documentos pendientes de revision." />
-            ) : (
-              <ul className="space-y-2">
-                {pendingDocumentsList.map((document) => {
-                  const workerName = getWorkerName(document.worker);
-                  return (
-                    <li key={document.id}>
-                      <Link
-                        href={getWorkerDocumentsHref(document)}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-amber-200/70 bg-white px-3 py-3 transition hover:border-amber-300 hover:bg-amber-50/40"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
-                            {document.file_name}
-                          </p>
-                          <p className="mt-0.5 text-xs text-slate-600">
-                            {(folderLabels[document.folder_type as FolderType] ?? document.folder_type) +
-                              (workerName ? ` • ${workerName}` : "")}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
-                            Pendiente
-                          </span>
-                          <p className="whitespace-nowrap text-xs text-slate-600">{formatDate(document.created_at)}</p>
-                        </div>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+            {canReview && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Documentos pendientes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {!pendingDocumentsList.length ? (
+                            <p className="text-sm text-slate-500">No hay documentos pendientes de revisión.</p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {pendingDocumentsList.map((document) => (
+                                    <li key={document.id}>
+                                        <Link href={getWorkerDocumentsHref(document)} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                                            <div>
+                                                <p className="font-semibold">{document.file_name}</p>
+                                                <p className="text-sm text-slate-500">{getWorkerName(document.worker)}</p>
+                                            </div>
+                                            <Badge variant="warning">{formatDocumentStatus(document.status)}</Badge>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
             )}
-          </SectionCard>
-
-          <div className="grid gap-5 xl:grid-cols-2">{secondaryPanels}</div>
-        </>
-      ) : (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          <div className="space-y-5">
-            {canSeeDocuments ? (
-              <SectionCard title="Documentos recientes" description="Ultimos movimientos visibles segun tu rol.">
-                {!recentDocuments.length ? (
-                  <EmptyList message="Aun no hay documentos registrados." />
-                ) : (
-                  <ul className="space-y-2">
-                    {recentDocuments.map((document) => {
-                      const workerName = getWorkerName(document.worker);
-                      return (
-                        <li key={document.id}>
-                          <Link
-                            href={getWorkerDocumentsHref(document)}
-                            className="flex flex-wrap items-start justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
-                                {document.file_name}
-                              </p>
-                              <p className="mt-1 text-xs text-slate-600">
-                                {folderLabels[document.folder_type as FolderType] ?? document.folder_type}
-                                {workerName ? ` • ${workerName}` : ""}
-                              </p>
-                              <p className="mt-0.5 text-xs text-slate-500">{formatDate(document.created_at)}</p>
-                            </div>
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${documentStatusClass(document.status)}`}
-                            >
-                              {formatDocumentStatus(document.status)}
-                            </span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </SectionCard>
-            ) : (
-              <SectionCard title="Documentos">
-                <EmptyList message="Tu rol no tiene acceso a documentos." />
-              </SectionCard>
+            {canSeeDocuments && !canReview && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Documentos recientes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {!recentDocuments.length ? (
+                            <p className="text-sm text-slate-500">No hay documentos recientes.</p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {recentDocuments.map((document) => (
+                                    <li key={document.id}>
+                                        <Link href={getWorkerDocumentsHref(document)} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                                            <div>
+                                                <p className="font-semibold">{document.file_name}</p>
+                                                <p className="text-sm text-slate-500">{getWorkerName(document.worker)}</p>
+                                            </div>
+                                            <Badge variant={document.status === 'aprobado' ? 'success' : document.status === 'rechazado' ? 'destructive' : 'warning'}>
+                                                {formatDocumentStatus(document.status)}
+                                            </Badge>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
             )}
-          </div>
-
-          <div className="space-y-5">{secondaryPanels}</div>
         </div>
-      )}
+
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Notificaciones recientes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {!recentNotifications.length ? (
+                        <p className="text-sm text-slate-500">No hay notificaciones recientes.</p>
+                    ) : (
+                        <ul className="space-y-2">
+                            {recentNotifications.map((notification) => (
+                                <li key={notification.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <div>
+                                        <p className="font-semibold">{notification.event_type}</p>
+                                        <p className="text-sm text-slate-500">{formatDate(notification.created_at)}</p>
+                                    </div>
+                                    <Badge variant={notification.sent_at ? 'success' : 'secondary'}>
+                                        {notification.sent_at ? 'Enviado' : 'Pendiente'}
+                                    </Badge>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </CardContent>
+            </Card>
+            {canSeeAudit && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Auditoría reciente</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {!recentAudit.length ? (
+                            <p className="text-sm text-slate-500">No hay eventos de auditoría recientes.</p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {recentAudit.map((log) => (
+                                    <li key={log.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        <div>
+                                            <p className="font-semibold">{log.action}</p>
+                                            <p className="text-sm text-slate-500">{formatRole(log.actor_role)}</p>
+                                        </div>
+                                        <Badge variant="secondary">{formatDate(log.created_at)}</Badge>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+      </div>
     </section>
   );
 }
