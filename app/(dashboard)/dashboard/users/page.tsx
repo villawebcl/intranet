@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DashboardPageContainer } from "@/components/dashboard/page-container";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { EmptyStateCard } from "@/components/ui/empty-state-card";
@@ -175,43 +176,20 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   const nextPageHref = hasNextPage ? buildUsersPath(currentPage + 1) : null;
 
   return (
-    <DashboardPageContainer>
-      <section className="space-y-6 lg:space-y-7">
+    <section className="space-y-6 lg:space-y-7">
         <FlashMessages error={errorMessage} success={successMessage} />
 
-        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-                Usuarios nucleo
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Gestion de cuentas internas: admin, rrhh, contabilidad y visitante.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              <Link
-                href="/dashboard/access"
-                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Ver acceso y roles
-              </Link>
-              <Link
-                href="/dashboard"
-                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Volver al dashboard
-              </Link>
-            </div>
-          </div>
-        </header>
+        <SectionHeader
+            title="Usuarios nucleo"
+            description="Gestion de cuentas internas: admin, rrhh, contabilidad y visitante."
+        />
 
-        <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-          <h2 className="text-lg font-semibold text-slate-950">Crear usuario</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Crea un usuario del nucleo y asigna su rol de acceso.
-          </p>
-          <form action={createUserAdminAction} className="mt-5 grid gap-5 lg:grid-cols-4">
+        <Card>
+            <CardHeader>
+                <CardTitle>Crear usuario</CardTitle>
+            </CardHeader>
+            <CardContent>
+            <form action={createUserAdminAction} className="mt-5 grid gap-5 lg:grid-cols-4">
             <div className="space-y-1.5 lg:col-span-1">
               <label htmlFor="create-email" className="text-sm font-medium text-slate-900">
                 Correo
@@ -280,7 +258,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               </FormSubmitButton>
             </div>
           </form>
-        </section>
+            </CardContent>
+        </Card>
 
         <AlertBanner variant="info">
           {hiddenWorkersCount > 0
@@ -291,25 +270,17 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         {loadError ? <AlertBanner variant="error">{loadError}</AlertBanner> : null}
 
         {!loadError ? (
-          <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-950">Usuarios registrados</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  {filteredUsers.length} {filteredUsers.length === 1 ? "usuario" : "usuarios"} en
-                  esta pagina.
-                </p>
-              </div>
-            </div>
-
-            <PaginationControls
-              className="mt-5 px-5 py-4"
-              currentPage={currentPage}
-              previousHref={previousPageHref}
-              nextHref={nextPageHref}
-              showingCount={filteredUsers.length}
-            />
-
+          <Card>
+            <CardHeader>
+                <CardTitle>Usuarios registrados</CardTitle>
+                <PaginationControls
+                    currentPage={currentPage}
+                    previousHref={previousPageHref}
+                    nextHref={nextPageHref}
+                    showingCount={filteredUsers.length}
+                />
+            </CardHeader>
+            <CardContent>
             {!filteredUsers.length ? (
               <EmptyStateCard
                 className="mt-6 py-10 sm:py-12"
@@ -317,168 +288,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                 description="Cuando crees cuentas internas (admin, rrhh, contabilidad o visitante), apareceran listadas aqui."
               />
             ) : (
-              <>
-                <div className="mt-5 space-y-4 xl:hidden">
-                  {filteredUsers.map((row) => {
-                    const isCurrentUser = row.id === user.id;
-                    const isProtectedAdmin = row.role === "admin";
-
-                    return (
-                      <article
-                        key={row.id}
-                        className="rounded-sm border border-slate-200 bg-slate-50 p-5"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold text-slate-900">{row.email}</p>
-                            <p className="mt-1 text-xs text-slate-500">
-                              {row.fullName || "Sin nombre"}
-                            </p>
-                          </div>
-                          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
-                            {roleLabel(row.role)}
-                          </span>
-                        </div>
-
-                        <dl className="mt-3 grid gap-2 text-xs text-slate-600">
-                          <div className="flex items-start justify-between gap-3">
-                            <dt>Confirmado</dt>
-                            <dd>{row.emailConfirmed ? "Si" : "No"}</dd>
-                          </div>
-                          <div className="flex items-start justify-between gap-3">
-                            <dt>Ultimo acceso</dt>
-                            <dd className="text-right">{formatDate(row.lastSignInAt)}</dd>
-                          </div>
-                          <div className="flex items-start justify-between gap-3">
-                            <dt>Creado</dt>
-                            <dd className="text-right">{formatDate(row.createdAt)}</dd>
-                          </div>
-                        </dl>
-
-                        <form action={updateUserAdminAction} className="mt-4 space-y-3">
-                          <input type="hidden" name="userId" value={row.id} />
-                          <input type="hidden" name="returnTo" value={returnToPath} />
-                          <div className="space-y-1.5">
-                            <label
-                              htmlFor={`fullName-mobile-${row.id}`}
-                              className="text-xs font-medium text-slate-700"
-                            >
-                              Nombre
-                            </label>
-                            <input
-                              id={`fullName-mobile-${row.id}`}
-                              name="fullName"
-                              defaultValue={row.fullName}
-                              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label
-                              htmlFor={`role-mobile-${row.id}`}
-                              className="text-xs font-medium text-slate-700"
-                            >
-                              Rol
-                            </label>
-                            <select
-                              id={`role-mobile-${row.id}`}
-                              name="role"
-                              defaultValue={row.role}
-                              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                            >
-                              {coreUserRoles.map((role) => (
-                                <option key={role} value={role}>
-                                  {roleLabel(role)}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <FormSubmitButton
-                            pendingLabel="Guardando..."
-                            className="w-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
-                          >
-                            Guardar cambios
-                          </FormSubmitButton>
-                        </form>
-
-                        <form action={resetUserPasswordAdminAction} className="mt-3 space-y-2">
-                          <input type="hidden" name="userId" value={row.id} />
-                          <input type="hidden" name="returnTo" value={returnToPath} />
-                          <label
-                            htmlFor={`password-mobile-${row.id}`}
-                            className="text-xs font-medium text-slate-700"
-                          >
-                            Nueva contrasena
-                          </label>
-                          <input
-                            id={`password-mobile-${row.id}`}
-                            name="password"
-                            type="password"
-                            minLength={8}
-                            required
-                            className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                            placeholder="Minimo 8 caracteres"
-                          />
-                          <FormSubmitButton
-                            pendingLabel="Actualizando..."
-                            className="w-full border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50"
-                          >
-                            Resetear contrasena
-                          </FormSubmitButton>
-                        </form>
-
-                        {isProtectedAdmin ? (
-                          <AlertBanner className="mt-3" variant="info">
-                            {isCurrentUser
-                              ? "Tu cuenta admin esta protegida y no se puede eliminar desde esta pantalla."
-                              : "Las cuentas admin estan protegidas y no se pueden eliminar."}
-                          </AlertBanner>
-                        ) : (
-                          <details className="mt-3 rounded-sm border border-red-200 bg-red-50">
-                            <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
-                              Eliminar usuario
-                            </summary>
-                            <form
-                              action={deleteUserAdminAction}
-                              className="space-y-3 border-t border-red-200 px-3 py-3"
-                            >
-                              <input type="hidden" name="userId" value={row.id} />
-                              <input type="hidden" name="returnTo" value={returnToPath} />
-                              <p className="text-xs text-red-800">
-                                Eliminar el acceso de {row.email}. Esta accion no se puede deshacer.
-                              </p>
-                              <label className="flex items-start gap-2 text-xs text-red-900">
-                                <input
-                                  type="checkbox"
-                                  name="confirmDelete"
-                                  value="yes"
-                                  required
-                                  className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
-                                />
-                                Confirmo que quiero eliminar este usuario
-                              </label>
-                              <FormSubmitButton
-                                pendingLabel="Eliminando..."
-                                className="w-full border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
-                              >
-                                Eliminar usuario
-                              </FormSubmitButton>
-                            </form>
-                          </details>
-                        )}
-                      </article>
-                    );
-                  })}
-                </div>
-
                 <div className="mt-5 hidden overflow-x-auto rounded-sm border border-slate-200 xl:block">
                   <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
-                    <colgroup>
-                      <col className="w-[20%]" />
-                      <col className="w-[13%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[25%]" />
-                      <col className="w-[30%]" />
-                    </colgroup>
                     <thead className="bg-slate-50">
                       <tr>
                         <th className="px-4 py-4 text-left font-semibold text-slate-700">
@@ -488,19 +299,10 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                         <th className="px-4 py-4 text-left font-semibold text-slate-700">
                           Ultimo acceso
                         </th>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">
-                          Perfil / rol
-                        </th>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">
-                          Clave / baja
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {filteredUsers.map((row) => {
-                        const isCurrentUser = row.id === user.id;
-                        const isProtectedAdmin = row.role === "admin";
-
                         return (
                           <tr key={row.id} className="align-top">
                             <td className="px-4 py-4 align-top">
@@ -509,9 +311,6 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               </p>
                               <p className="mt-1 truncate text-xs text-slate-500" title={row.id}>
                                 {row.id}
-                              </p>
-                              <p className="mt-1 text-xs text-slate-600">
-                                Creado: {formatDate(row.createdAt)}
                               </p>
                             </td>
                             <td className="px-4 py-4 align-top">
@@ -535,128 +334,16 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                                 {formatDate(row.lastSignInAt)}
                               </p>
                             </td>
-                            <td className="px-4 py-4 align-top">
-                              <form action={updateUserAdminAction} className="space-y-2">
-                                <input type="hidden" name="userId" value={row.id} />
-                                <input type="hidden" name="returnTo" value={returnToPath} />
-                                <label htmlFor={`fullName-${row.id}`} className="sr-only">
-                                  Nombre completo
-                                </label>
-                                <input
-                                  id={`fullName-${row.id}`}
-                                  name="fullName"
-                                  defaultValue={row.fullName}
-                                  className="w-full rounded-sm border border-slate-300 px-2.5 py-2 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                                  placeholder="Nombre completo"
-                                />
-                                <label htmlFor={`role-${row.id}`} className="sr-only">
-                                  Rol
-                                </label>
-                                <div className="grid gap-2">
-                                  <select
-                                    id={`role-${row.id}`}
-                                    name="role"
-                                    defaultValue={row.role}
-                                    className="w-full rounded-sm border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                                  >
-                                    {coreUserRoles.map((role) => (
-                                      <option key={role} value={role}>
-                                        {roleLabel(role)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <FormSubmitButton
-                                    pendingLabel="Guardando..."
-                                    className="w-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                                  >
-                                    Guardar
-                                  </FormSubmitButton>
-                                </div>
-                              </form>
-                            </td>
-                            <td className="px-4 py-4 align-top">
-                              <form action={resetUserPasswordAdminAction} className="grid gap-2">
-                                <input type="hidden" name="userId" value={row.id} />
-                                <input type="hidden" name="returnTo" value={returnToPath} />
-                                <label htmlFor={`password-${row.id}`} className="sr-only">
-                                  Nueva contrasena
-                                </label>
-                                <input
-                                  id={`password-${row.id}`}
-                                  name="password"
-                                  type="password"
-                                  minLength={8}
-                                  required
-                                  className="w-full rounded-sm border border-slate-300 px-2.5 py-2 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
-                                  placeholder="Nueva clave"
-                                />
-                                <FormSubmitButton
-                                  pendingLabel="Actualizando..."
-                                  className="w-full border border-amber-300 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-50"
-                                >
-                                  Resetear
-                                </FormSubmitButton>
-                              </form>
-                              {isProtectedAdmin ? (
-                                <div className="mt-2 space-y-1">
-                                  <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                                    Protegido
-                                  </span>
-                                  <p className="text-xs text-slate-600">
-                                    {isCurrentUser ? "Cuenta actual admin" : "Cuenta admin"}
-                                  </p>
-                                </div>
-                              ) : (
-                                <details className="mt-2 rounded-sm border border-red-200 bg-red-50">
-                                  <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
-                                    Eliminar
-                                  </summary>
-                                  <form
-                                    action={deleteUserAdminAction}
-                                    className="space-y-2 border-t border-red-200 px-3 py-2"
-                                  >
-                                    <input type="hidden" name="userId" value={row.id} />
-                                    <input type="hidden" name="returnTo" value={returnToPath} />
-                                    <p className="break-all text-xs text-red-800">{row.email}</p>
-                                    <label className="flex items-start gap-2 text-xs text-red-900">
-                                      <input
-                                        type="checkbox"
-                                        name="confirmDelete"
-                                        value="yes"
-                                        required
-                                        className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
-                                      />
-                                      Confirmar eliminacion
-                                    </label>
-                                    <FormSubmitButton
-                                      pendingLabel="Eliminando..."
-                                      className="w-full border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
-                                    >
-                                      Eliminar
-                                    </FormSubmitButton>
-                                  </form>
-                                </details>
-                              )}
-                            </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
                 </div>
-
-                <PaginationControls
-                  className="mt-5 px-5 py-4"
-                  currentPage={currentPage}
-                  previousHref={previousPageHref}
-                  nextHref={nextPageHref}
-                  showingCount={filteredUsers.length}
-                />
-              </>
             )}
-          </section>
+            </CardContent>
+          </Card>
         ) : null}
       </section>
-    </DashboardPageContainer>
   );
 }
