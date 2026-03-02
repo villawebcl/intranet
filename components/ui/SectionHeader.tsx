@@ -17,7 +17,7 @@ export function SectionHeader({ title, description, actionHref, actionLabel }: S
       {actionHref && actionLabel ? (
         <Link
           href={actionHref}
-          className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          className="rounded-md border-0 bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
         >
           {actionLabel}
         </Link>

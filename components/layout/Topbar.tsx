@@ -26,14 +26,14 @@ export function Topbar({ displayName, roleLabel, onSignOut, navItems }: TopbarPr
     .join("");
 
   return (
-    <header className="dashboard-shell-header sticky top-0 z-20 border-b border-white/70 bg-white/82 backdrop-blur-lg">
+    <header className="dashboard-shell-header sticky top-0 z-20 bg-white/82 backdrop-blur-lg">
       <div className="w-full px-4 py-4 lg:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/dashboard"
             className="dashboard-shell-brand inline-flex items-center gap-3 rounded-md px-1.5 py-1.5 transition hover:bg-white"
           >
-            <span className="dashboard-shell-logo inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-sm font-semibold text-slate-700">
+            <span className="dashboard-shell-logo inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-semibold text-slate-700">
               N
             </span>
             <span>
@@ -47,7 +47,7 @@ export function Topbar({ displayName, roleLabel, onSignOut, navItems }: TopbarPr
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="dashboard-shell-usercard inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-right">
+            <div className="dashboard-shell-usercard inline-flex items-center gap-2 rounded-md bg-slate-100/90 px-3 py-2 text-right">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-800">
                 {initials || "U"}
               </span>
@@ -61,7 +61,7 @@ export function Topbar({ displayName, roleLabel, onSignOut, navItems }: TopbarPr
             <form action={onSignOut}>
               <FormSubmitButton
                 pendingLabel="Cerrando..."
-                className="dashboard-shell-signout rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="dashboard-shell-signout rounded-md bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
               >
                 Cerrar sesion
               </FormSubmitButton>

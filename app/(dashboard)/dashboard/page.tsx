@@ -129,12 +129,12 @@ function MetricCard({
 }) {
   const toneClass =
     tone === "success"
-      ? "border-emerald-200 bg-white"
+      ? "bg-white"
       : tone === "warning"
-        ? "border-amber-200 bg-white"
+        ? "bg-white"
         : tone === "danger"
-          ? "border-red-200 bg-white"
-          : "border-blue-200 bg-white";
+          ? "bg-white"
+          : "bg-white";
 
   const iconTone =
     tone === "success"
@@ -161,7 +161,7 @@ function MetricCard({
   ].join(" ");
 
   const content = (
-    <Card className={`h-full rounded-lg p-4 ${toneClass}`}>
+    <Card className={`h-full rounded-lg border-0 p-4 ${toneClass}`}>
       <div className="flex items-start gap-3">
         <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border ${iconTone}`}>
           {icon}
@@ -253,7 +253,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card id={id} className={["rounded-lg", className ?? ""].join(" ")}>
+    <Card id={id} className={["rounded-lg", className ?? "", "border-0"].join(" ")}>
       <SectionHeader title={title} description={description} actionHref={actionHref} actionLabel={actionLabel} />
       <div>{children}</div>
     </Card>
@@ -554,7 +554,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </AlertBanner>
       ) : null}
 
-      <Card className="rounded-lg p-6">
+      <Card className="rounded-lg border-0 p-6">
         <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
           Inicio
         </h1>
@@ -630,7 +630,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </div>
 
       {quickActions.length ? (
-        <Card className="rounded-lg p-4">
+        <Card className="rounded-lg border-0 p-4">
           <SectionHeader title="Accesos directos" description="Acciones operativas frecuentes." />
           <div className="flex flex-wrap gap-2">
             {quickActions.map((action) => (

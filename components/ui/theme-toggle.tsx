@@ -59,10 +59,10 @@ export function ThemeToggle({ inline = false }: ThemeToggleProps) {
       onClick={toggleTheme}
       aria-label="Alternar tema"
       className={[
-        "theme-toggle-button inline-flex items-center gap-2 border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition hover:bg-slate-50",
+        "theme-toggle-button inline-flex items-center gap-2 border-0 bg-slate-100 text-xs font-semibold text-slate-700 transition hover:bg-slate-200",
         inline
           ? "rounded-md px-3 py-2"
-          : "fixed bottom-4 right-4 z-50 rounded-md bg-white/90 px-3 py-2 shadow-lg shadow-slate-900/10 backdrop-blur-sm hover:bg-white",
+          : "fixed bottom-4 right-4 z-50 rounded-md bg-slate-100/95 px-3 py-2 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] backdrop-blur-sm hover:bg-slate-200",
       ].join(" ")}
     >
       <span className="inline-flex h-2 w-2 rounded-full bg-slate-400" aria-hidden />

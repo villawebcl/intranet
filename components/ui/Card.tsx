@@ -9,10 +9,10 @@ type CardProps = {
 } & Omit<ComponentPropsWithoutRef<"section">, "className" | "children">;
 
 const toneClasses: Record<CardTone, string> = {
-  default: "border-slate-200 bg-white",
-  muted: "border-slate-200 bg-[#fbfbfa]",
-  accent: "border-slate-300 bg-slate-50/70",
-  warning: "border-amber-200 bg-amber-50/50",
+  default: "bg-white",
+  muted: "bg-[#fbfbfa]",
+  accent: "bg-slate-50/70",
+  warning: "bg-amber-50/50",
 };
 
 export function Card({ children, className = "", tone = "default", ...rest }: CardProps) {
@@ -20,7 +20,7 @@ export function Card({ children, className = "", tone = "default", ...rest }: Ca
     <section
       {...rest}
       className={[
-        "rounded-lg border p-5",
+        "rounded-lg border-0 p-5 shadow-[0_10px_28px_-22px_rgba(15,23,42,0.35)]",
         toneClasses[tone],
         className,
       ].join(" ")}

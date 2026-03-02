@@ -103,7 +103,7 @@ export function ActionMenu({
         zIndex: 1100,
       }}
       className={
-        panelClassName ?? "rounded-md border border-slate-200 bg-white p-3 shadow-xl"
+        panelClassName ?? "rounded-md border-0 bg-white p-3 shadow-[0_14px_30px_-20px_rgba(15,23,42,0.45)]"
       }
     >
       {children}
@@ -120,7 +120,7 @@ export function ActionMenu({
         onClick={() => setOpen((value) => !value)}
         className={
           triggerClassName ??
-          "inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 text-base font-semibold text-slate-700 transition hover:bg-slate-50"
+          "inline-flex h-8 w-8 items-center justify-center rounded-md border-0 bg-slate-100 text-base font-semibold text-slate-700 transition hover:bg-slate-200"
         }
       >
         {triggerLabel}

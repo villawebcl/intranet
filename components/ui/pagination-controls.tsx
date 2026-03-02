@@ -20,7 +20,7 @@ export function PaginationControls({
   return (
     <div
       className={[
-        "flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm",
+        "flex flex-wrap items-center justify-between gap-2 rounded-md border-0 bg-white px-4 py-3 text-sm shadow-[0_10px_24px_-18px_rgba(15,23,42,0.35)]",
         className,
       ].join(" ")}
     >
@@ -40,12 +40,12 @@ export function PaginationControls({
         {previousHref ? (
           <Link
             href={previousHref}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="rounded-md border-0 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
           >
             Anterior
           </Link>
         ) : (
-          <span className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-400">
+          <span className="rounded-md bg-slate-100/70 px-3 py-1.5 text-xs font-semibold text-slate-400">
             Anterior
           </span>
         )}
@@ -53,12 +53,12 @@ export function PaginationControls({
         {nextHref ? (
           <Link
             href={nextHref}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="rounded-md border-0 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
           >
             Siguiente
           </Link>
         ) : (
-          <span className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-400">
+          <span className="rounded-md bg-slate-100/70 px-3 py-1.5 text-xs font-semibold text-slate-400">
             Siguiente
           </span>
         )}

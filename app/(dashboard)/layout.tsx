@@ -70,7 +70,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
       ? [
           {
             href: "/dashboard/users",
-            label: "Usuarios nucleo",
+            label: "Usuarios",
             description: "Gestion de cuentas internas y permisos",
             icon: "users" as const,
           },
