@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { reviewDocumentAction } from "@/app/(dashboard)/dashboard/workers/[workerId]/documents/actions";
 import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { HeaderSearch } from "@/components/layout/header-search";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { AlertBanner } from "@/components/ui/alert-banner";
@@ -459,89 +460,113 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       ? [{ href: "/dashboard/notifications", label: "Revisar emails" }]
       : []),
   ];
-  const secondaryPanels = (
-    <>
-      {showNotificationsPanel ? (
-        <SectionCard
-          title="Notificaciones recientes"
-          description={
-            canSeeNotificationsPanel
-              ? "Eventos documentales recientes y estado de envio."
-              : "Tus notificaciones mas recientes."
-          }
-          actionHref={notificationsHref}
-          actionLabel={notificationsHref ? "Abrir panel" : undefined}
-        >
-          {!recentNotifications.length ? (
-            <EmptyList message="No hay notificaciones recientes." />
-          ) : (
-            <ul className="space-y-2">
-              {recentNotifications.map((notification) => (
-                <li key={notification.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {notificationEventLabel(notification.event_type)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-600">{formatDate(notification.created_at)}</p>
-                  </div>
-                  <Badge tone={notification.sent_at ? "success" : "neutral"}>
-                    {notification.sent_at ? "Enviado" : "Pendiente"}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-      ) : null}
-
-      {showAuditPanel ? (
-        <SectionCard
-          title="Auditoria reciente"
-          description="Ultimos eventos criticos registrados."
-          actionHref="/dashboard/audit"
-          actionLabel="Ver auditoria"
-        >
-          {!recentAudit.length ? (
-            <EmptyList message="No hay eventos de auditoria recientes." />
-          ) : (
-            <ul className="space-y-2">
-              {recentAudit.map((log) => (
-                <li key={log.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
-                  <div>
-                    <p className="text-sm font-semibold capitalize text-slate-900">{formatAuditAction(log.action)}</p>
-                    <p className="mt-1 text-xs text-slate-600">
-                      {formatDate(log.created_at)}
-                      {log.actor_role ? ` • ${formatRole(log.actor_role)}` : ""}
-                    </p>
-                  </div>
-                  <Badge tone="neutral" className={auditActionClass(log.action)}>
-                    {log.action}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-      ) : !showNotificationsPanel ? (
-        <SectionCard title="Acceso y permisos" description="Resumen rapido de capacidades de tu rol.">
-          <div className="grid gap-2 sm:grid-cols-2">
-            {[
-              { label: "Gestion de trabajadores", enabled: canManage },
-              { label: "Consulta documentos", enabled: canSeeDocuments },
-              { label: "Revision documentos", enabled: canReview },
-              { label: "Auditoria", enabled: canSeeAudit },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                <span className="text-sm text-slate-700">{item.label}</span>
-                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${item.enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
-                  {item.enabled ? "Activo" : "Sin acceso"}
-                </span>
+  const dashboardSearchItems = [
+    { href: "/dashboard", label: "Inicio", description: "Resumen general y accesos rapidos" },
+    ...(canManage ? [{ href: "/dashboard/workers", label: "Trabajadores", description: "Gestion y consulta" }] : []),
+    ...(canReview
+      ? [{ href: "/dashboard/workers?status=activo", label: "Pendientes", description: "Revision documental" }]
+      : []),
+    ...(isAdmin ? [{ href: "/dashboard/users", label: "Usuarios", description: "Gestion de cuentas" }] : []),
+    ...(canSeeNotificationsPanel
+      ? [{ href: "/dashboard/notifications", label: "Notificaciones", description: "Eventos y estado de email" }]
+      : []),
+    ...(canSeeAudit ? [{ href: "/dashboard/audit", label: "Auditoria", description: "Trazabilidad de eventos" }] : []),
+  ];
+  const notificationsPanel = showNotificationsPanel ? (
+    <SectionCard
+      title="Notificaciones recientes"
+      description={
+        canSeeNotificationsPanel
+          ? "Eventos documentales recientes y estado de envio."
+          : "Tus notificaciones mas recientes."
+      }
+      actionHref={notificationsHref}
+      actionLabel={notificationsHref ? "Abrir panel" : undefined}
+      className="h-full"
+    >
+      {!recentNotifications.length ? (
+        <EmptyList message="No hay notificaciones recientes." />
+      ) : (
+        <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+          {recentNotifications.map((notification) => (
+            <li key={notification.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {notificationEventLabel(notification.event_type)}
+                </p>
+                <p className="mt-1 text-xs text-slate-600">{formatDate(notification.created_at)}</p>
               </div>
-            ))}
+              <Badge tone={notification.sent_at ? "success" : "neutral"}>
+                {notification.sent_at ? "Enviado" : "Pendiente"}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionCard>
+  ) : (
+    <SectionCard
+      title="Notificaciones recientes"
+      description="Eventos documentales recientes."
+      className="h-full"
+    >
+      <EmptyList message="Tu rol no tiene acceso al panel de notificaciones." />
+    </SectionCard>
+  );
+
+  const auditPanel = showAuditPanel ? (
+    <SectionCard
+      title="Auditoria reciente"
+      description="Ultimos eventos criticos registrados."
+      actionHref="/dashboard/audit"
+      actionLabel="Ver auditoria"
+      className="h-full"
+    >
+      {!recentAudit.length ? (
+        <EmptyList message="No hay eventos de auditoria recientes." />
+      ) : (
+        <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+          {recentAudit.map((log) => (
+            <li key={log.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
+              <div>
+                <p className="text-sm font-semibold capitalize text-slate-900">{formatAuditAction(log.action)}</p>
+                <p className="mt-1 text-xs text-slate-600">
+                  {formatDate(log.created_at)}
+                  {log.actor_role ? ` • ${formatRole(log.actor_role)}` : ""}
+                </p>
+              </div>
+              <Badge tone="neutral" className={auditActionClass(log.action)}>
+                {log.action}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionCard>
+  ) : (
+    <SectionCard title="Auditoria reciente" description="Trazabilidad de eventos criticos." className="h-full">
+      <EmptyList message="Tu rol no tiene acceso al panel de auditoria." />
+    </SectionCard>
+  );
+
+  const accessPanel = (
+    <SectionCard title="Acceso y permisos" description="Resumen rapido de capacidades de tu rol.">
+      <div className="grid gap-2 sm:grid-cols-2">
+        {[
+          { label: "Gestion de trabajadores", enabled: canManage },
+          { label: "Consulta documentos", enabled: canSeeDocuments },
+          { label: "Revision documentos", enabled: canReview },
+          { label: "Auditoria", enabled: canSeeAudit },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+            <span className="text-sm text-slate-700">{item.label}</span>
+            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${item.enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
+              {item.enabled ? "Activo" : "Sin acceso"}
+            </span>
           </div>
-        </SectionCard>
-      ) : null}
-    </>
+        ))}
+      </div>
+    </SectionCard>
   );
 
   return (
@@ -555,12 +580,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       ) : null}
 
       <Card className="rounded-lg border-0 p-6">
-        <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
-          Inicio
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Panel operativo para gestionar trabajadores, documentos y seguimiento de actividad en un solo lugar.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
+              Inicio
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Panel operativo para gestionar trabajadores, documentos y seguimiento de actividad en un solo lugar.
+            </p>
+          </div>
+          <div className="w-full max-w-xl">
+            <HeaderSearch items={dashboardSearchItems} />
+          </div>
+        </div>
         {queryErrors.length ? (
           <div className="mt-3">
             <Badge tone="warning">Datos parciales</Badge>
@@ -647,12 +679,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       ) : null}
 
       {canReview ? (
-        <>
+        <div className="grid gap-4 xl:grid-cols-3">
           <SectionCard
             id="cola-revision"
             title="Documentos pendientes"
             description="Revision prioritaria."
-            className="border-amber-200 bg-amber-50/30"
+            className="h-full border-amber-200 bg-amber-50/30"
           >
             <div className="mb-3 inline-flex items-center gap-5 border-b border-slate-200 text-sm font-semibold">
               <span className="border-b-2 border-slate-900 pb-2 text-slate-900">Todos</span>
@@ -660,67 +692,67 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             {!pendingDocumentsList.length ? (
               <EmptyList message="No hay documentos pendientes de revision." />
             ) : (
-              <ul className="space-y-2">
+              <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
                 {pendingDocumentsList.map((document) => {
                   const workerName = getWorkerName(document.worker);
                   return (
                     <li key={document.id}>
                       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200/70 bg-white px-3 py-3">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
-                              {document.file_name}
-                            </p>
-                            <p className="mt-0.5 text-xs text-slate-600">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
+                            {document.file_name}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-600">
                             {(folderLabels[document.folder_type as FolderType] ?? document.folder_type) +
                               (workerName ? ` • ${workerName}` : "")}
                           </p>
-                          </div>
-                          <div className="flex flex-wrap items-center justify-end gap-2">
-                            <Badge tone="warning">Pendiente</Badge>
-                            <p className="whitespace-nowrap text-xs text-slate-600">{formatDate(document.created_at)}</p>
-                            <Link
-                              href={getWorkerDocumentsHref(document)}
-                              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        </div>
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                          <Badge tone="warning">Pendiente</Badge>
+                          <p className="whitespace-nowrap text-xs text-slate-600">{formatDate(document.created_at)}</p>
+                          <Link
+                            href={getWorkerDocumentsHref(document)}
+                            className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            Ver
+                          </Link>
+                          <form action={reviewDocumentAction}>
+                            <input type="hidden" name="workerId" value={document.worker_id} />
+                            <input type="hidden" name="documentId" value={document.id} />
+                            <input type="hidden" name="decision" value="aprobado" />
+                            <input type="hidden" name="returnTo" value="/dashboard" />
+                            <FormSubmitButton
+                              pendingLabel="Aprobando..."
+                              className="rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
                             >
-                              Ver
-                            </Link>
-                            <form action={reviewDocumentAction}>
+                              Aprobar
+                            </FormSubmitButton>
+                          </form>
+                          <details className="rounded-md border border-red-200 bg-red-50/60">
+                            <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-semibold text-red-700">
+                              Rechazar
+                            </summary>
+                            <form action={reviewDocumentAction} className="space-y-2 border-t border-red-200 px-2.5 py-2">
                               <input type="hidden" name="workerId" value={document.worker_id} />
                               <input type="hidden" name="documentId" value={document.id} />
-                              <input type="hidden" name="decision" value="aprobado" />
+                              <input type="hidden" name="decision" value="rechazado" />
                               <input type="hidden" name="returnTo" value="/dashboard" />
+                              <input
+                                name="rejectionReason"
+                                required
+                                maxLength={500}
+                                placeholder="Motivo rechazo"
+                                className="w-44 rounded-md border border-red-200 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none ring-slate-300 focus:ring-2"
+                              />
                               <FormSubmitButton
-                                pendingLabel="Aprobando..."
-                                className="rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+                                pendingLabel="Rechazando..."
+                                className="w-full rounded-md border border-red-300 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
                               >
-                                Aprobar
+                                Confirmar
                               </FormSubmitButton>
                             </form>
-                            <details className="rounded-md border border-red-200 bg-red-50/60">
-                              <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-semibold text-red-700">
-                                Rechazar
-                              </summary>
-                              <form action={reviewDocumentAction} className="space-y-2 border-t border-red-200 px-2.5 py-2">
-                                <input type="hidden" name="workerId" value={document.worker_id} />
-                                <input type="hidden" name="documentId" value={document.id} />
-                                <input type="hidden" name="decision" value="rechazado" />
-                                <input type="hidden" name="returnTo" value="/dashboard" />
-                                <input
-                                  name="rejectionReason"
-                                  required
-                                  maxLength={500}
-                                  placeholder="Motivo rechazo"
-                                  className="w-44 rounded-md border border-red-200 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none ring-slate-300 focus:ring-2"
-                                />
-                                <FormSubmitButton
-                                  pendingLabel="Rechazando..."
-                                  className="w-full rounded-md border border-red-300 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
-                                >
-                                  Confirmar
-                                </FormSubmitButton>
-                              </form>
-                            </details>
-                          </div>
+                          </details>
+                        </div>
                       </div>
                     </li>
                   );
@@ -729,10 +761,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </SectionCard>
 
-          <div className="grid gap-4 xl:grid-cols-2">
-            {secondaryPanels}
-          </div>
-        </>
+          {notificationsPanel}
+          {auditPanel}
+        </div>
       ) : (
         <div className="grid gap-4 2xl:grid-cols-12">
           <div className="space-y-4 2xl:col-span-8">
@@ -777,7 +808,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
 
-          <div className="space-y-4 2xl:col-span-4">{secondaryPanels}</div>
+          <div className="space-y-4 2xl:col-span-4">
+            {notificationsPanel}
+            {showAuditPanel ? auditPanel : accessPanel}
+          </div>
         </div>
       )}
     </section>

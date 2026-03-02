@@ -520,7 +520,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
             </div>
 
             <div className="hidden w-full overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm xl:block">
-              <table className="min-w-[980px] w-full table-fixed divide-y divide-slate-200 text-sm">
+              <table className="audit-events-table min-w-[980px] w-full table-fixed text-sm">
                 <colgroup>
                   <col className="w-[16%]" />
                   <col className="w-[14%]" />
@@ -537,7 +537,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                     <th className="px-4 py-4 text-left font-semibold text-slate-700">Metadata</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="audit-events-body">
                   {rows.map((log) => (
                     <tr key={log.id} className="align-top hover:bg-slate-50/50">
                       <td className="px-4 py-4 text-slate-700">
