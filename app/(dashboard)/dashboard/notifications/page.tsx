@@ -303,7 +303,7 @@ function PayloadDetailButton({
       className="w-full sm:w-auto"
     >
       <div className="space-y-4">
-        <section className="rounded-sm border border-slate-200 bg-slate-50 p-4">
+        <section className="rounded-md border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
             Resumen completo
           </p>
@@ -313,7 +313,7 @@ function PayloadDetailButton({
         </section>
 
         {payloadValue ? (
-          <section className="rounded-sm border border-slate-200 bg-white">
+          <section className="rounded-md border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                 Payload JSON
@@ -397,7 +397,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
         success={getStringParam(urlParams.success)}
       />
 
-      <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+      <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Notificaciones</h1>
@@ -407,7 +407,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
           </div>
           <Link
             href="/dashboard"
-            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             Volver al dashboard
           </Link>
@@ -436,7 +436,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
               ) : null}
             </div>
 
-            <form className="mt-4 grid gap-3 rounded-sm border border-slate-200 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+            <form className="mt-4 grid gap-3 rounded-md border border-slate-200 bg-slate-50 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <div className="space-y-1.5">
                 <label htmlFor="filter-event" className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                   Evento
@@ -445,7 +445,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   id="filter-event"
                   name="event"
                   defaultValue={eventFilter}
-                  className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                 >
                   <option value="all">Todos los eventos</option>
                   {notificationEventOptions.map((eventType) => (
@@ -464,7 +464,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   id="filter-email"
                   name="email"
                   defaultValue={emailFilter}
-                  className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                 >
                   <option value="all">Todos</option>
                   <option value="pending">No enviado</option>
@@ -475,13 +475,13 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
               <div className="flex items-end gap-2">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-sm bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                  className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                 >
                   Filtrar
                 </button>
                 <Link
                   href="/dashboard/notifications"
-                  className="inline-flex items-center justify-center rounded-sm border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Limpiar
                 </Link>
@@ -492,13 +492,13 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
       </header>
 
       {error ? (
-        <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
           No se pudieron cargar notificaciones: {error.message}
         </div>
       ) : null}
 
       {!error && !notificationRows.length ? (
-        <div className="rounded-sm border border-slate-200 bg-white px-4 py-10 text-center shadow-sm">
+        <div className="rounded-md border border-slate-200 bg-white px-4 py-10 text-center shadow-sm">
           <p className="text-sm font-medium text-slate-700">No hay notificaciones registradas.</p>
           <p className="mt-1 text-sm text-slate-500">
             Cuando se carguen o revisen documentos, apareceran aqui.
@@ -520,7 +520,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
             {notificationRows.map((notification) => (
               <article
                 key={notification.id}
-                className="rounded-sm border border-slate-200 bg-white p-4 shadow-sm"
+                className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -541,7 +541,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                   <p className="mt-1 break-all font-mono text-xs text-slate-700">{notification.user_id}</p>
                 </div>
 
-                <div className="mt-3 space-y-2 rounded-sm border border-slate-200 bg-slate-50 p-3">
+                <div className="mt-3 space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
                   <PayloadPreview payloadValue={notification.payload} />
                   <PayloadDetailButton
                     eventType={notification.event_type}
@@ -555,7 +555,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
             ))}
           </div>
 
-          <div className="hidden overflow-x-auto rounded-sm border border-slate-200 bg-white shadow-sm md:block">
+          <div className="hidden overflow-x-auto rounded-md border border-slate-200 bg-white shadow-sm md:block">
             <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
               <colgroup>
                 <col className="w-[18%]" />
@@ -589,13 +589,13 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                     <td className="px-3 py-3">
                       <span
                         title={notification.user_id}
-                        className="inline-block max-w-full truncate rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                        className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                       >
                         {truncateMiddle(notification.user_id)}
                       </span>
                     </td>
                     <td className="px-3 py-3">
-                      <div className="space-y-2 rounded-sm border border-slate-200 bg-slate-50 p-3">
+                      <div className="space-y-2 rounded-md border border-slate-200 bg-slate-50 p-3">
                         <PayloadPreview payloadValue={notification.payload} />
                       </div>
                     </td>

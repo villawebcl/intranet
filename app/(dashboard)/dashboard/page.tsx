@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
+import { reviewDocumentAction } from "@/app/(dashboard)/dashboard/workers/[workerId]/documents/actions";
+import { FormSubmitButton } from "@/components/forms/form-submit-button";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { FlashMessages } from "@/components/ui/flash-messages";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import {
   canManageWorkers,
+  canUploadDocuments,
   canReviewDocuments,
   canViewAudit,
   canViewDocuments,
@@ -92,13 +99,6 @@ function notificationEventLabel(eventType: string) {
   return eventType;
 }
 
-function notificationStatusClass(sentAt: string | null) {
-  if (sentAt) {
-    return "bg-emerald-100 text-emerald-800";
-  }
-  return "bg-slate-200 text-slate-700";
-}
-
 function formatAuditAction(action: string) {
   return action.replaceAll("_", " ");
 }
@@ -116,32 +116,64 @@ function MetricCard({
   hint,
   tone = "default",
   href,
+  icon,
+  className,
 }: {
   label: string;
   value: string | number;
   hint?: string;
-  tone?: "default" | "success" | "warning";
+  tone?: "default" | "success" | "warning" | "danger";
   href?: string;
+  icon: ReactNode;
+  className?: string;
 }) {
   const toneClass =
     tone === "success"
-      ? "border-emerald-200 bg-emerald-50"
+      ? "border-emerald-200 bg-white"
       : tone === "warning"
-        ? "border-amber-200 bg-amber-50"
-        : "border-slate-200 bg-white";
+        ? "border-amber-200 bg-white"
+        : tone === "danger"
+          ? "border-red-200 bg-white"
+          : "border-blue-200 bg-white";
+
+  const iconTone =
+    tone === "success"
+      ? "border-emerald-200 bg-emerald-100 text-emerald-700"
+      : tone === "warning"
+        ? "border-amber-200 bg-amber-100 text-amber-700"
+        : tone === "danger"
+          ? "border-red-200 bg-red-100 text-red-700"
+          : "border-blue-200 bg-blue-100 text-blue-700";
+
+  const accentBar =
+    tone === "success"
+      ? "from-emerald-400 to-teal-500"
+      : tone === "warning"
+        ? "from-amber-400 to-amber-500"
+        : tone === "danger"
+          ? "from-orange-400 to-red-500"
+          : "from-blue-400 to-blue-500";
 
   const cardClass = [
-    "rounded-sm border p-4 shadow-sm transition",
-    toneClass,
-    href ? "hover:-translate-y-0.5 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-200" : "",
+    "group transition",
+    href ? "hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-200" : "",
+    className ?? "",
   ].join(" ");
 
   const content = (
-    <>
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-slate-600">{hint}</p> : null}
-    </>
+    <Card className={`h-full rounded-lg p-4 ${toneClass}`}>
+      <div className="flex items-start gap-3">
+        <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border ${iconTone}`}>
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1 border-l border-slate-200 pl-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+          <p className="mt-1 text-4xl font-semibold tracking-tight text-slate-950">{value}</p>
+          {hint ? <p className="mt-1 text-xs text-slate-600">{hint}</p> : null}
+        </div>
+      </div>
+      <div className={`mt-3 h-1 rounded-full bg-gradient-to-r ${accentBar}`} />
+    </Card>
   );
 
   if (href) {
@@ -153,6 +185,54 @@ function MetricCard({
   }
 
   return <div className={cardClass}>{content}</div>;
+}
+
+function MetricIcon({ type }: { type: "workers" | "inactive" | "documents" | "emails" | "active" }) {
+  const baseClass = "h-3.5 w-3.5";
+
+  if (type === "workers") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={baseClass}>
+        <circle cx="8" cy="9" r="2.5" />
+        <circle cx="16" cy="9" r="2.5" />
+        <path d="M4.5 18c.6-2 2.1-3 3.5-3s2.9 1 3.5 3M12.5 18c.6-2 2.1-3 3.5-3s2.9 1 3.5 3" />
+      </svg>
+    );
+  }
+
+  if (type === "documents") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={baseClass}>
+        <path d="M7 3h7l4 4v14H7z" />
+        <path d="M14 3v4h4M10 12h5M10 16h5" />
+      </svg>
+    );
+  }
+
+  if (type === "emails") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={baseClass}>
+        <rect x="4" y="6" width="16" height="12" rx="1" />
+        <path d="m5 8 7 5 7-5" />
+      </svg>
+    );
+  }
+
+  if (type === "active") {
+    return (
+      <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={baseClass}>
+        <circle cx="12" cy="12" r="8" />
+        <path d="m8.5 12.5 2.2 2.1 4.7-4.6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={baseClass}>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M8.5 8.5 15.5 15.5M15.5 8.5 8.5 15.5" />
+    </svg>
+  );
 }
 
 function SectionCard({
@@ -173,29 +253,16 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={["rounded-sm border border-slate-200 bg-white p-5 shadow-sm", className ?? ""].join(" ")}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-950">{title}</h2>
-          {description ? <p className="mt-1 text-sm text-slate-600">{description}</p> : null}
-        </div>
-        {actionHref && actionLabel ? (
-          <Link
-            href={actionHref}
-            className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            {actionLabel}
-          </Link>
-        ) : null}
-      </div>
-      <div className="mt-4">{children}</div>
-    </section>
+    <Card id={id} className={["rounded-lg", className ?? ""].join(" ")}>
+      <SectionHeader title={title} description={description} actionHref={actionHref} actionLabel={actionLabel} />
+      <div>{children}</div>
+    </Card>
   );
 }
 
 function EmptyList({ message }: { message: string }) {
   return (
-    <div className="rounded-sm border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
+    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-600">
       {message}
     </div>
   );
@@ -237,6 +304,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const role = (profile?.role as AppRole | null | undefined) ?? "visitante";
   const canManage = canManageWorkers(role);
+  const canUpload = canUploadDocuments(role);
   const canSeeDocuments = canViewDocuments(role);
   const canReview = canReviewDocuments(role);
   const canSeeAudit = canViewAudit(role);
@@ -374,6 +442,23 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const hasRecentNotifications = recentNotifications.length > 0;
   const showNotificationsPanel = hasRecentNotifications || canSeeNotificationsPanel;
   const showAuditPanel = canSeeAudit;
+  const quickActions = [
+    ...(canManage
+      ? [{ href: "/dashboard/workers/new", label: "Crear trabajador" }]
+      : []),
+    ...(canUpload
+      ? [{ href: "/dashboard/workers?status=activo", label: "Subir documento" }]
+      : []),
+    ...(canReview
+      ? [{ href: "/dashboard/workers?status=activo", label: "Revisar pendientes" }]
+      : []),
+    ...(isAdmin
+      ? [{ href: "/dashboard/users", label: "Crear usuario nucleo" }]
+      : []),
+    ...(canSeeNotificationsPanel
+      ? [{ href: "/dashboard/notifications", label: "Revisar emails" }]
+      : []),
+  ];
   const secondaryPanels = (
     <>
       {showNotificationsPanel ? (
@@ -392,21 +477,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           ) : (
             <ul className="space-y-2">
               {recentNotifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3"
-                >
+                <li key={notification.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
                       {notificationEventLabel(notification.event_type)}
                     </p>
                     <p className="mt-1 text-xs text-slate-600">{formatDate(notification.created_at)}</p>
                   </div>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${notificationStatusClass(notification.sent_at)}`}
-                  >
+                  <Badge tone={notification.sent_at ? "success" : "neutral"}>
                     {notification.sent_at ? "Enviado" : "Pendiente"}
-                  </span>
+                  </Badge>
                 </li>
               ))}
             </ul>
@@ -426,10 +506,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           ) : (
             <ul className="space-y-2">
               {recentAudit.map((log) => (
-                <li
-                  key={log.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3"
-                >
+                <li key={log.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3">
                   <div>
                     <p className="text-sm font-semibold capitalize text-slate-900">{formatAuditAction(log.action)}</p>
                     <p className="mt-1 text-xs text-slate-600">
@@ -437,11 +514,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                       {log.actor_role ? ` • ${formatRole(log.actor_role)}` : ""}
                     </p>
                   </div>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${auditActionClass(log.action)}`}
-                  >
+                  <Badge tone="neutral" className={auditActionClass(log.action)}>
                     {log.action}
-                  </span>
+                  </Badge>
                 </li>
               ))}
             </ul>
@@ -456,16 +531,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               { label: "Revision documentos", enabled: canReview },
               { label: "Auditoria", enabled: canSeeAudit },
             ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between rounded-sm border border-slate-200 bg-slate-50 px-3 py-2"
-              >
+              <div key={item.label} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                 <span className="text-sm text-slate-700">{item.label}</span>
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                    item.enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"
-                  }`}
-                >
+                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${item.enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
                   {item.enabled ? "Activo" : "Sin acceso"}
                 </span>
               </div>
@@ -477,7 +545,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   );
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <FlashMessages error={errorMessage} success={successMessage} />
       {workerAssignmentMissing ? (
         <AlertBanner variant="warning">
@@ -486,51 +554,55 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </AlertBanner>
       ) : null}
 
-      <header className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm">
+      <Card className="rounded-lg p-6">
         <h1 data-testid="dashboard-title" className="text-2xl font-semibold tracking-tight text-slate-950">
           Inicio
         </h1>
-        <p className="mt-1 text-sm text-slate-600">Vista rapida del estado actual y actividad reciente.</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
-            Rol: {formatRole(role)}
-          </span>
-          {queryErrors.length ? (
-            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
-              Datos parciales
-            </span>
-          ) : null}
-        </div>
-      </header>
+        <p className="mt-1 text-sm text-slate-600">
+          Panel operativo para gestionar trabajadores, documentos y seguimiento de actividad en un solo lugar.
+        </p>
+        {queryErrors.length ? (
+          <div className="mt-3">
+            <Badge tone="warning">Datos parciales</Badge>
+          </div>
+        ) : null}
+      </Card>
 
       {queryErrors.length ? (
-        <div className="rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
           Se cargo el dashboard con informacion parcial. Algunas secciones no pudieron actualizarse.
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-12">
         <MetricCard
           label="Trabajadores"
           value={workersTotal}
-          hint="Total registrados"
+          hint="Total"
+          tone="success"
           href={workersListHref}
+          icon={<MetricIcon type="workers" />}
+          className="xl:col-span-3"
         />
         {canManage ? (
           <MetricCard
             label="Inactivos"
             value={workersInactive}
-            hint="Ver listado filtrado"
+            hint="Estado inactivo"
             tone={workersInactive > 0 ? "warning" : "default"}
             href={workersInactiveHref}
+            icon={<MetricIcon type="inactive" />}
+            className="xl:col-span-3"
           />
         ) : (
           <MetricCard
             label="Activos"
             value={workersActive}
-            hint="Ver listado filtrado"
+            hint="Estado activo"
             tone="success"
             href={workersActiveHref}
+            icon={<MetricIcon type="active" />}
+            className="xl:col-span-3"
           />
         )}
         {canSeeDocuments ? (
@@ -540,6 +612,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             hint={canReview ? `Pendientes: ${documentsPending}` : "Documentos visibles"}
             tone="default"
             href={documentsMetricHref}
+            icon={<MetricIcon type="documents" />}
+            className="xl:col-span-3"
           />
         ) : null}
         {canSeeNotificationsPanel ? (
@@ -547,20 +621,42 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             label="Email no enviado"
             value={notificationsPendingEmail}
             hint="Pendientes"
-            tone={notificationsPendingEmail > 0 ? "warning" : "default"}
+            tone={notificationsPendingEmail > 0 ? "danger" : "default"}
             href="/dashboard/notifications"
+            icon={<MetricIcon type="emails" />}
+            className="xl:col-span-3"
           />
         ) : null}
       </div>
+
+      {quickActions.length ? (
+        <Card className="rounded-lg p-4">
+          <SectionHeader title="Accesos directos" description="Acciones operativas frecuentes." />
+          <div className="flex flex-wrap gap-2">
+            {quickActions.map((action) => (
+              <Link
+                key={action.href + action.label}
+                href={action.href}
+                className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       {canReview ? (
         <>
           <SectionCard
             id="cola-revision"
             title="Documentos pendientes"
-            description="Revision prioritaria. Haz click en un documento para abrir la ficha del trabajador."
+            description="Revision prioritaria."
             className="border-amber-200 bg-amber-50/30"
           >
+            <div className="mb-3 inline-flex items-center gap-5 border-b border-slate-200 text-sm font-semibold">
+              <span className="border-b-2 border-slate-900 pb-2 text-slate-900">Todos</span>
+            </div>
             {!pendingDocumentsList.length ? (
               <EmptyList message="No hay documentos pendientes de revision." />
             ) : (
@@ -569,26 +665,63 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   const workerName = getWorkerName(document.worker);
                   return (
                     <li key={document.id}>
-                      <Link
-                        href={getWorkerDocumentsHref(document)}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-amber-200/70 bg-white px-3 py-3 transition hover:border-amber-300 hover:bg-amber-50/40"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
-                            {document.file_name}
-                          </p>
-                          <p className="mt-0.5 text-xs text-slate-600">
+                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200/70 bg-white px-3 py-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
+                              {document.file_name}
+                            </p>
+                            <p className="mt-0.5 text-xs text-slate-600">
                             {(folderLabels[document.folder_type as FolderType] ?? document.folder_type) +
                               (workerName ? ` • ${workerName}` : "")}
                           </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
-                            Pendiente
-                          </span>
-                          <p className="whitespace-nowrap text-xs text-slate-600">{formatDate(document.created_at)}</p>
-                        </div>
-                      </Link>
+                          </div>
+                          <div className="flex flex-wrap items-center justify-end gap-2">
+                            <Badge tone="warning">Pendiente</Badge>
+                            <p className="whitespace-nowrap text-xs text-slate-600">{formatDate(document.created_at)}</p>
+                            <Link
+                              href={getWorkerDocumentsHref(document)}
+                              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                            >
+                              Ver
+                            </Link>
+                            <form action={reviewDocumentAction}>
+                              <input type="hidden" name="workerId" value={document.worker_id} />
+                              <input type="hidden" name="documentId" value={document.id} />
+                              <input type="hidden" name="decision" value="aprobado" />
+                              <input type="hidden" name="returnTo" value="/dashboard" />
+                              <FormSubmitButton
+                                pendingLabel="Aprobando..."
+                                className="rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+                              >
+                                Aprobar
+                              </FormSubmitButton>
+                            </form>
+                            <details className="rounded-md border border-red-200 bg-red-50/60">
+                              <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-semibold text-red-700">
+                                Rechazar
+                              </summary>
+                              <form action={reviewDocumentAction} className="space-y-2 border-t border-red-200 px-2.5 py-2">
+                                <input type="hidden" name="workerId" value={document.worker_id} />
+                                <input type="hidden" name="documentId" value={document.id} />
+                                <input type="hidden" name="decision" value="rechazado" />
+                                <input type="hidden" name="returnTo" value="/dashboard" />
+                                <input
+                                  name="rejectionReason"
+                                  required
+                                  maxLength={500}
+                                  placeholder="Motivo rechazo"
+                                  className="w-44 rounded-md border border-red-200 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none ring-slate-300 focus:ring-2"
+                                />
+                                <FormSubmitButton
+                                  pendingLabel="Rechazando..."
+                                  className="w-full rounded-md border border-red-300 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                                >
+                                  Confirmar
+                                </FormSubmitButton>
+                              </form>
+                            </details>
+                          </div>
+                      </div>
                     </li>
                   );
                 })}
@@ -596,13 +729,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </SectionCard>
 
-          <div className="grid gap-5 xl:grid-cols-2">{secondaryPanels}</div>
+          <div className="grid gap-4 xl:grid-cols-2">
+            {secondaryPanels}
+          </div>
         </>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-          <div className="space-y-5">
+        <div className="grid gap-4 2xl:grid-cols-12">
+          <div className="space-y-4 2xl:col-span-8">
             {canSeeDocuments ? (
-              <SectionCard title="Documentos recientes" description="Ultimos movimientos visibles segun tu rol.">
+              <SectionCard title="Documentos recientes" description="Ultimos movimientos visibles.">
                 {!recentDocuments.length ? (
                   <EmptyList message="Aun no hay documentos registrados." />
                 ) : (
@@ -613,7 +748,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                         <li key={document.id}>
                           <Link
                             href={getWorkerDocumentsHref(document)}
-                            className="flex flex-wrap items-start justify-between gap-3 rounded-sm border border-slate-200 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
+                            className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3 transition hover:border-slate-300 hover:bg-slate-50"
                           >
                             <div className="min-w-0">
                               <p className="truncate text-sm font-semibold text-slate-900" title={document.file_name}>
@@ -625,9 +760,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                               </p>
                               <p className="mt-0.5 text-xs text-slate-500">{formatDate(document.created_at)}</p>
                             </div>
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${documentStatusClass(document.status)}`}
-                            >
+                            <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${documentStatusClass(document.status)}`}>
                               {formatDocumentStatus(document.status)}
                             </span>
                           </Link>
@@ -644,7 +777,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
 
-          <div className="space-y-5">{secondaryPanels}</div>
+          <div className="space-y-4 2xl:col-span-4">{secondaryPanels}</div>
         </div>
       )}
     </section>

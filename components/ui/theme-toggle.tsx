@@ -20,7 +20,11 @@ function getInitialTheme(): ThemeMode {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "soft-dark" : "light";
 }
 
-export function ThemeToggle() {
+type ThemeToggleProps = {
+  inline?: boolean;
+};
+
+export function ThemeToggle({ inline = false }: ThemeToggleProps) {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") {
       return "light";
@@ -54,7 +58,12 @@ export function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label="Alternar tema"
-      className="theme-toggle-button fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-sm border border-slate-200 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg shadow-slate-900/10 backdrop-blur-sm hover:bg-white"
+      className={[
+        "theme-toggle-button inline-flex items-center gap-2 border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition hover:bg-slate-50",
+        inline
+          ? "rounded-md px-3 py-2"
+          : "fixed bottom-4 right-4 z-50 rounded-md bg-white/90 px-3 py-2 shadow-lg shadow-slate-900/10 backdrop-blur-sm hover:bg-white",
+      ].join(" ")}
     >
       <span className="inline-flex h-2 w-2 rounded-full bg-slate-400" aria-hidden />
       <span>Tema</span>

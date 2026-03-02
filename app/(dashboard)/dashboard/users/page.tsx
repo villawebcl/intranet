@@ -179,7 +179,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       <section className="space-y-6 lg:space-y-7">
         <FlashMessages error={errorMessage} success={successMessage} />
 
-        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -192,13 +192,13 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             <div className="flex flex-wrap gap-2.5">
               <Link
                 href="/dashboard/access"
-                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Ver acceso y roles
               </Link>
               <Link
                 href="/dashboard"
-                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Volver al dashboard
               </Link>
@@ -206,7 +206,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
           </div>
         </header>
 
-        <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <h2 className="text-lg font-semibold text-slate-950">Crear usuario</h2>
           <p className="mt-1 text-sm text-slate-600">
             Crea un usuario del nucleo y asigna su rol de acceso.
@@ -221,7 +221,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                 name="email"
                 type="email"
                 required
-                className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                 placeholder="usuario@empresa.cl"
               />
             </div>
@@ -233,7 +233,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               <input
                 id="create-fullName"
                 name="fullName"
-                className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                 placeholder="Nombre Apellido"
               />
             </div>
@@ -246,7 +246,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                 id="create-role"
                 name="role"
                 defaultValue="visitante"
-                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
               >
                 {coreUserRoles.map((role) => (
                   <option key={role} value={role}>
@@ -266,7 +266,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                 type="password"
                 required
                 minLength={8}
-                className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                 placeholder="Minimo 8 caracteres"
               />
             </div>
@@ -291,7 +291,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         {loadError ? <AlertBanner variant="error">{loadError}</AlertBanner> : null}
 
         {!loadError ? (
-          <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+          <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-slate-950">Usuarios registrados</h2>
@@ -326,7 +326,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                     return (
                       <article
                         key={row.id}
-                        className="rounded-sm border border-slate-200 bg-slate-50 p-5"
+                        className="rounded-md border border-slate-200 bg-slate-50 p-5"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -369,7 +369,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               id={`fullName-mobile-${row.id}`}
                               name="fullName"
                               defaultValue={row.fullName}
-                              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -383,7 +383,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               id={`role-mobile-${row.id}`}
                               name="role"
                               defaultValue={row.role}
-                              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                             >
                               {coreUserRoles.map((role) => (
                                 <option key={role} value={role}>
@@ -415,7 +415,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                             type="password"
                             minLength={8}
                             required
-                            className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                             placeholder="Minimo 8 caracteres"
                           />
                           <FormSubmitButton
@@ -433,7 +433,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                               : "Las cuentas admin estan protegidas y no se pueden eliminar."}
                           </AlertBanner>
                         ) : (
-                          <details className="mt-3 rounded-sm border border-red-200 bg-red-50">
+                          <details className="mt-3 rounded-md border border-red-200 bg-red-50">
                             <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
                               Eliminar usuario
                             </summary>
@@ -470,7 +470,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                   })}
                 </div>
 
-                <div className="mt-5 hidden overflow-x-auto rounded-sm border border-slate-200 xl:block">
+                <div className="mt-5 hidden overflow-x-auto rounded-md border border-slate-200 xl:block">
                   <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
                     <colgroup>
                       <col className="w-[20%]" />
@@ -546,7 +546,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                                   id={`fullName-${row.id}`}
                                   name="fullName"
                                   defaultValue={row.fullName}
-                                  className="w-full rounded-sm border border-slate-300 px-2.5 py-2 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                  className="w-full rounded-md border border-slate-300 px-2.5 py-2 text-xs text-slate-900 outline-none ring-slate-300 focus:ring-2"
                                   placeholder="Nombre completo"
                                 />
                                 <label htmlFor={`role-${row.id}`} className="sr-only">
@@ -557,7 +557,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                                     id={`role-${row.id}`}
                                     name="role"
                                     defaultValue={row.role}
-                                    className="w-full rounded-sm border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                    className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-900 outline-none ring-slate-300 focus:ring-2"
                                   >
                                     {coreUserRoles.map((role) => (
                                       <option key={role} value={role}>
@@ -587,7 +587,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                                   type="password"
                                   minLength={8}
                                   required
-                                  className="w-full rounded-sm border border-slate-300 px-2.5 py-2 text-xs text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                                  className="w-full rounded-md border border-slate-300 px-2.5 py-2 text-xs text-slate-900 outline-none ring-slate-300 focus:ring-2"
                                   placeholder="Nueva clave"
                                 />
                                 <FormSubmitButton
@@ -607,7 +607,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                                   </p>
                                 </div>
                               ) : (
-                                <details className="mt-2 rounded-sm border border-red-200 bg-red-50">
+                                <details className="mt-2 rounded-md border border-red-200 bg-red-50">
                                   <summary className="cursor-pointer list-none px-3 py-2 text-xs font-semibold text-red-700">
                                     Eliminar
                                   </summary>

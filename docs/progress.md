@@ -9,7 +9,7 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Leer este archivo antes de cambios importantes para entender el estado actual.
 - Actualizar este archivo al cerrar cualquier bloque relevante de trabajo.
 
-## Estado actual (2026-02-27)
+## Estado actual (2026-03-02)
 
 - Seguridad de auditoria endurecida: insercion via RPC `SECURITY DEFINER` y bloqueo de insert directo no confiable.
 - Seguridad de descargas endurecida: `visitante` sin lectura directa de `storage.objects`, flujo por `download_requests` + aprobacion + signed URL temporal.
@@ -23,12 +23,47 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
 - Se incorpora comando unico de certificacion `npm run rc` (lint + typecheck + unit + build:ci + smoke).
 - Se crea runbook de release en `docs/RELEASE.md` (freeze/tag, verificacion SQL post-deploy, bootstrap admin inicial).
 - Se aplica pass de espaciado UI en pantallas densas (`workers`, `documents`, `users`, `audit`) con contenedor consistente reusable.
+- Se completa rediseño UI/UX transversal estilo SaaS minimalista:
+  - shell dashboard renovado (topbar + sidebar fija/collapsible + contenido full-width)
+  - dashboard `Inicio` reorganizado en mosaico operativo
+  - auditoria simplificada para lectura rapida (metadata compacta)
+  - consistencia visual global (radios/bordes/focus/temas)
+- Se habilita busqueda profesional en header:
+  - resultados de navegacion + trabajadores + documentos
+  - endpoint server seguro con permisos por rol: `GET /api/header-search`
+  - dropdown con navegacion por teclado y seleccion directa
+- Se incorporan accesos directos operativos en `Inicio` (segun permisos), evitando redundancia con la sidebar.
 - Validaciones tecnicas recientes en verde:
   - `npm run lint`
   - `npm run typecheck`
   - `npm run test:unit`
 
 ## Progreso diario
+
+### 2026-03-02
+
+#### Hecho
+
+- Rediseño UI/UX transversal aplicado sin cambios de logica de negocio:
+  - componentes UI base (`Card`, `Badge`, `SectionHeader`)
+  - shell de layout (`AppShell`, `Topbar`, `Sidebar`) y refinamiento de navegacion lateral
+  - tema oscuro global en escala gris + coherencia visual de foco/bordes/estados
+- `Inicio` actualizado a layout de mosaico con jerarquia clara:
+  - KPIs visualmente diferenciados
+  - bloque de documentos pendientes con acciones directas (`Ver`, `Aprobar`, `Rechazar`)
+  - paneles de actividad ordenados en grilla para evitar desbordes visuales
+- `Auditoria` simplificada para mejorar legibilidad:
+  - chips de accion mas discretos
+  - metadata compacta (menos ruido y mejor escaneo)
+  - tabla contenida dentro de viewport con scroll interno cuando aplica
+- Busqueda de header convertida en herramienta operativa real:
+  - modulo de busqueda cliente (`components/layout/header-search.tsx`)
+  - API de busqueda (`app/api/header-search/route.ts`)
+  - resultados combinados de `Navegacion`, `Trabajadores` y `Documentos`
+- Sidebar fijada correctamente en desktop y control de colapso con pestana lateral persistente.
+- Validaciones tecnicas en verde tras los cambios:
+  - `npm run lint`
+  - `npm run typecheck`
 
 ### 2026-02-27
 

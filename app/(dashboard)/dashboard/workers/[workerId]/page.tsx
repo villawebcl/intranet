@@ -264,7 +264,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         success={getStringParam(urlParams.success)}
       />
 
-      <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -276,7 +276,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           <div className="flex flex-wrap gap-2">
             <Link
               href="/dashboard/workers"
-              className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Volver
             </Link>
@@ -284,7 +284,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
               <>
                 <Link
                   href={`/dashboard/workers/${worker.id}/edit`}
-                  className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Editar datos
                 </Link>
@@ -300,7 +300,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                   </FormSubmitButton>
                 </form>
                 {isAdmin ? (
-                  <details className="rounded-sm border border-red-200 bg-red-50">
+                  <details className="rounded-md border border-red-200 bg-red-50">
                     <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-red-700">
                       Archivar
                     </summary>
@@ -336,7 +336,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             ) : null}
             {!worker.is_active ? (
               <>
-                <span className="inline-flex items-center rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+                <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
                   Registro archivado
                 </span>
                 {isAdmin ? (
@@ -352,7 +352,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                   </form>
                 ) : null}
                 {isAdmin ? (
-                  <details className="rounded-sm border border-red-200 bg-red-50">
+                  <details className="rounded-md border border-red-200 bg-red-50">
                     <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-red-700">
                       Eliminar definitivo
                     </summary>
@@ -389,7 +389,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             {canReadDocuments ? (
               <Link
                 href={`/dashboard/workers/${worker.id}/documents`}
-                className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Ver documentos
               </Link>
@@ -399,7 +399,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 href={`/dashboard/workers/${worker.id}/documents/new${
                   hasSingleUploadFolder ? `?folder=${primaryUploadFolder}` : ""
                 }`}
-                className="rounded-sm border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 {primaryUploadFolder === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir documento"}
               </Link>
@@ -408,30 +408,30 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         </header>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Estado</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.status}</p>
           </div>
-          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Registro</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.is_active ? "Activo" : "Archivado"}</p>
           </div>
-          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Area</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.area ?? "Sin area"}</p>
           </div>
-          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Cargo</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.position ?? "Sin cargo"}</p>
           </div>
-          <div className="rounded-sm border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Correo</p>
             <p className="mt-1 truncate font-semibold text-slate-900">{worker.email ?? "Sin correo"}</p>
           </div>
         </div>
 
         {canManage ? (
-          <section className="mt-4 rounded-sm border border-slate-200 bg-slate-50 p-4">
+          <section className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-4">
             <header className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-base font-semibold text-slate-900">Acceso al portal</h2>
@@ -447,15 +447,15 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             </header>
 
             <div className="mt-3 grid gap-3 md:grid-cols-3">
-              <div className="rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
                 <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Correo acceso</p>
                 <p className="mt-1 truncate font-medium text-slate-900">{workerAccessEmail ?? "Sin cuenta"}</p>
               </div>
-              <div className="rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
                 <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Ultimo login</p>
                 <p className="mt-1 font-medium text-slate-900">{formatDateTime(workerAccessLastSignInAt)}</p>
               </div>
-              <div className="rounded-sm border border-slate-200 bg-white px-3 py-2 text-sm">
+              <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
                 <p className="text-xs uppercase tracking-[0.08em] text-slate-500">ID cuenta</p>
                 <p className="mt-1 truncate font-medium text-slate-900">{workerAccessUserId ?? "Sin cuenta"}</p>
               </div>
@@ -468,7 +468,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             ) : null}
 
             {workerAccessState === "sin_acceso" && !workerAccessError ? (
-              <div className="mt-3 rounded-sm border border-slate-200 bg-white p-3">
+              <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
                 {!worker.is_active ? (
                   <AlertBanner variant="warning">Debes desarchivar el trabajador para crear su acceso.</AlertBanner>
                 ) : !worker.email ? (
@@ -489,7 +489,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         type="password"
                         minLength={8}
                         required
-                        className="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
                         placeholder="Minimo 8 caracteres"
                       />
                     </div>
@@ -534,7 +534,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
       </section>
 
-      <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
         <header>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -543,11 +543,11 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                 Estructura fija de 12 carpetas para gestion documental del trabajador.
               </p>
             </div>
-            <div className="inline-flex rounded-sm border border-slate-300 bg-white p-1">
+            <div className="inline-flex rounded-md border border-slate-300 bg-white p-1">
               <Link
                 href={`/dashboard/workers/${worker.id}?foldersView=list`}
                 className={[
-                  "rounded-sm px-3 py-1.5 text-xs font-semibold transition",
+                  "rounded-md px-3 py-1.5 text-xs font-semibold transition",
                   foldersView === "list"
                     ? "bg-slate-900 text-white"
                     : "text-slate-700 hover:bg-slate-50",
@@ -558,7 +558,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
               <Link
                 href={`/dashboard/workers/${worker.id}?foldersView=grid`}
                 className={[
-                  "rounded-sm px-3 py-1.5 text-xs font-semibold transition",
+                  "rounded-md px-3 py-1.5 text-xs font-semibold transition",
                   foldersView === "grid"
                     ? "bg-slate-900 text-white"
                     : "text-slate-700 hover:bg-slate-50",
@@ -583,7 +583,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         ) : null}
 
         {foldersView === "list" ? (
-          <div className="mt-4 overflow-hidden rounded-sm border border-slate-200">
+          <div className="mt-4 overflow-hidden rounded-md border border-slate-200">
             <ul className="divide-y divide-slate-200 bg-white">
               {folderTypes.map((folderType) => {
                 const summary = folderSummary[folderType];
@@ -613,7 +613,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         {canReadDocuments ? (
                           <Link
                             href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
-                            className="inline-flex rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="inline-flex rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             Ver documentos
                           </Link>
@@ -621,7 +621,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                         {canUpload && worker.is_active && canUploadDocumentToFolder(role, folderType) ? (
                           <Link
                             href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
-                            className="inline-flex rounded-sm border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="inline-flex rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
                             {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir liquidacion" : "Subir PDF"}
                           </Link>
@@ -638,7 +638,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             {folderTypes.map((folderType) => {
               const summary = folderSummary[folderType];
               return (
-                <article key={folderType} className="rounded-sm border border-slate-200 bg-white p-3">
+                <article key={folderType} className="rounded-md border border-slate-200 bg-white p-3">
                   <p className="truncate text-xs font-semibold uppercase tracking-[0.06em] text-slate-700">
                     {folderLabels[folderType]}
                   </p>
@@ -660,7 +660,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                     {canReadDocuments ? (
                       <Link
                         href={`/dashboard/workers/${worker.id}/documents?folder=${folderType}`}
-                        className="inline-flex rounded-sm border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                        className="inline-flex rounded-md border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
                       >
                         Ver
                       </Link>
@@ -668,7 +668,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
                     {canUpload && worker.is_active && canUploadDocumentToFolder(role, folderType) ? (
                       <Link
                         href={`/dashboard/workers/${worker.id}/documents/new?folder=${folderType}`}
-                        className="inline-flex rounded-sm border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                        className="inline-flex rounded-md border border-slate-300 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
                       >
                         {folderType === ACCOUNTING_UPLOAD_FOLDER_TYPE ? "Subir" : "PDF"}
                       </Link>

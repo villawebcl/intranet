@@ -282,7 +282,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
   return (
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
-        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Trabajadores</h1>
@@ -315,26 +315,26 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                 {archiveFilter === "archived" ? (
                   <Link
                     href={buildWorkersPath(query, statusFilter, "active", 1)}
-                    className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     Ver activos
                   </Link>
                 ) : (
                   <Link
                     href={buildWorkersPath(query, statusFilter, "archived", 1)}
-                    className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     Ver archivados
                   </Link>
                 )}
                 <Link
                   href="/dashboard/workers/new"
-                  className="inline-flex items-center rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex items-center rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
                   Nuevo trabajador
                 </Link>
                 {!workerAccessError && missingAccessCandidatesCount > 0 ? (
-                  <details className="rounded-sm border border-blue-200 bg-blue-50">
+                  <details className="rounded-md border border-blue-200 bg-blue-50">
                     <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-blue-700">
                       Crear accesos faltantes ({missingAccessCandidatesCount})
                     </summary>
@@ -352,7 +352,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                           name="confirmCreate"
                           value="yes"
                           required
-                          className="mt-0.5 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                          className="mt-0.5 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-slate-300"
                         />
                         Confirmo la creacion masiva
                       </label>
@@ -366,7 +366,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                   </details>
                 ) : null}
                 {!workerAccessError && missingAccessCandidatesCount === 0 ? (
-                  <span className="inline-flex items-center rounded-sm border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                  <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
                     Sin accesos pendientes
                   </span>
                 ) : null}
@@ -381,7 +381,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
         ) : null}
 
         <form
-          className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+          className="rounded-md border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
           method="get"
         >
           <p className="text-sm font-medium text-slate-900">Busqueda</p>
@@ -396,14 +396,14 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               id="q"
               name="q"
               defaultValue={query}
-              className="min-w-0 rounded-sm border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
               placeholder="Ej: 12.345.678-9 o Perez"
             />
             <select
               id="status"
               name="status"
               defaultValue={statusFilter}
-              className="rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
             >
               <option value="">Todos los estados</option>
               <option value="activo">Activos</option>
@@ -413,7 +413,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               id="archive"
               name="archive"
               defaultValue={archiveFilter}
-              className="rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
             >
               <option value="active">Solo activos</option>
               <option value="archived">Solo archivados</option>
@@ -421,14 +421,14 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
             </select>
             <button
               type="submit"
-              className="rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Buscar
             </button>
             {hasFilters ? (
               <Link
                 href="/dashboard/workers"
-                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Limpiar
               </Link>
@@ -499,7 +499,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                   <Link
                     key={worker.id}
                     href={`/dashboard/workers/${worker.id}`}
-                    className="block rounded-sm border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50/40"
+                    className="block rounded-md border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:bg-slate-50/40"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -546,7 +546,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               })}
             </div>
 
-            <div className="hidden rounded-sm border border-slate-200 bg-white shadow-sm md:block">
+            <div className="hidden rounded-md border border-slate-200 bg-white shadow-sm md:block">
               <div className="overflow-x-auto overflow-y-visible">
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50">
@@ -614,7 +614,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                               <div className="space-y-2">
                                 <Link
                                   href={`/dashboard/workers/${worker.id}`}
-                                  className="block rounded-sm border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                  className="block rounded-md border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                                 >
                                   Abrir ficha
                                 </Link>
@@ -622,7 +622,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                                 {canEdit ? (
                                   <Link
                                     href={`/dashboard/workers/${worker.id}/edit`}
-                                    className="block rounded-sm border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                    className="block rounded-md border border-slate-300 px-3 py-2 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                                   >
                                     Editar
                                   </Link>
@@ -647,7 +647,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                                 ) : null}
 
                                 {canArchive ? (
-                                  <details className="rounded-sm border border-red-200 bg-red-50">
+                                  <details className="rounded-md border border-red-200 bg-red-50">
                                     <summary className="cursor-pointer list-none px-3 py-2 text-center text-xs font-semibold text-red-700">
                                       Archivar
                                     </summary>
@@ -694,7 +694,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
                                 ) : null}
 
                                 {canDelete ? (
-                                  <details className="rounded-sm border border-red-200 bg-red-50">
+                                  <details className="rounded-md border border-red-200 bg-red-50">
                                     <summary className="cursor-pointer list-none px-3 py-2 text-center text-xs font-semibold text-red-700">
                                       Eliminar definitivo
                                     </summary>

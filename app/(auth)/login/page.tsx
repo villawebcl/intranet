@@ -40,7 +40,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-8 sm:px-6">
       <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,420px)]">
-        <section className="relative overflow-hidden rounded-sm border border-white/70 bg-white/70 p-6 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)] backdrop-blur-sm sm:p-8">
+        <section className="relative overflow-hidden rounded-md border border-white/70 bg-white/70 p-6 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)] backdrop-blur-sm sm:p-8">
           <div className="absolute -right-12 -top-10 h-36 w-36 rounded-full bg-blue-200/40 blur-2xl" aria-hidden />
           <div className="absolute -bottom-10 left-10 h-24 w-24 rounded-full bg-cyan-200/40 blur-2xl" aria-hidden />
 
@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-sm border border-slate-200/80 bg-white/85 p-4">
+              <div className="rounded-md border border-slate-200/80 bg-white/85 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                   Seguridad
                 </p>
@@ -65,7 +65,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   Sesiones controladas y permisos segun perfil.
                 </p>
               </div>
-              <div className="rounded-sm border border-slate-200/80 bg-white/85 p-4">
+              <div className="rounded-md border border-slate-200/80 bg-white/85 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                   Operacion
                 </p>
@@ -77,7 +77,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         </section>
 
-        <section className="rounded-sm border border-white/80 bg-white/90 p-6 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.42)] backdrop-blur-sm sm:p-7">
+        <section className="rounded-md border border-white/80 bg-white/90 p-6 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.42)] backdrop-blur-sm sm:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
             Acceso
           </p>
@@ -87,7 +87,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
 
           {reason === "timeout" ? (
-            <p className="mt-4 rounded-sm border border-amber-200 bg-amber-50/90 px-3 py-2 text-sm text-amber-800">
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50/90 px-3 py-2 text-sm text-amber-800">
               La sesion se cerro por inactividad.
             </p>
           ) : null}

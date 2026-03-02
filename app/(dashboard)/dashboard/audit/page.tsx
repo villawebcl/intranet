@@ -224,27 +224,36 @@ function ActionBadge({ action }: { action: string }) {
   return (
     <span
       title={action}
-      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${tone}`}
+      className={`inline-flex rounded-md border px-2 py-1 text-xs font-medium leading-none ${tone}`}
     >
       {formatActionTitle(action)}
     </span>
   );
 }
 
-function MetadataSummary({ metadataValue }: { metadataValue: unknown }) {
+function MetadataSummary({
+  metadataValue,
+  compact = false,
+}: {
+  metadataValue: unknown;
+  compact?: boolean;
+}) {
   const summary = getMetadataSummary(metadataValue);
 
   if (!summary.length) {
     return <p className="text-xs text-slate-500">Sin metadata estructurada.</p>;
   }
 
+  const visible = compact ? summary.slice(0, 2) : summary;
+  const hiddenCount = compact ? Math.max(0, summary.length - visible.length) : 0;
+
   return (
-    <ul className="flex flex-wrap gap-2">
-      {summary.map(({ key, value }) => (
-        <li
+    <div className="flex flex-wrap items-center gap-1.5">
+      {visible.map(({ key, value }) => (
+        <span
           key={key}
           title={`${metadataFieldLabel(key)}: ${formatMetadataValueForDisplay(key, value)}`}
-          className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1"
+          className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1"
         >
           <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-slate-500">
             {metadataFieldLabel(key)}
@@ -258,9 +267,14 @@ function MetadataSummary({ metadataValue }: { metadataValue: unknown }) {
           >
             {formatMetadataValueForDisplay(key, value)}
           </span>
-        </li>
+        </span>
       ))}
-    </ul>
+      {hiddenCount ? (
+        <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
+          +{hiddenCount} mas
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -359,7 +373,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
   return (
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
-        <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Auditoria</h1>
@@ -369,7 +383,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
             </div>
             <Link
               href="/dashboard"
-              className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Volver al dashboard
             </Link>
@@ -396,10 +410,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
           ) : null}
         </header>
 
-        <form
-          className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-          method="get"
-        >
+        <form className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6" method="get">
           <p className="text-sm font-medium text-slate-900">Filtros</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
             <div className="space-y-1.5">
@@ -414,7 +425,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 name="action"
                 defaultValue={actionFilter}
                 placeholder="document_uploaded"
-                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
               />
             </div>
             <div className="space-y-1.5">
@@ -429,19 +440,19 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 name="entity"
                 defaultValue={entityFilter}
                 placeholder="document o worker"
-                className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 focus:ring-2"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
               />
             </div>
             <div className="flex items-end gap-2.5 lg:pb-0.5">
               <button
                 type="submit"
-                className="rounded-sm bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Aplicar
               </button>
               <Link
                 href="/dashboard/audit"
-                className="rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Limpiar
               </Link>
@@ -450,7 +461,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
         </form>
 
         {error ? (
-          <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
             No se pudieron cargar logs: {error.message}
           </div>
         ) : null}
@@ -476,10 +487,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
 
             <div className="space-y-4 xl:hidden">
               {rows.map((log) => (
-                <article
-                  key={log.id}
-                  className="rounded-sm border border-slate-200 bg-white p-5 shadow-sm"
-                >
+                <article key={log.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs text-slate-600">{formatDate(log.created_at)}</p>
@@ -504,21 +512,21 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                     </div>
                   </div>
 
-                  <div className="mt-3 rounded-sm border border-slate-200 bg-slate-50 p-3">
-                    <MetadataSummary metadataValue={log.metadata} />
+                  <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                    <MetadataSummary metadataValue={log.metadata} compact />
                   </div>
                 </article>
               ))}
             </div>
 
-            <div className="hidden overflow-x-auto rounded-sm border border-slate-200 bg-white shadow-sm xl:block">
-              <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+            <div className="hidden w-full overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm xl:block">
+              <table className="min-w-[980px] w-full table-fixed divide-y divide-slate-200 text-sm">
                 <colgroup>
                   <col className="w-[16%]" />
-                  <col className="w-[13%]" />
-                  <col className="w-[15%]" />
                   <col className="w-[14%]" />
-                  <col className="w-[42%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[30%]" />
                 </colgroup>
                 <thead className="bg-slate-50">
                   <tr>
@@ -531,7 +539,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {rows.map((log) => (
-                    <tr key={log.id} className="align-top">
+                    <tr key={log.id} className="align-top hover:bg-slate-50/50">
                       <td className="px-4 py-4 text-slate-700">
                         <p className="break-words text-xs leading-5 md:text-sm">
                           {formatDate(log.created_at)}
@@ -548,7 +556,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                           {log.actor_user_id ? (
                             <span
                               title={log.actor_user_id}
-                              className="inline-block max-w-full truncate rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                              className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                             >
                               {truncateMiddle(log.actor_user_id)}
                             </span>
@@ -563,7 +571,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                           {log.entity_id ? (
                             <span
                               title={log.entity_id}
-                              className="inline-block max-w-full truncate rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
+                              className="inline-block max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700"
                             >
                               {truncateMiddle(log.entity_id)}
                             </span>
@@ -571,8 +579,8 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="max-w-full rounded-sm border border-slate-200 bg-slate-50 p-3">
-                          <MetadataSummary metadataValue={log.metadata} />
+                        <div className="max-w-full overflow-hidden rounded-md border border-slate-200 bg-slate-50 p-2.5">
+                          <MetadataSummary metadataValue={log.metadata} compact />
                         </div>
                       </td>
                     </tr>

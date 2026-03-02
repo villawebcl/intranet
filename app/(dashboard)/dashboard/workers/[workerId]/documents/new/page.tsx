@@ -73,7 +73,7 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
 
   return (
     <section className="space-y-5">
-      <header className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+      <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Subir documento PDF</h1>
         <p className="mt-1 text-sm text-slate-600">
           Trabajador: {worker.first_name} {worker.last_name}
@@ -87,7 +87,7 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
         </AlertBanner>
       ) : null}
 
-      <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-sm text-slate-700">
           Reglas: solo PDF, tamano maximo {DOCUMENT_MAX_SIZE_MB}MB, estado inicial pendiente.
         </p>
@@ -104,7 +104,7 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
               id="folderType"
               name="folderType"
               defaultValue={selectedFolder}
-              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 transition focus:ring-2"
             >
               {uploadableFolders.map((folderType) => (
                 <option key={folderType} value={folderType}>
@@ -131,7 +131,7 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
               accept={DOCUMENT_FILE_ACCEPT}
               required
               disabled={!isWorkerActive}
-              className="w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition file:mr-3 file:rounded-sm file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white focus:ring-2"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 transition file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white focus:ring-2"
             />
           </div>
 
@@ -145,7 +145,7 @@ export default async function UploadDocumentPage({ params, searchParams }: Uploa
             </FormSubmitButton>
             <Link
               href={`/dashboard/workers/${worker.id}`}
-              className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Cancelar
             </Link>

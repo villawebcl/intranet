@@ -25,14 +25,14 @@ type WorkerFormProps = {
 };
 
 function inputClassName() {
-  return "w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-blue-500 transition focus:ring-2";
+  return "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 transition focus:ring-2";
 }
 
 export function WorkerForm(props: WorkerFormProps) {
   const showAccessSetup = props.showAccessSetup ?? false;
 
   return (
-    <section className="rounded-sm border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-950">{props.title}</h1>
         <p className="mt-1 text-sm text-slate-600">{props.description}</p>
@@ -145,7 +145,7 @@ export function WorkerForm(props: WorkerFormProps) {
         </div>
 
         {showAccessSetup ? (
-          <section className="rounded-sm border border-slate-200 bg-slate-50 p-4">
+          <section className="rounded-md border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-start gap-2">
               <input
                 id="create-access-now"
@@ -194,7 +194,7 @@ export function WorkerForm(props: WorkerFormProps) {
           </FormSubmitButton>
           <Link
             href="/dashboard/workers"
-            className="inline-flex items-center rounded-sm border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             Volver al listado
           </Link>

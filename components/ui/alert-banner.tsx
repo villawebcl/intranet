@@ -29,7 +29,7 @@ export function AlertBanner({
   return (
     <div
       className={[
-        "rounded-sm border px-3 py-2.5 text-sm shadow-sm",
+        "rounded-md border px-3 py-2.5 text-sm shadow-sm",
         variantClassName(variant),
         className ?? "",
       ].join(" ")}
