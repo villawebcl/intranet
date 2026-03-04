@@ -373,17 +373,18 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
   return (
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
-        <header className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <header className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)] sm:p-7">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Auditoria</h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Sistema</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Auditoria</h1>
+              <p className="mt-1 text-sm text-slate-500">
                 Eventos criticos del sistema con paginacion.
               </p>
             </div>
             <Link
               href="/dashboard"
-              className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
             >
               Volver al dashboard
             </Link>
@@ -410,7 +411,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
           ) : null}
         </header>
 
-        <form className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6" method="get">
+        <form className="rounded-xl bg-white p-5 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.06)] sm:p-6" method="get">
           <p className="text-sm font-medium text-slate-900">Filtros</p>
           <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
             <div className="space-y-1.5">
@@ -528,13 +529,13 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                   <col className="w-[20%]" />
                   <col className="w-[30%]" />
                 </colgroup>
-                <thead className="bg-slate-50">
+                <thead className="audit-events-table border-b border-slate-100 bg-[#f7f7f5]">
                   <tr>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Fecha</th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Accion</th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Actor</th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Entidad</th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Metadata</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Fecha</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Accion</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Actor</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Entidad</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Metadata</th>
                   </tr>
                 </thead>
                 <tbody className="audit-events-body">

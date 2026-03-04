@@ -264,19 +264,20 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
         success={getStringParam(urlParams.success)}
       />
 
-      <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)]">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Trabajador</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
               {worker.first_name} {worker.last_name}
             </h1>
-            <p className="mt-1 text-sm text-slate-600">RUT: {worker.rut}</p>
+            <p className="mt-1 text-sm text-slate-500">RUT: {worker.rut}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <Link
               href="/dashboard/workers"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
             >
               Volver
             </Link>
@@ -284,7 +285,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
               <>
                 <Link
                   href={`/dashboard/workers/${worker.id}/edit`}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
                 >
                   Editar datos
                 </Link>
@@ -534,7 +535,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
 
       </section>
 
-      <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)]">
         <header>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

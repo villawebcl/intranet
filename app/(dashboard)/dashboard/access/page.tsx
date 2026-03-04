@@ -71,39 +71,41 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
     <section className="space-y-5">
       <FlashMessages error={errorMessage} success={successMessage} />
 
-      <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <header className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)]">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Acceso y roles</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Configuracion</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Acceso y roles</h1>
+            <p className="mt-1 text-sm text-slate-500">
               Resumen operativo de permisos por rol.
             </p>
           </div>
-          <Link
-            href="/dashboard"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
-        <div className="mt-4 inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-          Rol actual: {roleLabel(currentRole)}
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex items-center rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+              Rol: {roleLabel(currentRole)}
+            </span>
+            <Link
+              href="/dashboard"
+              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+            >
+              Volver al dashboard
+            </Link>
+          </div>
         </div>
       </header>
 
-      <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-950">Uso recomendado</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Esta vista muestra la politica de permisos por rol. La asignacion de roles y la
-              gestion de cuentas se realiza en Usuarios.
+            <h2 className="text-base font-semibold text-slate-900">Politica de acceso</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              La asignacion de roles y la gestion de cuentas se realiza en Usuarios.
             </p>
           </div>
           {currentRole === "admin" ? (
             <Link
               href="/dashboard/users"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
             >
               Ir a Usuarios
             </Link>
@@ -111,17 +113,17 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
         </div>
       </section>
 
-      <div className="hidden overflow-x-auto rounded-md border border-slate-200 bg-white shadow-sm md:block">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+      <div className="hidden overflow-x-auto rounded-xl bg-white shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)] md:block">
+        <table className="min-w-full divide-y divide-slate-100 text-sm">
+          <thead className="bg-[#f7f7f5]">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Rol</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Gestion usuarios</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Gestion trabajadores</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Ver documentos</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Subir</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Revisar</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-700">Auditoria</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Rol</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Usuarios</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Trabajadores</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Ver docs</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Subir</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Revisar</th>
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Auditoria</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

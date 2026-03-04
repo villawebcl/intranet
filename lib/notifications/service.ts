@@ -164,11 +164,12 @@ export async function sendResendEmail(params: SendEmailParams) {
     });
 
     if (!response.ok) {
-      const message = await response.text();
-      console.error("resend email failed", message);
+      const body = await response.text();
+      console.error("resend email failed", { status: response.status, body });
       return false;
     }
 
+    console.log("resend email sent", { to: params.to, subject: params.subject, at: new Date().toISOString() });
     return true;
   } catch (error) {
     console.error("resend email failed", error);

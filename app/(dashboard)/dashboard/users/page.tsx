@@ -179,26 +179,27 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       <section className="space-y-6 lg:space-y-7">
         <FlashMessages error={errorMessage} success={successMessage} />
 
-        <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <header className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)] sm:p-7">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Administracion</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
                 Usuarios nucleo
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Gestion de cuentas internas: admin, rrhh, contabilidad y visitante.
+              <p className="mt-1 text-sm text-slate-500">
+                Cuentas internas: admin, rrhh, contabilidad y visitante.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-2">
               <Link
                 href="/dashboard/access"
-                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
               >
-                Ver acceso y roles
+                Acceso y roles
               </Link>
               <Link
                 href="/dashboard"
-                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
               >
                 Volver al dashboard
               </Link>
@@ -206,7 +207,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
           </div>
         </header>
 
-        <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <section className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.06)] sm:p-7">
           <h2 className="text-lg font-semibold text-slate-950">Crear usuario</h2>
           <p className="mt-1 text-sm text-slate-600">
             Crea un usuario del nucleo y asigna su rol de acceso.
@@ -291,7 +292,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         {loadError ? <AlertBanner variant="error">{loadError}</AlertBanner> : null}
 
         {!loadError ? (
-          <section className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+          <section className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.06)] sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-slate-950">Usuarios registrados</h2>
@@ -470,8 +471,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                   })}
                 </div>
 
-                <div className="mt-5 hidden overflow-x-auto rounded-md border border-slate-200 xl:block">
-                  <table className="w-full table-fixed divide-y divide-slate-200 text-sm">
+                <div className="mt-5 hidden overflow-x-auto rounded-xl shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)] xl:block">
+                  <table className="w-full table-fixed divide-y divide-slate-100 bg-white text-sm">
                     <colgroup>
                       <col className="w-[20%]" />
                       <col className="w-[13%]" />
@@ -479,19 +480,19 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                       <col className="w-[25%]" />
                       <col className="w-[30%]" />
                     </colgroup>
-                    <thead className="bg-slate-50">
+                    <thead className="bg-[#f7f7f5]">
                       <tr>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                           Usuario
                         </th>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">Estado</th>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Estado</th>
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                           Ultimo acceso
                         </th>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                           Perfil / rol
                         </th>
-                        <th className="px-4 py-4 text-left font-semibold text-slate-700">
+                        <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                           Clave / baja
                         </th>
                       </tr>

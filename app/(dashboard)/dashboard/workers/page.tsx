@@ -282,11 +282,12 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
   return (
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
-        <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
+        <header className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)] sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Trabajadores</h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Personas</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Trabajadores</h1>
+              <p className="mt-1 text-sm text-slate-500">
                 Listado con busqueda basica, estado laboral y archivado.
               </p>
               {!error ? (
@@ -381,7 +382,7 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
         ) : null}
 
         <form
-          className="rounded-md border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+          className="rounded-xl bg-white p-5 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.06)] sm:p-6"
           method="get"
         >
           <p className="text-sm font-medium text-slate-900">Busqueda</p>
@@ -546,24 +547,24 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
               })}
             </div>
 
-            <div className="hidden rounded-md border border-slate-200 bg-white shadow-sm md:block">
+            <div className="hidden rounded-xl bg-white shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)] md:block">
               <div className="overflow-x-auto overflow-y-visible">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50">
+                <table className="min-w-full divide-y divide-slate-100 text-sm">
+                <thead className="bg-[#f7f7f5]">
                   <tr>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Trabajador</th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">RUT</th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Trabajador</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">RUT</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                       Area / Cargo
                     </th>
-                    <th className="px-4 py-4 text-left font-semibold text-slate-700">Estado</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Estado</th>
                     {canManage ? (
-                      <th className="px-4 py-4 text-left font-semibold text-slate-700">
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
                         Acceso portal
                       </th>
                     ) : null}
                     {canManage ? (
-                      <th className="px-4 py-4 text-left font-semibold text-slate-700">Acciones</th>
+                      <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Acciones</th>
                     ) : null}
                   </tr>
                 </thead>

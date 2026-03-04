@@ -20,46 +20,46 @@ export function PaginationControls({
   return (
     <div
       className={[
-        "flex flex-wrap items-center justify-between gap-2 rounded-md border-0 bg-white px-4 py-3 text-sm shadow-[0_10px_24px_-18px_rgba(15,23,42,0.35)]",
+        "flex flex-wrap items-center justify-between gap-2 py-2",
         className,
       ].join(" ")}
     >
-      <div className="text-slate-600">
+      <p className="text-xs text-slate-400">
         {totalCount === null ? (
-          <span>
-            Mostrando {showingCount} resultados · Pagina {currentPage}
-          </span>
+          <>
+            {showingCount} resultados &middot; p.{currentPage}
+          </>
         ) : (
-          <span>
-            Mostrando {showingCount} de {totalCount} resultados · Pagina {currentPage}
-          </span>
+          <>
+            {showingCount} de {totalCount} &middot; p.{currentPage}
+          </>
         )}
-      </div>
+      </p>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {previousHref ? (
           <Link
             href={previousHref}
-            className="rounded-md border-0 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
+            className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
           >
-            Anterior
+            ← Anterior
           </Link>
         ) : (
-          <span className="rounded-md bg-slate-100/70 px-3 py-1.5 text-xs font-semibold text-slate-400">
-            Anterior
+          <span className="rounded-lg bg-slate-100/50 px-3 py-1.5 text-xs font-semibold text-slate-300">
+            ← Anterior
           </span>
         )}
 
         {nextHref ? (
           <Link
             href={nextHref}
-            className="rounded-md border-0 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
+            className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
           >
-            Siguiente
+            Siguiente →
           </Link>
         ) : (
-          <span className="rounded-md bg-slate-100/70 px-3 py-1.5 text-xs font-semibold text-slate-400">
-            Siguiente
+          <span className="rounded-lg bg-slate-100/50 px-3 py-1.5 text-xs font-semibold text-slate-300">
+            Siguiente →
           </span>
         )}
       </div>

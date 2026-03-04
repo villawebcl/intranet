@@ -153,6 +153,10 @@ html[data-theme="soft-dark"] body [class*="bg-slate-50"] {
   background-color: #1d2940 !important;
 }
 
+html[data-theme="soft-dark"] body [class*="bg-[#f7f7f5]"] {
+  background-color: #1d2940 !important;
+}
+
 html[data-theme="soft-dark"] body [class*="bg-slate-100"] {
   background-color: #243149 !important;
 }
@@ -378,6 +382,48 @@ html[data-theme="soft-dark"] .audit-events-table thead {
 
 html[data-theme="soft-dark"] .audit-events-body tr + tr td {
   border-top-color: rgb(104 132 176 / 0.14);
+}
+
+/* Table row hover — subtle warmth */
+.dashboard-content table tbody tr {
+  transition: background-color 100ms ease;
+}
+
+.dashboard-content table tbody tr:hover td {
+  background-color: rgb(15 23 42 / 0.018);
+}
+
+html[data-theme="soft-dark"] .dashboard-content table tbody tr:hover td {
+  background-color: rgb(255 255 255 / 0.03);
+}
+
+/* Alert banner dark mode — left border accent */
+html[data-theme="soft-dark"] body [class*="border-l-emerald"] {
+  border-left-color: #4ade80 !important;
+}
+
+html[data-theme="soft-dark"] body [class*="border-l-red"] {
+  border-left-color: #f87171 !important;
+}
+
+html[data-theme="soft-dark"] body [class*="border-l-amber"] {
+  border-left-color: #fbbf24 !important;
+}
+
+html[data-theme="soft-dark"] body [class*="border-l-blue"] {
+  border-left-color: #60a5fa !important;
+}
+
+/* Metric card accent bars: preserve saturation in dark mode */
+html[data-theme="soft-dark"] body .metric-card-accent[class*="bg-blue-"] {
+  background-color: #3b82f6 !important;
+  opacity: 0.7;
+}
+
+/* Sidebar logo: dark bg stays dark in dark mode */
+html[data-theme="soft-dark"] .dashboard-shell-logo {
+  background-color: #0f172a !important;
+  color: #f8fbff !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
