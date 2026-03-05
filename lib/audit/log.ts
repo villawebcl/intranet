@@ -1,6 +1,7 @@
 import "server-only";
 
 import { type AppRole } from "@/lib/constants/domain";
+import { logServerEvent } from "@/lib/observability/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -54,12 +55,12 @@ export async function insertAuditLog(params: InsertAuditLogParams) {
   try {
     adminClient = params.adminClient ?? createSupabaseAdminClient();
   } catch (error) {
-    console.error("[AUDIT_FAILURE] admin client unavailable", {
+    await logServerEvent("error", "audit_write_failed", {
       action: params.action,
       actorUserId: params.actorUserId,
       actorRole: params.actorRole,
       reason: "missing_service_role_key",
-      error,
+      error: error instanceof Error ? error.message : String(error),
     });
     return false;
   }
@@ -74,7 +75,7 @@ export async function insertAuditLog(params: InsertAuditLogParams) {
   });
 
   if (error) {
-    console.error("[AUDIT_FAILURE] rpc insert failed", {
+    await logServerEvent("error", "audit_write_failed", {
       action: params.action,
       actorUserId: params.actorUserId,
       actorRole: params.actorRole,

@@ -13,10 +13,24 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  const requestHeaders = new Headers(request.headers);
+  const requestId = requestHeaders.get("x-request-id") ?? crypto.randomUUID();
+  requestHeaders.set("x-request-id", requestId);
+
+  function nextResponseWithRequestHeaders() {
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+    response.headers.set("x-request-id", requestId);
+    return response;
+  }
+
   // The response must be recreated inside setAll so that updated session cookies
   // are forwarded to the browser. Using the original response object would lose
   // the cookies added by the Supabase client after it was constructed.
-  let supabaseResponse = NextResponse.next({ request });
+  let supabaseResponse = nextResponseWithRequestHeaders();
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -25,7 +39,7 @@ export async function proxy(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        supabaseResponse = NextResponse.next({ request });
+        supabaseResponse = nextResponseWithRequestHeaders();
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options),
         );
@@ -45,12 +59,17 @@ export async function proxy(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = AUTH_ROUTE;
     loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   // Protect /api routes: return 401 instead of redirect.
   if (!user && pathname.startsWith(API_ROUTE)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized", requestId }, {
+      status: 401,
+      headers: { "x-request-id": requestId },
+    });
   }
 
   // Avoid redirect loop: send authenticated users away from login page.
@@ -58,7 +77,9 @@ export async function proxy(request: NextRequest) {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = DASHBOARD_ROUTE;
     dashboardUrl.search = "";
-    return NextResponse.redirect(dashboardUrl);
+    const response = NextResponse.redirect(dashboardUrl);
+    response.headers.set("x-request-id", requestId);
+    return response;
   }
 
   return supabaseResponse;

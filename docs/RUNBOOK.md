@@ -98,3 +98,8 @@ Regla:
   - Revisar rol en `profiles` y policy aplicable.
 - Upload PDF rechazado:
   - Confirmar `mime_type=application/pdf` y `<=5MB`.
+
+## 8) Observabilidad
+
+- Baseline operacional: `docs/OBSERVABILITY.md`
+- Verificar propagacion de `x-request-id` en requests/responses y logs.

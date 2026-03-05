@@ -282,16 +282,13 @@ export async function createWorkerAccess(
     return { ok: false, error: "El trabajador ya tiene una cuenta asociada" };
   }
 
-  const { data: usersPage, error: usersError } = await adminClient.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
+  const { users, error: usersError } = await listAllAuthUsers(adminClient);
 
-  if (usersError) {
+  if (usersError || !users) {
     return { ok: false, error: "No se pudo validar si el correo ya esta registrado" };
   }
 
-  const existingEmailUser = usersPage.users.find((item) => (item.email ?? "").toLowerCase() === normalizedEmail);
+  const existingEmailUser = users.find((item) => (item.email ?? "").toLowerCase() === normalizedEmail);
   if (existingEmailUser) {
     return {
       ok: false,

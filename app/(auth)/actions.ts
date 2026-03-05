@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { type AppRole } from "@/lib/constants/domain";
 import { insertAuditLog } from "@/lib/audit/log";
 import { checkRateLimit, clearRateLimit } from "@/lib/auth/rate-limiter";
+import { logServerEvent } from "@/lib/observability/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 const IP_LIMIT = 5;
@@ -45,30 +46,42 @@ export async function loginWithPasswordAction(formData: FormData) {
     "unknown";
 
   const ipKey = `ip:${ip}`;
-  const emailKey = `email:${email}`;
-
-  const ipCheck = checkRateLimit(ipKey, IP_LIMIT, IP_WINDOW_MS);
-  if (!ipCheck.ok) {
-    redirect(withLoginError(nextPath, "rate_limited"));
-  }
-
-  const emailCheck = checkRateLimit(emailKey, EMAIL_LIMIT, EMAIL_WINDOW_MS);
-  if (!emailCheck.ok) {
-    redirect(withLoginError(nextPath, "rate_limited"));
-  }
+  const emailKey = `em:${email.toLowerCase()}`;
 
   const supabase = await createSupabaseServerClient();
+
+  const ipCheck = await checkRateLimit(supabase, ipKey, IP_LIMIT, IP_WINDOW_MS);
+  if (!ipCheck.ok) {
+    await logServerEvent("warn", "auth_login_rate_limited", {
+      scope: "ip",
+      retryAfterSeconds: ipCheck.retryAfterSeconds,
+    });
+    redirect(withLoginError(nextPath, "rate_limited"));
+  }
+
+  const emailCheck = await checkRateLimit(supabase, emailKey, EMAIL_LIMIT, EMAIL_WINDOW_MS);
+  if (!emailCheck.ok) {
+    await logServerEvent("warn", "auth_login_rate_limited", {
+      scope: "email",
+      retryAfterSeconds: emailCheck.retryAfterSeconds,
+    });
+    redirect(withLoginError(nextPath, "rate_limited"));
+  }
+
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (signInError) {
+    await logServerEvent("warn", "auth_login_failed", {
+      reason: "invalid_credentials",
+    });
     redirect(withLoginError(nextPath, "invalid_credentials"));
   }
 
-  clearRateLimit(ipKey);
-  clearRateLimit(emailKey);
+  await clearRateLimit(supabase, ipKey);
+  await clearRateLimit(supabase, emailKey);
 
   const {
     data: { user },
@@ -95,6 +108,11 @@ export async function loginWithPasswordAction(formData: FormData) {
     metadata: {
       method: "password",
     },
+  });
+
+  await logServerEvent("info", "auth_login_success", {
+    actorUserId: user.id,
+    actorRole,
   });
 
   redirect(nextPath);

@@ -202,13 +202,13 @@ export default async function globalSetup() {
       .update({
         worker_id: workerId,
         folder_type: documentSeed.folderType,
-        status: "pendiente",
+        status: "aprobado",
         file_name: documentSeed.fileName,
         file_size_bytes: pdfBytes.byteLength,
         mime_type: documentSeed.mimeType,
         uploaded_by: runtimeUsers.admin.id,
-        reviewed_by: null,
-        reviewed_at: null,
+        reviewed_by: runtimeUsers.admin.id,
+        reviewed_at: new Date().toISOString(),
         rejection_reason: null,
       })
       .eq("id", documentId)
@@ -226,12 +226,14 @@ export default async function globalSetup() {
       .insert({
         worker_id: workerId,
         folder_type: documentSeed.folderType,
-        status: "pendiente",
+        status: "aprobado",
         file_name: documentSeed.fileName,
         file_path: storagePath,
         file_size_bytes: pdfBytes.byteLength,
         mime_type: documentSeed.mimeType,
         uploaded_by: runtimeUsers.admin.id,
+        reviewed_by: runtimeUsers.admin.id,
+        reviewed_at: new Date().toISOString(),
       })
       .select("id")
       .single();

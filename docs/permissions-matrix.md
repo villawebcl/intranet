@@ -14,6 +14,7 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 - `admin`
 - `rrhh`
 - `contabilidad`
+- `trabajador`
 - `visitante`
 
 ## Matriz resumida
@@ -23,7 +24,7 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 | Login / acceso dashboard | Si | Si | Si | Si |
 | Gestion de usuarios (crear/asignar rol/reset password) | Si | No | No | No |
 | Eliminar usuario (con confirmacion) | Si* | No | No | No |
-| Ver listado trabajadores | Si | Si | Si (lectura) | Limitado*** |
+| Ver listado trabajadores | Si | Si | Si (lectura) | Solo activos*** |
 | Crear trabajador | Si | Si | No | No |
 | Crear acceso de intranet al crear trabajador | Si | Si | No | No |
 | Editar trabajador | Si | Si | No | No |
@@ -33,7 +34,7 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 | Gestion de acceso portal trabajador (crear/suspender/reactivar) | Si | Si | No | No |
 | Ver detalle trabajador | Si | Si | Si (lectura) | Limitado*** |
 | Ver resumen documental en ficha trabajador | Si | Si | Si | No |
-| Ver listado documentos por trabajador | Si | Si | Si | Si (restringido) |
+| Ver listado documentos por trabajador | Si | Si | Si | Si (solo aprobados, trabajador activo) |
 | Subir documento PDF | Si | Si | Si (solo `Liquidaciones`) | No |
 | Aprobar/Rechazar documento | Si | Si | No | No |
 | Descargar documento | Si | Si | Si | No (solo solicitud) |
@@ -45,7 +46,7 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 
 \** Solo se permite sobre trabajadores previamente archivados.
 
-\*** `visitante` en workers: el alcance documentado indica acceso limitado al modulo de trabajadores; confirmar exactamente que vistas quedan expuestas en UI final.
+\*** `visitante` solo puede ver trabajadores activos (sin gestion) para navegar documentos aprobados.
 
 ## Detalle operativo por rol
 
@@ -82,8 +83,8 @@ Documentar la matriz de permisos vigente del MVP para QA, soporte y futuras feat
 ### `visitante`
 
 - Acceso a dashboard autenticado.
-- Acceso al modulo de trabajadores: limitado (sin gestion).
-- Acceso documental restringido: visualiza metadata/listado sin descarga directa.
+- Acceso al modulo de trabajadores: limitado a trabajadores activos (sin gestion).
+- Acceso documental restringido: visualiza solo documentos aprobados de trabajadores activos (sin descarga directa).
 - Puede solicitar descarga de documentos al equipo administrador.
 - Sin gestion de trabajadores.
 - Sin acceso a auditoria.

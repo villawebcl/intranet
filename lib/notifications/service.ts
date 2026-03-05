@@ -4,6 +4,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 
 import { type AppRole } from "@/lib/constants/domain";
 import { getServerEnv } from "@/lib/env";
+import { logServerEvent } from "@/lib/observability/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
 type NotificationEventType =
@@ -154,6 +155,16 @@ type SendEmailParams = {
   html: string;
 };
 
+function maskEmail(email: string) {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) {
+    return "invalid";
+  }
+
+  const visible = local.slice(0, 2);
+  return `${visible}***@${domain}`;
+}
+
 export async function sendResendEmail(params: SendEmailParams) {
   const env = getServerEnv();
   if (!env.RESEND_API_KEY || !env.NOTIFICATIONS_FROM_EMAIL) {
@@ -177,14 +188,24 @@ export async function sendResendEmail(params: SendEmailParams) {
 
     if (!response.ok) {
       const body = await response.text();
-      console.error("resend email failed", { status: response.status, body });
+      await logServerEvent("error", "email_send_failed", {
+        provider: "resend",
+        status: response.status,
+        body,
+      });
       return false;
     }
 
-    console.log("resend email sent", { to: params.to, subject: params.subject, at: new Date().toISOString() });
+    await logServerEvent("info", "email_sent", {
+      provider: "resend",
+      recipient: maskEmail(params.to),
+    });
     return true;
   } catch (error) {
-    console.error("resend email failed", error);
+    await logServerEvent("error", "email_send_failed", {
+      provider: "resend",
+      error: error instanceof Error ? error.message : String(error),
+    });
     return false;
   }
 }

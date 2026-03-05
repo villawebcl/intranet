@@ -77,6 +77,9 @@ Migraciones clave:
 - `20260227_000012_performance_indexes_pagination.sql` (indices para listados paginados)
 - `20260227_000013_profiles_sensitive_fields_hardening.sql` (protege `profiles.role/worker_id` + RPC admin controlada)
 - `20260227_000014_notifications_download_request_spoof_hardening.sql` (anti-spoof en notifications + RPC validada)
+- `20260305_000019_visitante_scope_tightening.sql` (reduce exposicion de metadata para `visitante`)
+- `20260305_000020_search_trgm_indexes.sql` (indices trigram para busquedas `ilike`)
+- `20260305_000021_auth_rate_limit_rpc.sql` (rate limiting distribuido en Postgres)
 
 Nota:
 
@@ -218,3 +221,4 @@ Opcional (emails):
 - `docs/progress.md`
 - `docs/RELEASE.md`
 - `docs/tasks.md`
+- `docs/OBSERVABILITY.md`

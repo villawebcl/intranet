@@ -1,14 +1,10 @@
+import "server-only";
+
+import { type SupabaseClient } from "@supabase/supabase-js";
+
 /**
- * In-memory rate limiter.
- *
- * IMPORTANT — production limitation: this store lives in the Node.js process.
- * In multi-instance deployments (Vercel, Railway with horizontal scaling, etc.)
- * each instance has its own independent store, so a distributed attacker can
- * bypass limits by spreading requests across instances.
- *
- * For production with multiple instances, replace this with a shared store:
- *   - Upstash Redis (serverless-friendly): https://upstash.com
- *   - Supabase DB-based counter (via RPC with window functions)
+ * Fallback in-memory limiter used only when DB RPC is unavailable.
+ * Primary path uses a distributed Postgres-backed limiter via RPC.
  */
 
 type RateLimitEntry = {
@@ -34,7 +30,7 @@ if (typeof setInterval !== "undefined") {
   setInterval(purgeExpired, CLEANUP_INTERVAL_MS).unref?.();
 }
 
-export function checkRateLimit(
+function checkRateLimitInMemory(
   key: string,
   limit: number,
   windowMs: number,
@@ -56,6 +52,47 @@ export function checkRateLimit(
   return { ok: true };
 }
 
-export function clearRateLimit(key: string) {
-  store.delete(key);
+export async function checkRateLimit(
+  supabase: SupabaseClient,
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<{ ok: true } | { ok: false; retryAfterSeconds: number }> {
+  const windowSeconds = Math.max(1, Math.floor(windowMs / 1000));
+
+  try {
+    const { data, error } = await supabase.rpc("check_auth_rate_limit", {
+      p_key: key,
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const payload = (data ?? {}) as {
+      ok?: boolean;
+      retry_after_seconds?: number;
+    };
+
+    if (payload.ok) {
+      return { ok: true };
+    }
+
+    const retryAfterSeconds = Math.max(1, Number(payload.retry_after_seconds ?? 1));
+    return { ok: false, retryAfterSeconds };
+  } catch {
+    return checkRateLimitInMemory(key, limit, windowMs);
+  }
+}
+
+export async function clearRateLimit(supabase: SupabaseClient, key: string) {
+  try {
+    await supabase.rpc("clear_auth_rate_limit", {
+      p_key: key,
+    });
+  } catch {
+    store.delete(key);
+  }
 }
