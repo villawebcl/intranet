@@ -9,6 +9,7 @@ import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { canManageWorkers, isWorkerScopedRole } from "@/lib/auth/roles";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -32,6 +33,16 @@ function getStringParam(value: string | string[] | undefined) {
   }
 
   return value.trim();
+}
+
+/**
+ * Strip PostgREST filter syntax characters from a user-supplied search term
+ * before interpolating it into an .or() filter string.
+ * Characters like ( ) , . { } can break out of the ilike value and inject
+ * additional filter conditions.
+ */
+function sanitizeSearchQuery(q: string) {
+  return q.replace(/[(),.{}]/g, "").slice(0, 100);
 }
 
 function getPageParam(value: string | string[] | undefined) {
@@ -84,17 +95,11 @@ function getStatusLabel(status: string) {
 
 type WorkerAccessState = "sin_acceso" | "activo" | "suspendido";
 
-function isUserSuspended(bannedUntil: string | null | undefined) {
-  if (!bannedUntil) {
-    return false;
-  }
-
-  const bannedUntilDate = new Date(bannedUntil);
-  if (Number.isNaN(bannedUntilDate.getTime())) {
-    return false;
-  }
-
-  return bannedUntilDate.getTime() > Date.now();
+function accessStateFromBannedUntil(bannedUntil: string | null | undefined): WorkerAccessState {
+  if (!bannedUntil) return "activo";
+  const ts = new Date(bannedUntil).getTime();
+  if (Number.isNaN(ts)) return "activo";
+  return ts > Date.now() ? "suspendido" : "activo";
 }
 
 function getAccessState(workerAccessState: WorkerAccessState) {
@@ -151,8 +156,9 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
   const currentPage = getPageParam(params.page);
   const pageFrom = (currentPage - 1) * WORKERS_PAGE_SIZE;
   const pageTo = pageFrom + WORKERS_PAGE_SIZE - 1;
-  const successMessage = getStringParam(params.success);
-  const errorMessage = getStringParam(params.error);
+  const flash = await getFlash();
+  const successMessage = flash.success ?? "";
+  const errorMessage = flash.error ?? getStringParam(params.error);
   const currentPath = buildWorkersPath(query, statusFilter, archiveFilter, currentPage);
 
   const { data: profile } = await supabase
@@ -183,8 +189,9 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
     .range(pageFrom, pageTo);
 
   if (query.length) {
+    const safeQuery = sanitizeSearchQuery(query);
     workersQuery = workersQuery.or(
-      `rut.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`,
+      `rut.ilike.%${safeQuery}%,first_name.ilike.%${safeQuery}%,last_name.ilike.%${safeQuery}%`,
     );
   }
   if (statusFilter) {
@@ -222,46 +229,16 @@ export default async function WorkersPage({ searchParams }: WorkersPageProps) {
       const workerIds = workers?.map((worker) => worker.id) ?? [];
       const { data: profiles, error: profilesError } = await adminClient
         .from("profiles")
-        .select("id, worker_id, role")
-        .in("worker_id", workerIds);
+        .select("worker_id, banned_until")
+        .in("worker_id", workerIds)
+        .eq("role", "trabajador");
 
       if (profilesError) {
         workerAccessError = "No se pudo cargar estado de accesos";
       } else {
-        const workerProfiles = (profiles ?? []).filter(
-          (profile): profile is { id: string; worker_id: string; role: string } =>
-            Boolean(profile.worker_id) && profile.role === "trabajador",
-        );
-
-        const workerIdByUserId = new Map(
-          workerProfiles.map((profile) => [profile.id, profile.worker_id]),
-        );
-
-        const { data: usersPage, error: usersError } = await adminClient.auth.admin.listUsers({
-          page: 1,
-          perPage: 1000,
-        });
-
-        if (usersError) {
-          workerAccessError = "No se pudo cargar estado de accesos";
-        } else {
-          const usersById = new Map(usersPage.users.map((authUser) => [authUser.id, authUser]));
-          workerProfiles.forEach((profile) => {
-            const authUser = usersById.get(profile.id);
-            if (!authUser) {
-              return;
-            }
-
-            const workerId = workerIdByUserId.get(profile.id);
-            if (!workerId) {
-              return;
-            }
-
-            workerAccessByWorkerId.set(
-              workerId,
-              isUserSuspended(authUser.banned_until) ? "suspendido" : "activo",
-            );
-          });
+        for (const profile of profiles ?? []) {
+          if (!profile.worker_id) continue;
+          workerAccessByWorkerId.set(profile.worker_id, accessStateFromBannedUntil(profile.banned_until));
         }
       }
     } catch {

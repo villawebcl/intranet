@@ -1,24 +1,13 @@
 import { redirect } from "next/navigation";
 
 import { canManageWorkers } from "@/lib/auth/roles";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import { createWorkerAction } from "../actions";
 import { WorkerForm } from "../_components/worker-form";
 
-type NewWorkerPageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-function getStringParam(value: string | string[] | undefined) {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  return value.trim();
-}
-
-export default async function NewWorkerPage({ searchParams }: NewWorkerPageProps) {
+export default async function NewWorkerPage() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -38,7 +27,7 @@ export default async function NewWorkerPage({ searchParams }: NewWorkerPageProps
     redirect("/dashboard/workers?error=No+tienes+permisos+para+crear+trabajadores");
   }
 
-  const params = await searchParams;
+  const flash = await getFlash();
 
   return (
     <WorkerForm
@@ -46,7 +35,7 @@ export default async function NewWorkerPage({ searchParams }: NewWorkerPageProps
       description="Completa los datos basicos y, si corresponde, crea su acceso a intranet en el mismo paso."
       submitLabel="Crear trabajador"
       action={createWorkerAction}
-      errorMessage={getStringParam(params.error)}
+      errorMessage={flash.error ?? ""}
       showAccessSetup
       values={{
         rut: "",

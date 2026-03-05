@@ -8,6 +8,7 @@ import { EmptyStateCard } from "@/components/ui/empty-state-card";
 import { FlashMessages } from "@/components/ui/flash-messages";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { appRoles } from "@/lib/constants/domain";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -35,13 +36,6 @@ type AuthUserRow = {
 const coreUserRoles = appRoles.filter((role) => role !== "trabajador");
 const USERS_PAGE_SIZE = 20;
 
-function getStringParam(value: string | string[] | undefined) {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  return value.trim();
-}
 
 function getPageParam(value: string | string[] | undefined) {
   if (typeof value !== "string") {
@@ -91,7 +85,7 @@ function isSoftDeletedAuthUser(user: unknown) {
 }
 
 export default async function UsersPage({ searchParams }: UsersPageProps) {
-  const params = await searchParams;
+  const [params, flash] = await Promise.all([searchParams, getFlash()]);
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -166,8 +160,8 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
         : "No se pudo abrir la gestion de usuarios";
   }
 
-  const successMessage = getStringParam(params.success);
-  const errorMessage = getStringParam(params.error);
+  const successMessage = flash.success ?? "";
+  const errorMessage = flash.error ?? "";
   const filteredUsers = users.filter((row) => row.role !== "trabajador");
   const hiddenWorkersCount = users.length - filteredUsers.length;
   const returnToPath = buildUsersPath(currentPage);

@@ -15,6 +15,7 @@ import {
   isWorkerScopedRole,
 } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import {
@@ -103,7 +104,7 @@ function getAccessStateLabel(state: WorkerAccessState) {
 
 export default async function WorkerDetailPage({ params, searchParams }: WorkerDetailPageProps) {
   const { workerId } = await params;
-  const urlParams = await searchParams;
+  const [urlParams, flash] = await Promise.all([searchParams, getFlash()]);
   const foldersView = normalizeFoldersView(getStringParam(urlParams.foldersView));
 
   const supabase = await createSupabaseServerClient();
@@ -260,8 +261,8 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
   return (
     <section className="space-y-5">
       <FlashMessages
-        error={getStringParam(urlParams.error)}
-        success={getStringParam(urlParams.success)}
+        error={flash.error ?? ""}
+        success={flash.success ?? ""}
       />
 
       <section className="rounded-xl bg-white p-6 shadow-[0_2px_20px_-8px_rgba(15,23,42,0.08)]">

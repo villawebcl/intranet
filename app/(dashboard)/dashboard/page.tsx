@@ -19,6 +19,7 @@ import {
 } from "@/lib/auth/roles";
 import type { AppRole } from "@/lib/constants/domain";
 import { folderLabels, type FolderType } from "@/lib/constants/domain";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 type DashboardPageProps = {
@@ -280,9 +281,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     redirect("/login");
   }
 
-  const urlParams = await searchParams;
-  const successMessage = getStringParam(urlParams.success);
-  const errorMessage = getStringParam(urlParams.error);
+  const [urlParams, flash] = await Promise.all([searchParams, getFlash()]);
+  const successMessage = flash.success ?? "";
+  const errorMessage = flash.error ?? getStringParam(urlParams.error);
 
   const { data: profile } = await supabase
     .from("profiles")

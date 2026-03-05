@@ -15,7 +15,11 @@ type SearchItem = {
 
 function normalizeQuery(value: string | null) {
   if (!value) return "";
-  return value.trim().slice(0, 80);
+  // Strip PostgREST filter syntax chars to prevent filter injection in .or() strings.
+  return value
+    .trim()
+    .replace(/[(),.{}]/g, "")
+    .slice(0, 80);
 }
 
 function workerName(firstName: string | null, lastName: string | null) {
@@ -59,7 +63,7 @@ export async function GET(request: Request) {
     const { data: workerRows } = await supabase
       .from("workers")
       .select("id, first_name, last_name, rut, status")
-      .or(`rut.ilike.%${q}%,first_name.ilike.%${q}%,last_name.ilike.%${q}%`)
+      .or(`rut.ilike.%${q}%,first_name.ilike.%${q}%,last_name.ilike.%${q}%`) // q already sanitized by normalizeQuery
       .order("last_name", { ascending: true })
       .order("first_name", { ascending: true })
       .limit(6);

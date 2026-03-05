@@ -3,18 +3,20 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const AUTH_ROUTE = "/login";
 const DASHBOARD_ROUTE = "/dashboard";
+const API_ROUTE = "/api/";
 
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next({
-    request,
-  });
-
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return response;
+    return NextResponse.next({ request });
   }
+
+  // The response must be recreated inside setAll so that updated session cookies
+  // are forwarded to the browser. Using the original response object would lose
+  // the cookies added by the Supabase client after it was constructed.
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -22,38 +24,46 @@ export async function proxy(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          request.cookies.set(name, value);
-          response.cookies.set(name, value, options);
-        });
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options),
+        );
       },
     },
   });
 
+  // MUST use getUser() — not getSession() — to validate the token server-side.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDashboardRoute = request.nextUrl.pathname.startsWith(DASHBOARD_ROUTE);
-  const isAuthRoute = request.nextUrl.pathname === AUTH_ROUTE;
+  const { pathname } = request.nextUrl;
 
-  if (!user && isDashboardRoute) {
+  // Protect /dashboard routes: redirect unauthenticated users to login.
+  if (!user && pathname.startsWith(DASHBOARD_ROUTE)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = AUTH_ROUTE;
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isAuthRoute) {
+  // Protect /api routes: return 401 instead of redirect.
+  if (!user && pathname.startsWith(API_ROUTE)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Avoid redirect loop: send authenticated users away from login page.
+  if (user && pathname === AUTH_ROUTE) {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = DASHBOARD_ROUTE;
     dashboardUrl.search = "";
     return NextResponse.redirect(dashboardUrl);
   }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/login", "/dashboard/:path*"],
+  matcher: ["/login", "/dashboard/:path*", "/api/:path*"],
 };

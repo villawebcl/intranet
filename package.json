@@ -15,6 +15,8 @@
     "rc": "npm run lint && npm run typecheck && npm run test:unit && npm run build:ci && npm run e2e:smoke",
     "supabase:provision-trabajador": "node scripts/provision-trabajador-demo.mjs",
     "supabase:reset-users": "node scripts/reset-supabase-users.mjs --yes",
+    "storage:cleanup-orphans": "node scripts/cleanup-orphaned-storage.mjs",
+    "storage:cleanup-orphans:delete": "node scripts/cleanup-orphaned-storage.mjs --delete",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

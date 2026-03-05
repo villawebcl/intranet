@@ -39,15 +39,26 @@ export async function invokeInsertAuditLogRpc(
   return { error: result?.error ?? null };
 }
 
+/**
+ * Audit failures are NON-BLOCKING by design: a failed audit write must not
+ * prevent the underlying business operation from completing (e.g. a document
+ * upload should not be rolled back because the audit RPC timed out).
+ *
+ * However, failures are logged with the prefix [AUDIT_FAILURE] so they can be
+ * filtered and alerted on in any log aggregator (Datadog, Loki, CloudWatch, etc.):
+ *
+ *   grep '[AUDIT_FAILURE]' your-log-stream | alert if count > 0
+ */
 export async function insertAuditLog(params: InsertAuditLogParams) {
   let adminClient: SupabaseAdminClient;
   try {
     adminClient = params.adminClient ?? createSupabaseAdminClient();
   } catch (error) {
-    console.error("audit log admin client unavailable", {
+    console.error("[AUDIT_FAILURE] admin client unavailable", {
       action: params.action,
       actorUserId: params.actorUserId,
       actorRole: params.actorRole,
+      reason: "missing_service_role_key",
       error,
     });
     return false;
@@ -63,7 +74,7 @@ export async function insertAuditLog(params: InsertAuditLogParams) {
   });
 
   if (error) {
-    console.error("audit log insert failed", {
+    console.error("[AUDIT_FAILURE] rpc insert failed", {
       action: params.action,
       actorUserId: params.actorUserId,
       actorRole: params.actorRole,

@@ -4,7 +4,7 @@ import { type AppRole } from "@/lib/constants/domain";
 import { type WorkerFormInput } from "@/lib/validators/workers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
-import { logAuditEvent } from "@/lib/services/audit.service";
+import { insertAuditLog } from "@/lib/audit/log";
 import { type ServiceResult } from "@/lib/services/service-result";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
@@ -163,7 +163,7 @@ export async function createWorkerRecord(
     return { ok: false, error: message };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_created",
@@ -222,7 +222,7 @@ export async function updateWorkerRecord(
     return { ok: false, error: message };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_updated",
@@ -326,7 +326,7 @@ export async function createWorkerAccess(
     return { ok: false, error: profileLinkResult.error };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_access_created",
@@ -453,7 +453,7 @@ export async function createMissingWorkerAccesses(
     existingEmails.add(normalizedEmail);
     createdCount += 1;
 
-    await logAuditEvent({
+    await insertAuditLog({
       supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_access_created",
@@ -469,7 +469,7 @@ export async function createMissingWorkerAccesses(
     });
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_access_bulk_created",
@@ -538,7 +538,11 @@ export async function suspendWorkerAccess(
     return { ok: false, error: "No se pudo suspender el acceso del trabajador" };
   }
 
-  await logAuditEvent({
+  // Denormalize banned_until into profiles to avoid Auth API round-trip in listings.
+  const bannedUntil = new Date(Date.now() + 876000 * 60 * 60 * 1000).toISOString();
+  await adminClient.from("profiles").update({ banned_until: bannedUntil }).eq("id", profile.id);
+
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_access_suspended",
@@ -597,7 +601,10 @@ export async function activateWorkerAccess(
     return { ok: false, error: "No se pudo activar el acceso del trabajador" };
   }
 
-  await logAuditEvent({
+  // Clear denormalized banned_until in profiles.
+  await adminClient.from("profiles").update({ banned_until: null }).eq("id", profile.id);
+
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_access_activated",
@@ -650,7 +657,7 @@ export async function toggleWorkerStatus(
     return { ok: false, error: "No se pudo cambiar el estado" };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_status_changed",
@@ -730,11 +737,16 @@ export async function archiveWorker(
 
       if (!suspendError) {
         suspendedAccess = true;
+        const bannedUntil = new Date(Date.now() + 876000 * 60 * 60 * 1000).toISOString();
+        await adminClient
+          .from("profiles")
+          .update({ banned_until: bannedUntil })
+          .eq("id", workerAccessProfile.id);
       }
     }
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_archived",
@@ -826,7 +838,7 @@ export async function deleteWorkerPermanently(
     }
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_deleted",
@@ -894,7 +906,7 @@ export async function unarchiveWorker(
     return { ok: false, error: "No se pudo desarchivar el trabajador" };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "worker_unarchived",

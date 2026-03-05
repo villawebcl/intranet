@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 
 import { BLOCK_UPLOAD_FOR_INACTIVE_WORKERS } from "@/lib/constants/documents";
 import { type AppRole, type FolderType } from "@/lib/constants/domain";
-import { logAuditEvent } from "@/lib/services/audit.service";
+import { insertAuditLog } from "@/lib/audit/log";
 import {
   notifyDocumentReviewed,
   notifyDocumentUploaded,
@@ -12,11 +12,10 @@ import {
 } from "@/lib/services/notifications.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { type ServiceResult } from "@/lib/services/service-result";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 type SupabaseAdminClient = ReturnType<typeof createSupabaseAdminClient>;
-
-type ServiceResult<T = void> = { ok: true; data: T } | { ok: false; error: string };
 
 type DocumentServiceContext = {
   supabase: SupabaseServerClient;
@@ -99,7 +98,7 @@ export async function uploadWorkerDocument(
     return { ok: false, error: "No se pudo registrar el documento" };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "document_uploaded",
@@ -172,7 +171,7 @@ export async function reviewWorkerDocument(
     return { ok: false, error: "No se pudo actualizar el estado del documento" };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: payload.decision === "aprobado" ? "document_approved" : "document_rejected",
@@ -238,7 +237,7 @@ export async function createDocumentDownloadUrl(
     };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "document_downloaded",
@@ -309,7 +308,7 @@ export async function createDocumentDownloadRequest(
     requestReason: payload.requestReason,
   });
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "document_download_requested",
@@ -384,7 +383,7 @@ export async function resolveDocumentDownloadRequest(
     return { ok: false, error: "La solicitud ya fue procesada" };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: isApproved ? "document_download_request_approved" : "document_download_request_rejected",
@@ -468,7 +467,7 @@ export async function createApprovedDownloadUrl(
     return { ok: false, error: "No se pudo generar el enlace temporal" };
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "document_downloaded",

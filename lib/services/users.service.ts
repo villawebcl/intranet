@@ -3,7 +3,7 @@ import "server-only";
 import { type AppRole } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
-import { logAuditEvent } from "@/lib/services/audit.service";
+import { insertAuditLog } from "@/lib/audit/log";
 import { serviceError, serviceOk, type ServiceResult } from "@/lib/services/service-result";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
@@ -91,7 +91,7 @@ export async function createCoreUser(
     return serviceError("Usuario creado en Auth, pero no se pudo registrar perfil/rol");
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "user_created",
@@ -150,7 +150,7 @@ export async function updateCoreUserProfile(
     console.error("admin auth metadata update failed", error);
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "user_updated",
@@ -183,7 +183,7 @@ export async function resetCoreUserPassword(
     return serviceError("No se pudo resetear la contrasena del usuario");
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "user_password_reset",
@@ -239,7 +239,7 @@ export async function deleteCoreUser(
     deletionMode = "soft";
   }
 
-  await logAuditEvent({
+  await insertAuditLog({
     supabase: context.supabase,
     adminClient: context.adminClient,
     action: "user_deleted",

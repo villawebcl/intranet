@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { z } from "zod";
 
 function emptyStringToUndefined(value: unknown) {
@@ -22,14 +23,16 @@ const serverEnvSchema = z.object({
   NOTIFICATIONS_FROM_EMAIL: z.preprocess(emptyStringToUndefined, z.string().email().optional()),
 });
 
-export function getClientEnv() {
-  return clientEnvSchema.parse({
+// cache() memoizes the result per-request in the React render tree,
+// avoiding repeated Zod parsing when multiple Server Components call this.
+export const getClientEnv = cache(() =>
+  clientEnvSchema.parse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     APP_URL: process.env.APP_URL,
     INACTIVITY_TIMEOUT_MINUTES: process.env.INACTIVITY_TIMEOUT_MINUTES,
-  });
-}
+  }),
+);
 
 export function getServerEnv() {
   return serverEnvSchema.parse({

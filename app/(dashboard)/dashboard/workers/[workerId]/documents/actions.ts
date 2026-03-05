@@ -21,7 +21,6 @@ import {
   reviewWorkerDocument,
   uploadWorkerDocument,
 } from "@/lib/services/documents.service";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 import {
   createDownloadRequestSchema,
   downloadApprovedRequestSchema,
@@ -30,34 +29,12 @@ import {
   reviewDocumentSchema,
   uploadDocumentSchema,
 } from "@/lib/validators/documents";
+import { setFlash } from "@/lib/flash";
+import { getRoleContext, getSafePath, WORKERS_BASE_PATH } from "../../_shared/action-utils";
 import { getApprovedDownloadErrorMessage } from "./download-errors";
 
-const WORKERS_BASE_PATH = "/dashboard/workers";
 const DIRECT_DOWNLOAD_SIGNED_URL_SECONDS = 60;
 const APPROVED_DOWNLOAD_SIGNED_URL_SECONDS = 300;
-
-function getSafePath(path: string | undefined, fallback: string) {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return fallback;
-  }
-
-  if (!path.startsWith(WORKERS_BASE_PATH)) {
-    return fallback;
-  }
-
-  return path;
-}
-
-function withMessage(path: string, params: Record<string, string>) {
-  const url = new URL(path, "http://localhost");
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-
-  const search = url.searchParams.toString();
-  return search ? `${url.pathname}?${search}` : url.pathname;
-}
 
 function getWorkerScopeError(params: {
   role: AppRole;
@@ -79,31 +56,7 @@ function getWorkerScopeError(params: {
   return null;
 }
 
-async function getRoleContext() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { supabase, user: null, role: null as AppRole | null, profileWorkerId: null as string | null };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, worker_id")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  return {
-    supabase,
-    user,
-    role: (profile?.role ?? "visitante") as AppRole,
-    profileWorkerId: profile?.worker_id ?? null,
-  };
-}
-
-function ensureWorkerScopeOrRedirect(params: {
+async function ensureWorkerScopeOrRedirect(params: {
   role: AppRole;
   profileWorkerId: string | null;
   targetWorkerId: string;
@@ -113,14 +66,12 @@ function ensureWorkerScopeOrRedirect(params: {
     return;
   }
 
+  await setFlash({ error: scopeError });
+
   if (scopeError === "Tu cuenta trabajador no tiene trabajador asignado") {
-    redirect(withMessage("/dashboard", { error: scopeError }));
+    redirect("/dashboard");
   } else {
-    redirect(
-      withMessage(`/dashboard/workers/${params.profileWorkerId}/documents`, {
-        error: scopeError,
-      }),
-    );
+    redirect(`/dashboard/workers/${params.profileWorkerId}/documents`);
   }
 }
 
@@ -189,6 +140,29 @@ function isValidPdfFile(file: File) {
   return file.name.toLowerCase().endsWith(".pdf");
 }
 
+/**
+ * Verify the file starts with the PDF magic bytes (%PDF-).
+ * The MIME type and extension are client-controlled, but the actual file
+ * content can only be faked if someone crafts a valid PDF header — which
+ * is good enough for a first-pass server-side content check.
+ */
+async function hasPdfMagicBytes(file: File): Promise<boolean> {
+  try {
+    const buffer = await file.slice(0, 5).arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    // %PDF- in ASCII: 0x25 0x50 0x44 0x46 0x2D
+    return (
+      bytes[0] === 0x25 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x44 &&
+      bytes[3] === 0x46 &&
+      bytes[4] === 0x2D
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function uploadDocumentAction(formData: FormData) {
   const parsed = uploadDocumentSchema.safeParse({
     workerId: formData.get("workerId"),
@@ -200,43 +174,50 @@ export async function uploadDocumentAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida para subir documento" }));
+    await setFlash({ error: "Solicitud invalida para subir documento" });
+    redirect(returnPath);
   }
 
   const fileValue = formData.get("file");
   if (!(fileValue instanceof File)) {
-    redirect(withMessage(returnPath, { error: "Debes seleccionar un archivo PDF" }));
+    await setFlash({ error: "Debes seleccionar un archivo PDF" });
+    redirect(returnPath);
   }
 
   if (!isValidPdfFile(fileValue)) {
-    redirect(withMessage(returnPath, { error: "Solo se permiten archivos PDF" }));
+    await setFlash({ error: "Solo se permiten archivos PDF" });
+    redirect(returnPath);
   }
 
   if (fileValue.size <= 0) {
-    redirect(withMessage(returnPath, { error: "El archivo esta vacio" }));
+    await setFlash({ error: "El archivo esta vacio" });
+    redirect(returnPath);
+  }
+
+  if (!(await hasPdfMagicBytes(fileValue))) {
+    await setFlash({ error: "El archivo no es un PDF valido" });
+    redirect(returnPath);
   }
 
   if (fileValue.size > DOCUMENT_MAX_SIZE_BYTES) {
-    redirect(
-      withMessage(returnPath, {
-        error: `El archivo supera el limite de ${DOCUMENT_MAX_SIZE_MB}MB`,
-      }),
-    );
+    await setFlash({ error: `El archivo supera el limite de ${DOCUMENT_MAX_SIZE_MB}MB` });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureWorkerScopeOrRedirect({
+  await ensureWorkerScopeOrRedirect({
     role: context.role,
     profileWorkerId: context.profileWorkerId,
     targetWorkerId: parsed.data.workerId,
   });
 
   if (!canUploadDocuments(context.role) || !canUploadDocumentToFolder(context.role, parsed.data.folderType)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para subir documentos" }));
+    await setFlash({ error: "No tienes permisos para subir documentos" });
+    redirect(returnPath);
   }
 
   const result = await uploadWorkerDocument(
@@ -253,14 +234,12 @@ export async function uploadDocumentAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(
-    withMessage(returnPath, {
-      success: "Documento cargado en estado pendiente",
-    }),
-  );
+  await setFlash({ success: "Documento cargado en estado pendiente" });
+  redirect(returnPath);
 }
 
 export async function reviewDocumentAction(formData: FormData) {
@@ -276,27 +255,30 @@ export async function reviewDocumentAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida para revisar documento" }));
+    await setFlash({ error: "Solicitud invalida para revisar documento" });
+    redirect(returnPath);
   }
 
   const rejectionReason = parsed.data.rejectionReason?.trim() ?? "";
   if (parsed.data.decision === "rechazado" && !rejectionReason.length) {
-    redirect(withMessage(returnPath, { error: "Debes indicar un motivo de rechazo" }));
+    await setFlash({ error: "Debes indicar un motivo de rechazo" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureWorkerScopeOrRedirect({
+  await ensureWorkerScopeOrRedirect({
     role: context.role,
     profileWorkerId: context.profileWorkerId,
     targetWorkerId: parsed.data.workerId,
   });
 
   if (!canReviewDocuments(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para revisar documentos" }));
+    await setFlash({ error: "No tienes permisos para revisar documentos" });
+    redirect(returnPath);
   }
 
   const result = await reviewWorkerDocument(
@@ -314,15 +296,15 @@ export async function reviewDocumentAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(
-    withMessage(returnPath, {
-      success:
-        parsed.data.decision === "aprobado" ? "Documento aprobado correctamente" : "Documento rechazado",
-    }),
-  );
+  await setFlash({
+    success:
+      parsed.data.decision === "aprobado" ? "Documento aprobado correctamente" : "Documento rechazado",
+  });
+  redirect(returnPath);
 }
 
 export async function downloadDocumentAction(formData: FormData) {
@@ -336,22 +318,24 @@ export async function downloadDocumentAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida de descarga" }));
+    await setFlash({ error: "Solicitud invalida de descarga" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureWorkerScopeOrRedirect({
+  await ensureWorkerScopeOrRedirect({
     role: context.role,
     profileWorkerId: context.profileWorkerId,
     targetWorkerId: parsed.data.workerId,
   });
 
   if (!canDownloadDocuments(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para descargar documentos" }));
+    await setFlash({ error: "No tienes permisos para descargar documentos" });
+    redirect(returnPath);
   }
 
   const result = await createDocumentDownloadUrl(
@@ -369,7 +353,8 @@ export async function downloadDocumentAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
   redirect(result.data.signedUrl);
@@ -387,22 +372,24 @@ export async function requestDocumentDownloadAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida de descarga" }));
+    await setFlash({ error: "Solicitud invalida de descarga" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureWorkerScopeOrRedirect({
+  await ensureWorkerScopeOrRedirect({
     role: context.role,
     profileWorkerId: context.profileWorkerId,
     targetWorkerId: parsed.data.workerId,
   });
 
   if (!canRequestDocumentDownload(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para solicitar descargas" }));
+    await setFlash({ error: "No tienes permisos para solicitar descargas" });
+    redirect(returnPath);
   }
 
   const result = await createDocumentDownloadRequest(
@@ -419,14 +406,12 @@ export async function requestDocumentDownloadAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(
-    withMessage(returnPath, {
-      success: "Solicitud de descarga enviada al equipo administrador",
-    }),
-  );
+  await setFlash({ success: "Solicitud de descarga enviada al equipo administrador" });
+  redirect(returnPath);
 }
 
 export async function resolveDownloadRequestAction(formData: FormData) {
@@ -442,22 +427,24 @@ export async function resolveDownloadRequestAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida para resolver descarga" }));
+    await setFlash({ error: "Solicitud invalida para resolver descarga" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureWorkerScopeOrRedirect({
+  await ensureWorkerScopeOrRedirect({
     role: context.role,
     profileWorkerId: context.profileWorkerId,
     targetWorkerId: parsed.data.workerId,
   });
 
   if (!canReviewDocuments(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para aprobar solicitudes" }));
+    await setFlash({ error: "No tienes permisos para aprobar solicitudes" });
+    redirect(returnPath);
   }
 
   const result = await resolveDocumentDownloadRequest(
@@ -475,17 +462,17 @@ export async function resolveDownloadRequestAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(
-    withMessage(returnPath, {
-      success:
-        parsed.data.decision === "aprobado"
-          ? "Solicitud aprobada. Ya se puede generar un enlace temporal de 5 minutos."
-          : "Solicitud rechazada",
-    }),
-  );
+  await setFlash({
+    success:
+      parsed.data.decision === "aprobado"
+        ? "Solicitud aprobada. Ya se puede generar un enlace temporal de 5 minutos."
+        : "Solicitud rechazada",
+  });
+  redirect(returnPath);
 }
 
 export async function downloadApprovedRequestAction(formData: FormData) {
@@ -499,13 +486,15 @@ export async function downloadApprovedRequestAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida de descarga aprobada" }));
+    await setFlash({ error: "Solicitud invalida de descarga aprobada" });
+    redirect(returnPath);
   }
 
   const result = await getApprovedDownloadUrlAction(parsed.data);
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: getApprovedDownloadErrorMessage(result.error) }));
+    await setFlash({ error: getApprovedDownloadErrorMessage(result.error) });
+    redirect(returnPath);
   }
 
   redirect(result.signedUrl);

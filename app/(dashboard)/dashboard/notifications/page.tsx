@@ -7,6 +7,7 @@ import { ModalButton } from "@/components/ui/modal-button";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { canViewAudit } from "@/lib/auth/roles";
 import { folderLabels, folderTypes } from "@/lib/constants/domain";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 type NotificationsPageProps = {
@@ -340,7 +341,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     redirect("/login");
   }
 
-  const urlParams = await searchParams;
+  const [urlParams, flash] = await Promise.all([searchParams, getFlash()]);
   const eventFilter = getEventFilter(urlParams.event);
   const emailFilter = getEmailFilter(urlParams.email);
   const currentPage = getPageParam(urlParams.page);
@@ -392,8 +393,8 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     : null;
 
   const isAdmin = profile?.role === "admin";
-  const successParam = getStringParam(urlParams.success);
-  const errorParam = getStringParam(urlParams.error);
+  const successParam = flash.success ?? "";
+  const errorParam = flash.error ?? "";
 
   return (
     <section className="space-y-5">

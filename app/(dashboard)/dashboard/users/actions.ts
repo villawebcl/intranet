@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { type AppRole } from "@/lib/constants/domain";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { setFlash } from "@/lib/flash";
 import {
   createUserAdminSchema,
   deleteUserAdminSchema,
@@ -33,17 +34,6 @@ function getSafePath(path: string | undefined, fallback: string) {
   return path;
 }
 
-function withMessage(path: string, params: Record<string, string>) {
-  const url = new URL(path, "http://localhost");
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-
-  const search = url.searchParams.toString();
-  return search ? `${url.pathname}?${search}` : url.pathname;
-}
-
 async function getAdminContext() {
   const supabase = await createSupabaseServerClient();
   const {
@@ -63,32 +53,22 @@ async function getAdminContext() {
   return { supabase, user, role: profile?.role ?? "visitante" };
 }
 
-function ensureAdminOrRedirect(role: AppRole | null, returnPath = USERS_BASE_PATH) {
+async function ensureAdminOrRedirect(role: AppRole | null, returnPath = USERS_BASE_PATH) {
   if (role !== "admin") {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para gestionar usuarios" }));
+    await setFlash({ error: "No tienes permisos para gestionar usuarios" });
+    redirect(returnPath);
   }
 }
 
-function ensureCoreRoleOrRedirect(role: AppRole, returnPath = USERS_BASE_PATH) {
+async function ensureCoreRoleOrRedirect(role: AppRole, returnPath = USERS_BASE_PATH) {
   if (role === "trabajador") {
-    redirect(
-      withMessage(returnPath, {
-        error: "El rol trabajador se administra en la pestaña Trabajadores",
-      }),
-    );
+    await setFlash({ error: "El rol trabajador se administra en la pestaña Trabajadores" });
+    redirect(returnPath);
   }
 }
 
-function getAdminClientOrRedirect(returnPath: string, errorMessage: string) {
-  try {
-    return createSupabaseAdminClient();
-  } catch {
-    redirect(
-      withMessage(returnPath, {
-        error: errorMessage,
-      }),
-    );
-  }
+function getAdminClientOrThrow() {
+  return createSupabaseAdminClient();
 }
 
 export async function createUserAdminAction(formData: FormData) {
@@ -101,28 +81,30 @@ export async function createUserAdminAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(
-      withMessage(USERS_BASE_PATH, {
-        error: parsed.error.issues[0]?.message ?? "Datos invalidos para crear usuario",
-      }),
-    );
+    await setFlash({ error: parsed.error.issues[0]?.message ?? "Datos invalidos para crear usuario" });
+    redirect(USERS_BASE_PATH);
   }
 
   const context = await getAdminContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureAdminOrRedirect(context.role);
-  ensureCoreRoleOrRedirect(parsed.data.role, USERS_BASE_PATH);
+  await ensureAdminOrRedirect(context.role);
+  await ensureCoreRoleOrRedirect(parsed.data.role, USERS_BASE_PATH);
+
+  let adminClient;
+  try {
+    adminClient = getAdminClientOrThrow();
+  } catch {
+    await setFlash({ error: "Falta configuracion de servicio para gestionar usuarios" });
+    redirect(USERS_BASE_PATH);
+  }
 
   const result = await createCoreUser(
     {
       supabase: context.supabase,
-      adminClient: getAdminClientOrRedirect(
-        USERS_BASE_PATH,
-        "Falta configuracion de servicio para gestionar usuarios",
-      ),
+      adminClient,
       actorUserId: context.user.id,
       actorRole: context.role,
     },
@@ -135,10 +117,12 @@ export async function createUserAdminAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(USERS_BASE_PATH, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(USERS_BASE_PATH);
   }
 
-  redirect(withMessage(USERS_BASE_PATH, { success: "Usuario creado correctamente" }));
+  await setFlash({ success: "Usuario creado correctamente" });
+  redirect(USERS_BASE_PATH);
 }
 
 export async function updateUserAdminAction(formData: FormData) {
@@ -153,33 +137,36 @@ export async function updateUserAdminAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, USERS_BASE_PATH);
 
   if (!parsed.success) {
-    redirect(
-      withMessage(returnPath, {
-        error: parsed.error.issues[0]?.message ?? "Solicitud invalida para actualizar usuario",
-      }),
-    );
+    await setFlash({ error: parsed.error.issues[0]?.message ?? "Solicitud invalida para actualizar usuario" });
+    redirect(returnPath);
   }
 
   const context = await getAdminContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureAdminOrRedirect(context.role, returnPath);
+  await ensureAdminOrRedirect(context.role, returnPath);
 
   if (parsed.data.userId === context.user.id && parsed.data.role !== "admin") {
-    redirect(withMessage(returnPath, { error: "No puedes quitarte el rol admin desde esta pantalla" }));
+    await setFlash({ error: "No puedes quitarte el rol admin desde esta pantalla" });
+    redirect(returnPath);
   }
 
-  ensureCoreRoleOrRedirect(parsed.data.role, returnPath);
+  await ensureCoreRoleOrRedirect(parsed.data.role, returnPath);
+
+  let adminClient;
+  try {
+    adminClient = getAdminClientOrThrow();
+  } catch {
+    await setFlash({ error: "Falta configuracion de servicio para gestionar usuarios" });
+    redirect(returnPath);
+  }
 
   const result = await updateCoreUserProfile(
     {
       supabase: context.supabase,
-      adminClient: getAdminClientOrRedirect(
-        returnPath,
-        "Falta configuracion de servicio para gestionar usuarios",
-      ),
+      adminClient,
       actorUserId: context.user.id,
       actorRole: context.role,
     },
@@ -191,10 +178,12 @@ export async function updateUserAdminAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Usuario actualizado" }));
+  await setFlash({ success: "Usuario actualizado" });
+  redirect(returnPath);
 }
 
 export async function resetUserPasswordAdminAction(formData: FormData) {
@@ -207,27 +196,29 @@ export async function resetUserPasswordAdminAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, USERS_BASE_PATH);
 
   if (!parsed.success) {
-    redirect(
-      withMessage(returnPath, {
-        error: parsed.error.issues[0]?.message ?? "Solicitud invalida para reset de contrasena",
-      }),
-    );
+    await setFlash({ error: parsed.error.issues[0]?.message ?? "Solicitud invalida para reset de contrasena" });
+    redirect(returnPath);
   }
 
   const context = await getAdminContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureAdminOrRedirect(context.role, returnPath);
+  await ensureAdminOrRedirect(context.role, returnPath);
+
+  let adminClient;
+  try {
+    adminClient = getAdminClientOrThrow();
+  } catch {
+    await setFlash({ error: "Falta configuracion de servicio para resetear contrasenas" });
+    redirect(returnPath);
+  }
 
   const result = await resetCoreUserPassword(
     {
       supabase: context.supabase,
-      adminClient: getAdminClientOrRedirect(
-        returnPath,
-        "Falta configuracion de servicio para resetear contrasenas",
-      ),
+      adminClient,
       actorUserId: context.user.id,
       actorRole: context.role,
     },
@@ -238,10 +229,12 @@ export async function resetUserPasswordAdminAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Contrasena actualizada" }));
+  await setFlash({ success: "Contrasena actualizada" });
+  redirect(returnPath);
 }
 
 export async function deleteUserAdminAction(formData: FormData) {
@@ -254,27 +247,34 @@ export async function deleteUserAdminAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, USERS_BASE_PATH);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Debes confirmar la eliminacion del usuario" }));
+    await setFlash({ error: "Debes confirmar la eliminacion del usuario" });
+    redirect(returnPath);
   }
 
   const context = await getAdminContext();
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
-  ensureAdminOrRedirect(context.role, returnPath);
+  await ensureAdminOrRedirect(context.role, returnPath);
 
   if (parsed.data.userId === context.user.id) {
-    redirect(withMessage(returnPath, { error: "No puedes eliminar tu propia cuenta admin" }));
+    await setFlash({ error: "No puedes eliminar tu propia cuenta admin" });
+    redirect(returnPath);
+  }
+
+  let adminClient;
+  try {
+    adminClient = getAdminClientOrThrow();
+  } catch {
+    await setFlash({ error: "Falta configuracion de servicio para eliminar usuarios" });
+    redirect(returnPath);
   }
 
   const result = await deleteCoreUser(
     {
       supabase: context.supabase,
-      adminClient: getAdminClientOrRedirect(
-        returnPath,
-        "Falta configuracion de servicio para eliminar usuarios",
-      ),
+      adminClient,
       actorUserId: context.user.id,
       actorRole: context.role,
     },
@@ -285,8 +285,10 @@ export async function deleteUserAdminAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Usuario eliminado" }));
+  await setFlash({ success: "Usuario eliminado" });
+  redirect(returnPath);
 }

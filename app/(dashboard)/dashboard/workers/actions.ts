@@ -3,8 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { canManageWorkers } from "@/lib/auth/roles";
-import { type AppRole } from "@/lib/constants/domain";
-import { createSupabaseServerClient } from "@/lib/supabase/server-client";
+import { setFlash } from "@/lib/flash";
 import {
   activateWorkerAccessSchema,
   createMissingWorkerAccessesSchema,
@@ -16,6 +15,7 @@ import {
   toggleWorkerStatusSchema,
   workerFormSchema,
 } from "@/lib/validators/workers";
+import { getRoleContext, getSafePath, WORKERS_BASE_PATH } from "./_shared/action-utils";
 import {
   activateWorkerAccess,
   archiveWorker,
@@ -29,49 +29,6 @@ import {
   updateWorkerRecord,
 } from "@/lib/services/workers.service";
 
-const WORKERS_BASE_PATH = "/dashboard/workers";
-
-function getSafePath(path: string | undefined, fallback: string) {
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
-    return fallback;
-  }
-
-  if (!path.startsWith(WORKERS_BASE_PATH)) {
-    return fallback;
-  }
-
-  return path;
-}
-
-function withMessage(path: string, params: Record<string, string>) {
-  const url = new URL(path, "http://localhost");
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-
-  const search = url.searchParams.toString();
-  return search ? `${url.pathname}?${search}` : url.pathname;
-}
-
-async function getRoleContext() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { supabase, user: null, role: null as AppRole | null };
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  return { supabase, user, role: profile?.role ?? "visitante" };
-}
 
 export async function createWorkerAction(formData: FormData) {
   const parsed = workerFormSchema.safeParse({
@@ -90,19 +47,13 @@ export async function createWorkerAction(formData: FormData) {
       : "";
 
   if (!parsed.success) {
-    redirect(
-      withMessage(`${WORKERS_BASE_PATH}/new`, {
-        error: parsed.error.issues[0]?.message ?? "Datos invalidos",
-      }),
-    );
+    await setFlash({ error: parsed.error.issues[0]?.message ?? "Datos invalidos" });
+    redirect(`${WORKERS_BASE_PATH}/new`);
   }
 
   if (createAccessNow && !parsed.data.email) {
-    redirect(
-      withMessage(`${WORKERS_BASE_PATH}/new`, {
-        error: "Debes ingresar correo para crear acceso a intranet",
-      }),
-    );
+    await setFlash({ error: "Debes ingresar correo para crear acceso a intranet" });
+    redirect(`${WORKERS_BASE_PATH}/new`);
   }
 
   if (createAccessNow) {
@@ -110,22 +61,22 @@ export async function createWorkerAction(formData: FormData) {
       temporaryPasswordInput,
     );
     if (!passwordValidation.success) {
-      redirect(
-        withMessage(`${WORKERS_BASE_PATH}/new`, {
-          error: passwordValidation.error.issues[0]?.message ?? "Contrasena temporal invalida",
-        }),
-      );
+      await setFlash({
+        error: passwordValidation.error.issues[0]?.message ?? "Contrasena temporal invalida",
+      });
+      redirect(`${WORKERS_BASE_PATH}/new`);
     }
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(WORKERS_BASE_PATH, { error: "No tienes permisos para crear trabajadores" }));
+    await setFlash({ error: "No tienes permisos para crear trabajadores" });
+    redirect(WORKERS_BASE_PATH);
   }
 
   const result = await createWorkerRecord(
@@ -138,7 +89,8 @@ export async function createWorkerAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(`${WORKERS_BASE_PATH}/new`, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(`${WORKERS_BASE_PATH}/new`);
   }
 
   const workerDetailPath = `${WORKERS_BASE_PATH}/${result.data.workerId}`;
@@ -157,17 +109,18 @@ export async function createWorkerAction(formData: FormData) {
     );
 
     if (!accessResult.ok) {
-      redirect(
-        withMessage(workerDetailPath, {
-          error: `Trabajador creado, pero no se pudo crear acceso: ${accessResult.error}`,
-        }),
-      );
+      await setFlash({
+        error: `Trabajador creado, pero no se pudo crear acceso: ${accessResult.error}`,
+      });
+      redirect(workerDetailPath);
     }
 
-    redirect(withMessage(workerDetailPath, { success: "Trabajador y acceso creados correctamente" }));
+    await setFlash({ success: "Trabajador y acceso creados correctamente" });
+    redirect(workerDetailPath);
   }
 
-  redirect(withMessage(workerDetailPath, { success: "Trabajador creado correctamente" }));
+  await setFlash({ success: "Trabajador creado correctamente" });
+  redirect(workerDetailPath);
 }
 
 export async function updateWorkerAction(workerId: string, formData: FormData) {
@@ -182,21 +135,19 @@ export async function updateWorkerAction(workerId: string, formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(
-      withMessage(`${WORKERS_BASE_PATH}/${workerId}`, {
-        error: parsed.error.issues[0]?.message ?? "Datos invalidos",
-      }),
-    );
+    await setFlash({ error: parsed.error.issues[0]?.message ?? "Datos invalidos" });
+    redirect(`${WORKERS_BASE_PATH}/${workerId}`);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(WORKERS_BASE_PATH, { error: "No tienes permisos para editar trabajadores" }));
+    await setFlash({ error: "No tienes permisos para editar trabajadores" });
+    redirect(WORKERS_BASE_PATH);
   }
 
   const result = await updateWorkerRecord(
@@ -212,10 +163,12 @@ export async function updateWorkerAction(workerId: string, formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(`${WORKERS_BASE_PATH}/${workerId}`, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(`${WORKERS_BASE_PATH}/${workerId}`);
   }
 
-  redirect(withMessage(`${WORKERS_BASE_PATH}/${workerId}`, { success: "Datos actualizados" }));
+  await setFlash({ success: "Datos actualizados" });
+  redirect(`${WORKERS_BASE_PATH}/${workerId}`);
 }
 
 export async function createWorkerAccessAction(formData: FormData) {
@@ -229,21 +182,19 @@ export async function createWorkerAccessAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(
-      withMessage(returnPath, {
-        error: parsed.error.issues[0]?.message ?? "Solicitud invalida para crear acceso",
-      }),
-    );
+    await setFlash({ error: parsed.error.issues[0]?.message ?? "Solicitud invalida para crear acceso" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para crear accesos de trabajadores" }));
+    await setFlash({ error: "No tienes permisos para crear accesos de trabajadores" });
+    redirect(returnPath);
   }
 
   const result = await createWorkerAccess(
@@ -259,10 +210,12 @@ export async function createWorkerAccessAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Acceso trabajador creado correctamente" }));
+  await setFlash({ success: "Acceso trabajador creado correctamente" });
+  redirect(returnPath);
 }
 
 export async function createMissingWorkerAccessesAction(formData: FormData) {
@@ -275,17 +228,19 @@ export async function createMissingWorkerAccessesAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Debes confirmar la creacion masiva de accesos" }));
+    await setFlash({ error: "Debes confirmar la creacion masiva de accesos" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para crear accesos de trabajadores" }));
+    await setFlash({ error: "No tienes permisos para crear accesos de trabajadores" });
+    redirect(returnPath);
   }
 
   const result = await createMissingWorkerAccesses({
@@ -295,22 +250,21 @@ export async function createMissingWorkerAccessesAction(formData: FormData) {
   });
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
   if (result.data.createdCount === 0) {
-    redirect(
-      withMessage(returnPath, {
-        error: `No se crearon accesos. Omitidos: ${result.data.skippedCount}. Errores: ${result.data.errorCount}.`,
-      }),
-    );
+    await setFlash({
+      error: `No se crearon accesos. Omitidos: ${result.data.skippedCount}. Errores: ${result.data.errorCount}.`,
+    });
+    redirect(returnPath);
   }
 
-  redirect(
-    withMessage(returnPath, {
-      success: `Invitaciones enviadas: ${result.data.createdCount}. Omitidos: ${result.data.skippedCount}. Errores: ${result.data.errorCount}.`,
-    }),
-  );
+  await setFlash({
+    success: `Invitaciones enviadas: ${result.data.createdCount}. Omitidos: ${result.data.skippedCount}. Errores: ${result.data.errorCount}.`,
+  });
+  redirect(returnPath);
 }
 
 export async function suspendWorkerAccessAction(formData: FormData) {
@@ -323,17 +277,19 @@ export async function suspendWorkerAccessAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida para suspender acceso" }));
+    await setFlash({ error: "Solicitud invalida para suspender acceso" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para suspender accesos" }));
+    await setFlash({ error: "No tienes permisos para suspender accesos" });
+    redirect(returnPath);
   }
 
   const result = await suspendWorkerAccess(
@@ -348,10 +304,12 @@ export async function suspendWorkerAccessAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Acceso trabajador suspendido" }));
+  await setFlash({ success: "Acceso trabajador suspendido" });
+  redirect(returnPath);
 }
 
 export async function activateWorkerAccessAction(formData: FormData) {
@@ -364,17 +322,19 @@ export async function activateWorkerAccessAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida para activar acceso" }));
+    await setFlash({ error: "Solicitud invalida para activar acceso" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para activar accesos" }));
+    await setFlash({ error: "No tienes permisos para activar accesos" });
+    redirect(returnPath);
   }
 
   const result = await activateWorkerAccess(
@@ -389,10 +349,12 @@ export async function activateWorkerAccessAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Acceso trabajador activado" }));
+  await setFlash({ success: "Acceso trabajador activado" });
+  redirect(returnPath);
 }
 
 export async function toggleWorkerStatusAction(formData: FormData) {
@@ -406,17 +368,19 @@ export async function toggleWorkerStatusAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida" }));
+    await setFlash({ error: "Solicitud invalida" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (!canManageWorkers(context.role)) {
-    redirect(withMessage(returnPath, { error: "No tienes permisos para cambiar estado" }));
+    await setFlash({ error: "No tienes permisos para cambiar estado" });
+    redirect(returnPath);
   }
 
   const result = await toggleWorkerStatus(
@@ -431,10 +395,12 @@ export async function toggleWorkerStatusAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Estado actualizado" }));
+  await setFlash({ success: "Estado actualizado" });
+  redirect(returnPath);
 }
 
 export async function deactivateWorkerAction(formData: FormData) {
@@ -448,17 +414,19 @@ export async function deactivateWorkerAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Debes confirmar el archivado del trabajador" }));
+    await setFlash({ error: "Debes confirmar el archivado del trabajador" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (context.role !== "admin") {
-    redirect(withMessage(returnPath, { error: "Solo admin puede archivar trabajadores" }));
+    await setFlash({ error: "Solo admin puede archivar trabajadores" });
+    redirect(returnPath);
   }
 
   const result = await archiveWorker(
@@ -473,10 +441,12 @@ export async function deactivateWorkerAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Trabajador archivado" }));
+  await setFlash({ success: "Trabajador archivado" });
+  redirect(returnPath);
 }
 
 export async function reactivateWorkerAction(formData: FormData) {
@@ -489,17 +459,19 @@ export async function reactivateWorkerAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(withMessage(returnPath, { error: "Solicitud invalida para desarchivar trabajador" }));
+    await setFlash({ error: "Solicitud invalida para desarchivar trabajador" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (context.role !== "admin") {
-    redirect(withMessage(returnPath, { error: "Solo admin puede desarchivar trabajadores" }));
+    await setFlash({ error: "Solo admin puede desarchivar trabajadores" });
+    redirect(returnPath);
   }
 
   const result = await unarchiveWorker(
@@ -514,10 +486,12 @@ export async function reactivateWorkerAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Trabajador desarchivado en estado inactivo" }));
+  await setFlash({ success: "Trabajador desarchivado en estado inactivo" });
+  redirect(returnPath);
 }
 
 export async function deleteWorkerAction(formData: FormData) {
@@ -531,21 +505,19 @@ export async function deleteWorkerAction(formData: FormData) {
   const returnPath = getSafePath(parsed.data?.returnTo, fallbackPath);
 
   if (!parsed.success) {
-    redirect(
-      withMessage(returnPath, {
-        error: "Debes confirmar la eliminacion definitiva del trabajador",
-      }),
-    );
+    await setFlash({ error: "Debes confirmar la eliminacion definitiva del trabajador" });
+    redirect(returnPath);
   }
 
   const context = await getRoleContext();
 
   if (!context.user) {
-    redirect(withMessage("/login", { error: "Debes iniciar sesion" }));
+    redirect("/login");
   }
 
   if (context.role !== "admin") {
-    redirect(withMessage(returnPath, { error: "Solo admin puede eliminar trabajadores" }));
+    await setFlash({ error: "Solo admin puede eliminar trabajadores" });
+    redirect(returnPath);
   }
 
   const result = await deleteWorkerPermanently(
@@ -560,17 +532,17 @@ export async function deleteWorkerAction(formData: FormData) {
   );
 
   if (!result.ok) {
-    redirect(withMessage(returnPath, { error: result.error }));
+    await setFlash({ error: result.error });
+    redirect(returnPath);
   }
 
   if (result.data.hadLinkedAccess && !result.data.linkedAccessDeleted) {
-    redirect(
-      withMessage(returnPath, {
-        success:
-          "Trabajador eliminado. No se pudo eliminar su acceso asociado; revisa Usuarios nucleo.",
-      }),
-    );
+    await setFlash({
+      success: "Trabajador eliminado. No se pudo eliminar su acceso asociado; revisa Usuarios nucleo.",
+    });
+    redirect(returnPath);
   }
 
-  redirect(withMessage(returnPath, { success: "Trabajador eliminado definitivamente" }));
+  await setFlash({ success: "Trabajador eliminado definitivamente" });
+  redirect(returnPath);
 }

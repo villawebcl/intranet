@@ -118,6 +118,11 @@ function createAdminClientStub(options?: {
   const adminClient = {
     from: (table: string) => {
       if (table === "profiles") {
+        const updateChain = { eq: () => updateChain, then: undefined as never };
+        // Make the chain itself awaitable so `await adminClient.from("profiles").update(...).eq(...)` works.
+        (updateChain as Record<string, unknown>).then = (resolve: (v: unknown) => void) =>
+          resolve({ error: null });
+
         return {
           select: () => ({
             eq: () => ({
@@ -131,6 +136,7 @@ function createAdminClientStub(options?: {
             calls.profileUpsertPayloads.push(payload);
             return { error: null };
           },
+          update: () => updateChain,
         };
       }
 

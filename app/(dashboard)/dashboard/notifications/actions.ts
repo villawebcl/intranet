@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { setFlash } from "@/lib/flash";
 import { sendResendEmail } from "@/lib/notifications/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
@@ -22,12 +23,14 @@ export async function sendTestEmailAction() {
     .maybeSingle();
 
   if (profile?.role !== "admin") {
-    redirect("/dashboard/notifications?error=No+tienes+permisos+para+enviar+emails+de+prueba");
+    await setFlash({ error: "No tienes permisos para enviar emails de prueba" });
+    redirect("/dashboard/notifications");
   }
 
   const email = user.email;
   if (!email) {
-    redirect("/dashboard/notifications?error=email_test_failed&detail=Sin+email+en+la+cuenta");
+    await setFlash({ error: "Sin email en la cuenta" });
+    redirect("/dashboard/notifications");
   }
 
   const ok = await sendResendEmail({
@@ -39,8 +42,10 @@ export async function sendTestEmailAction() {
   });
 
   if (!ok) {
-    redirect("/dashboard/notifications?error=email_test_failed");
+    await setFlash({ error: "No se pudo enviar el email de prueba" });
+    redirect("/dashboard/notifications");
   }
 
-  redirect("/dashboard/notifications?success=email_test_sent");
+  await setFlash({ success: "Email de prueba enviado correctamente" });
+  redirect("/dashboard/notifications");
 }

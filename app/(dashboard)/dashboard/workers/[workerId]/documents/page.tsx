@@ -19,6 +19,7 @@ import {
   isWorkerScopedRole,
 } from "@/lib/auth/roles";
 import { documentStatuses, folderLabels, folderTypes } from "@/lib/constants/domain";
+import { getFlash } from "@/lib/flash";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import {
@@ -162,7 +163,7 @@ export default async function WorkerDocumentsPage({
   searchParams,
 }: WorkerDocumentsPageProps) {
   const { workerId } = await params;
-  const urlParams = await searchParams;
+  const [urlParams, flash] = await Promise.all([searchParams, getFlash()]);
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -305,8 +306,8 @@ export default async function WorkerDocumentsPage({
     <DashboardPageContainer>
       <section className="space-y-6 lg:space-y-7">
         <FlashMessages
-          error={getStringParam(urlParams.error)}
-          success={getStringParam(urlParams.success)}
+          error={flash.error ?? ""}
+          success={flash.success ?? ""}
         />
 
         <header className="rounded-md border border-slate-200 bg-white p-6 shadow-sm sm:p-7">

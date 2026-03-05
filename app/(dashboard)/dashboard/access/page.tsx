@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FlashMessages } from "@/components/ui/flash-messages";
+import { getFlash } from "@/lib/flash";
 import {
   canManageUsers,
   canManageWorkers,
@@ -11,17 +12,6 @@ import {
 import { appRoles } from "@/lib/constants/domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
-type AccessRolesPageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-function getStringParam(value: string | string[] | undefined) {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  return value.trim();
-}
 
 function roleLabel(role: (typeof appRoles)[number]) {
   if (role === "admin") return "Admin";
@@ -35,8 +25,8 @@ function yesNo(value: boolean) {
   return value ? "Si" : "No";
 }
 
-export default async function AccessRolesPage({ searchParams }: AccessRolesPageProps) {
-  const params = await searchParams;
+export default async function AccessRolesPage() {
+  const flash = await getFlash();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -53,8 +43,8 @@ export default async function AccessRolesPage({ searchParams }: AccessRolesPageP
     .maybeSingle();
 
   const currentRole = profile?.role ?? "visitante";
-  const successMessage = getStringParam(params.success);
-  const errorMessage = getStringParam(params.error);
+  const successMessage = flash.success ?? "";
+  const errorMessage = flash.error ?? "";
 
   const matrix = appRoles.map((role) => ({
     role,

@@ -52,13 +52,17 @@ export async function getDefaultReviewerUserIds() {
 export async function getUserEmailById(userId: string) {
   try {
     const adminClient = createSupabaseAdminClient();
-    const { data, error } = await adminClient.auth.admin.getUserById(userId);
+    const { data, error } = await adminClient
+      .from("profiles")
+      .select("email")
+      .eq("id", userId)
+      .maybeSingle();
     if (error) {
-      console.error("get user email failed", error);
+      console.error("get user email from profiles failed", error);
       return null;
     }
 
-    return data.user.email ?? null;
+    return data?.email ?? null;
   } catch (error) {
     console.error("admin client unavailable for user email", error);
     return null;
@@ -93,17 +97,25 @@ export async function getUserEmailsByIds(userIds: string[]) {
     return {} as Record<string, string>;
   }
 
-  const emails: Record<string, string> = {};
-  await Promise.all(
-    uniqueUserIds.map(async (userId) => {
-      const email = await getUserEmailById(userId);
-      if (email) {
-        emails[userId] = email;
-      }
-    }),
-  );
+  try {
+    const adminClient = createSupabaseAdminClient();
+    const { data, error } = await adminClient
+      .from("profiles")
+      .select("id, email")
+      .in("id", uniqueUserIds);
 
-  return emails;
+    if (error) {
+      console.error("get user emails from profiles failed", error);
+      return {} as Record<string, string>;
+    }
+
+    return Object.fromEntries(
+      (data ?? []).filter((row) => row.email).map((row) => [row.id, row.email as string]),
+    );
+  } catch (error) {
+    console.error("admin client unavailable for user emails", error);
+    return {} as Record<string, string>;
+  }
 }
 
 export async function markNotificationsSent(

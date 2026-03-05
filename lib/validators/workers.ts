@@ -61,7 +61,11 @@ export const createWorkerAccessSchema = z.object({
   temporaryPassword: z
     .string()
     .min(8, "La contrasena temporal debe tener al menos 8 caracteres")
-    .max(128, "La contrasena temporal es demasiado larga"),
+    .max(128, "La contrasena temporal es demasiado larga")
+    .refine((val) => /[A-Z]/.test(val), "Debe incluir al menos una letra mayuscula")
+    .refine((val) => /[a-z]/.test(val), "Debe incluir al menos una letra minuscula")
+    .refine((val) => /[0-9]/.test(val), "Debe incluir al menos un numero")
+    .refine((val) => /[^A-Za-z0-9]/.test(val), "Debe incluir al menos un caracter especial"),
   returnTo: z.string().trim().optional(),
 });
 
