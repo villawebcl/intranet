@@ -212,7 +212,7 @@ function PayloadPreview({ payloadValue }: { payloadValue: unknown }) {
   return (
     <div className="space-y-1.5">
       {summary.slice(0, 2).map(({ key, value }) => (
-        <div key={key} className="grid grid-cols-[76px_1fr] items-start gap-2">
+        <div key={key} className="grid grid-cols-[minmax(0,72px)_minmax(0,1fr)] items-start gap-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
             {formatFieldLabel(key)}
           </p>
@@ -264,7 +264,7 @@ function PayloadSummary({ payloadValue }: { payloadValue: unknown }) {
   return (
     <dl className="space-y-1.5">
       {summary.map(({ key, value }) => (
-        <div key={key} className="grid grid-cols-[84px_1fr] items-start gap-2">
+        <div key={key} className="grid grid-cols-[minmax(0,80px)_minmax(0,1fr)] items-start gap-2">
           <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
             {formatFieldLabel(key)}
           </dt>
@@ -496,16 +496,16 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                 </select>
               </div>
 
-              <div className="flex items-end gap-2">
+              <div className="flex flex-wrap items-end gap-2">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                  className="inline-flex w-full items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 sm:w-auto"
                 >
                   Filtrar
                 </button>
                 <Link
                   href="/dashboard/notifications"
-                  className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:w-auto"
                 >
                   Limpiar
                 </Link>

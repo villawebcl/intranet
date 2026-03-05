@@ -408,7 +408,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
           </div>
         </header>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
           <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
             <p className="text-xs uppercase tracking-[0.08em] text-slate-500">Estado</p>
             <p className="mt-1 font-semibold text-slate-900">{worker.status}</p>
@@ -635,7 +635,7 @@ export default async function WorkerDetailPage({ params, searchParams }: WorkerD
             </ul>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {folderTypes.map((folderType) => {
               const summary = folderSummary[folderType];
               return (

@@ -444,16 +444,16 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-slate-300 focus:ring-2"
               />
             </div>
-            <div className="flex items-end gap-2.5 lg:pb-0.5">
+            <div className="flex flex-wrap items-end gap-2.5 lg:pb-0.5">
               <button
                 type="submit"
-                className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="w-full rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto"
               >
                 Aplicar
               </button>
               <Link
                 href="/dashboard/audit"
-                className="rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="w-full rounded-md border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
               >
                 Limpiar
               </Link>

@@ -44,7 +44,7 @@ export default async function Home() {
             Trabajadores, documentos y accesos desde un solo panel.
             Trazabilidad completa en cada operacion del equipo.
           </p>
-          <div className="mt-10 flex items-center gap-4">
+          <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_24px_-8px_rgba(15,23,42,0.5)] hover:bg-slate-800 hover:-translate-y-px transition-transform"
