@@ -153,12 +153,12 @@ function MetricCard({
   ].join(" ");
 
   const content = (
-    <Card className="relative h-full overflow-hidden rounded-xl border-0 p-5">
+    <Card className="relative h-full overflow-hidden rounded-xl border-0 p-3.5 sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">{label}</p>
         <span className={`shrink-0 ${iconColor}`}>{icon}</span>
       </div>
-      <p className="mt-3 text-[2.75rem] font-bold leading-none tracking-tight text-slate-950">{value}</p>
+      <p className="mt-2 text-2xl font-bold leading-none tracking-tight text-slate-950 sm:mt-3 sm:text-[2.75rem]">{value}</p>
       {hint ? <p className="mt-2 text-xs text-slate-500">{hint}</p> : null}
       <div className={`metric-card-accent absolute bottom-0 left-0 right-0 h-[3px] ${accentColor}`} />
     </Card>
@@ -607,7 +607,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </AlertBanner>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-12">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-12">
         <MetricCard
           label="Trabajadores"
           value={workersTotal}

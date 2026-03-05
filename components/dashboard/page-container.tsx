@@ -7,7 +7,7 @@ type DashboardPageContainerProps = {
 
 export function DashboardPageContainer({ children, className = "" }: DashboardPageContainerProps) {
   return (
-    <div className={`w-full px-4 py-6 lg:px-8 ${className}`}>
+    <div className={`w-full ${className}`}>
       {children}
     </div>
   );
