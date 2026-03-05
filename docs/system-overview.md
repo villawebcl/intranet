@@ -25,13 +25,14 @@ Permite:
 ## Alcance MVP actual (Fase 1)
 
 - Login con Supabase Auth
-- Roles: `admin`, `rrhh`, `contabilidad`, `visitante`
+- Roles: `admin`, `rrhh`, `contabilidad`, `trabajador`, `visitante`
 - Gestion de usuarios (crear, editar, resetear contrasena, eliminar con confirmacion)
 - Gestion de trabajadores (crear, editar, activar/desactivar; eliminacion solo admin con confirmacion)
 - 12 carpetas fijas por trabajador (enum)
 - Subida de PDF (solo PDF, max 5MB)
 - Flujo documental `pendiente -> aprobado/rechazado`
 - Descarga con URL firmada
+- Flujo de solicitud de descarga para `visitante` (`pendiente -> aprobado/rechazado`)
 - Notificaciones internas + email (Resend opcional por ENV)
 - Auditoria de acciones de auth/trabajadores/documentos
 
@@ -76,8 +77,19 @@ Permite:
 
 - `admin`: gestion de usuarios + trabajadores + documentos + auditoria + notificaciones
 - `rrhh`: gestion de trabajadores (sin eliminar) + documentos (sin panel de auditoria)
-- `contabilidad`: lectura documental (ver/descargar), sin crear/editar/subir/revisar
-- `visitante`: acceso al dashboard, sin acceso documental
+- `contabilidad`: lectura documental (ver/descargar) + subida acotada a `Liquidaciones`, sin revisar
+- `trabajador`: acceso solo a su propia documentacion (segun `profiles.worker_id`)
+- `visitante`: acceso al dashboard + visualizacion documental restringida (solo aprobados de trabajadores activos) + solicitud de descarga
+
+## Estado de cierre MVP
+
+- Estado: **MVP final operativo** para piloto comercial.
+- Release candidate publicado: `v0.1.0-rc1`.
+- Validaciones en verde:
+  - `lint`
+  - `typecheck`
+  - `test:unit`
+  - `e2e:smoke` (14/14)
 
 ## Fuentes legacy (mantener)
 

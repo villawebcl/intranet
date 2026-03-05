@@ -9,10 +9,11 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - Leer este archivo antes de iniciar cambios importantes para elegir trabajo vigente.
 - Actualizar este archivo despues de completar, crear o descartar tareas.
 
-## Estado del backlog (2026-02-23)
+## Estado del backlog (2026-03-05)
 
-- Prioridad actual: cerrar handoff del MVP (datos de entrega + acceptance final) usando checklists/documentacion operativa ya normalizada.
-- Estado tecnico/funcional consolidado en `docs/closeout-status-fase1.md` para separar implementacion vs pendientes operativos.
+- Prioridad actual: **modo mantenimiento comercial del MVP** (ajustes por cliente).
+- Estado tecnico/funcional: MVP final operativo, listo para piloto.
+- Referencia de cierre: `docs/MVP_FINAL.md`.
 
 ## Ahora (prioridad alta)
 
@@ -20,7 +21,7 @@ Centralizar tareas pendientes y backlog tecnico para no depender del contexto co
 - [x] Normalizar `docs/ACCEPTANCE_CHECKLIST.md` y `docs/delivery-checklist.md` con estado real post-PR `#3`. (2026-02-23)
 - [x] Separar pendientes de cierre por tipo (tecnico / operativo / externo-cliente) con estado y responsable sugerido. (2026-02-23)
 - [x] Dejar propuesta minima de cierre (checklist + proximos pasos) para handoff. (2026-02-23)
-- [ ] Completar datos reales de entrega (URL de produccion, responsable cliente, credenciales, fechas) y cerrar acceptance formal con cliente. (`staging` Vercel ya desplegado)
+- [ ] Completar datos reales de entrega comercial (URL final, responsable cliente, fechas y aceptacion formal).
 
 ## Proximas decisiones / definiciones (negocio + tecnica)
 

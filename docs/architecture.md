@@ -115,9 +115,10 @@ Beneficio: separa layouts/flujo sin afectar URLs finales.
 
 ## Riesgos/limites actuales de arquitectura
 
-- Sin suite de tests automatizados aun (dependencia alta en QA manual).
-- Mensajeria por `redirect` + query params es simple pero limitada para UX compleja.
-- Politica documental MVP ya definida y registrada en `docs/decisions.md`: maximo `5MB` para PDF y bloqueo de carga para trabajador `inactivo` (lectura/descarga segun rol).
+- La suite automatizada cubre calidad base (`lint`, `typecheck`, unit y smoke E2E), pero aun no es regresion completa end-to-end.
+- Mensajeria por `redirect` + query params es simple y estable para MVP, pero limitada para UX compleja de largo plazo.
+- El dashboard y vistas principales ya estan operativas; quedan oportunidades de seguir descomponiendo paginas grandes en modulos mas chicos para mantenibilidad.
+- Politica documental MVP definida y aplicada: maximo `5MB` para PDF y bloqueo de carga para trabajador `inactivo` (lectura/descarga segun rol).
 
 ## Referencias clave
 

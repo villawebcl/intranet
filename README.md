@@ -2,6 +2,8 @@
 
 Plantilla reusable de intranet documental (white-label) para adaptarla por cliente.
 
+Estado actual: **MVP final operativo** (piloto comercial listo).
+
 Incluye:
 
 - login + logout
@@ -222,3 +224,4 @@ Opcional (emails):
 - `docs/RELEASE.md`
 - `docs/tasks.md`
 - `docs/OBSERVABILITY.md`
+- `docs/MVP_FINAL.md`

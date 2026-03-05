@@ -38,6 +38,23 @@ Registrar progreso por fecha para retomar trabajo rapidamente y saber que falta.
   - `npm run typecheck`
   - `npm run test:unit`
 
+## Estado actual (2026-03-05)
+
+- Se cierra MVP final para piloto comercial.
+- Se completa hardening final:
+  - RLS visitante restringido a documentos aprobados de trabajadores activos.
+  - Rate limiting de login distribuido via RPC en Postgres.
+  - CSP ajustada para produccion (`unsafe-eval` solo en desarrollo).
+  - Request ID transversal + logging estructurado base.
+  - Indices trigram para busquedas `ilike`.
+- Se ajusta smoke E2E a reglas finales de permisos y se elimina warning por host inconsistente.
+- Validacion final de calidad en verde:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run test:unit`
+  - `npm run e2e:smoke` (**14/14**)
+- Se publica release candidate `v0.1.0-rc1`.
+
 ## Progreso diario
 
 ### 2026-03-02

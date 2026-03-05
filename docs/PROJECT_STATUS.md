@@ -22,34 +22,29 @@ Intranet web single-tenant para gestion documental de trabajadores, con control 
 - Deploy: Vercel.
 
 ## 4) Estado actual de calidad
-Fecha de corte: **27 de febrero de 2026**.
+Fecha de corte: **5 de marzo de 2026**.
 
 - `npm run lint`: **OK**.
 - `npm run typecheck`: **OK**.
 - `npm run test:unit`: **OK** (28 pruebas aprobadas).
 - `npm run build:ci`: **OK** (build de produccion completado).
-- `npm run e2e:smoke`: **NO ejecutable en este entorno local** por restriccion de puertos (`EPERM 0.0.0.0:3000` al iniciar `next dev` desde Playwright webServer).
-  - Ultima evidencia funcional reportada en entorno de desarrollo del equipo: **14/14 smoke tests aprobados** (27 de febrero de 2026).
+- `npm run e2e:smoke`: **OK** (14/14 pruebas aprobadas en entorno de desarrollo).
+- Release candidate publicado: **`v0.1.0-rc1`**.
 
 ## 5) Riesgos / pendientes reales (max 10)
-1. E2E smoke no se puede revalidar en este entorno de ejecucion por restriccion de red local (puerto 3000).
-2. La cobertura E2E es smoke (14 casos base), no regression amplia de UX completa.
-3. El nuevo flujo UX de descarga aprobada con reintento tiene cobertura unitaria de mensajes, pero no E2E dedicado de punta a punta.
-4. Existen scripts de provision/reset para test que aun escriben perfiles para fixtures; no afectan runtime, pero deben tratarse como tooling privilegiado.
-5. Notificaciones por correo dependen de configuracion ENV (`RESEND_*`) y su estado operativo final debe validarse en entorno destino.
-6. Faltan pruebas de carga/concurrencia bajo volumen real de usuarios.
-7. El sistema es single-tenant; no hay aislamiento multi-tenant a nivel modelo de datos.
-8. Falta consolidar evidencia manual final de acceptance en un solo cierre operativo (capturas/acta).
+1. La cobertura E2E actual es smoke (14 casos base), no regression completa de todo el producto.
+2. Notificaciones por correo dependen de configuracion ENV (`RESEND_*`) y validacion operativa en entorno destino.
+3. Faltan pruebas de carga/concurrencia bajo volumen real de usuarios.
+4. El sistema es single-tenant; no hay aislamiento multi-tenant a nivel modelo de datos.
+5. Queda trabajo opcional de simplificacion modular en algunas pantallas grandes para mantenimiento a largo plazo.
 
 ## 6) Roadmap breve
 
-### Fase 1: Estabilizacion (corto plazo)
-- Cerrar validacion e2e smoke en entorno con red habilitada (sin restriccion de puerto).
-- Ejecutar checklist manual por rol y consolidar evidencia final.
-- Verificar operacion de notificaciones email en entorno objetivo.
-- Cerrar pendientes operativos de entrega (runbook/acceptance).
+### Fase 1: Estado actual
+- MVP final operativo listo para piloto comercial.
+- Calidad tecnica base en verde (`rc`).
 
-### Fase 2: Productizacion (siguiente etapa)
+### Fase 2: Productizacion (siguiente etapa sugerida)
 - Ampliar cobertura automatizada (e2e funcional completo por rol y flujos criticos).
 - Endurecer observabilidad operativa (metrica/alertas de fallos en acciones criticas).
 - Preparar lineamientos de escalado y eventualmente estrategia multi-tenant.
