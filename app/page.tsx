@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { MissingEnvScreen } from "@/components/setup/missing-env-screen";
+import { getClientEnvResult, getMissingClientEnvKeys } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 export default async function Home() {
+  const clientEnv = getClientEnvResult();
+
+  if (!clientEnv.success) {
+    return <MissingEnvScreen missingKeys={getMissingClientEnvKeys()} />;
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

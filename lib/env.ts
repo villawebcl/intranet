@@ -23,15 +23,29 @@ const serverEnvSchema = z.object({
   NOTIFICATIONS_FROM_EMAIL: z.preprocess(emptyStringToUndefined, z.string().email().optional()),
 });
 
-// cache() memoizes the result per-request in the React render tree,
-// avoiding repeated Zod parsing when multiple Server Components call this.
-export const getClientEnv = cache(() =>
-  clientEnvSchema.parse({
+function readClientEnvInput() {
+  return {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     APP_URL: process.env.APP_URL,
     INACTIVITY_TIMEOUT_MINUTES: process.env.INACTIVITY_TIMEOUT_MINUTES,
-  }),
+  };
+}
+
+// cache() memoizes the result per-request in the React render tree,
+// avoiding repeated Zod parsing when multiple Server Components call this.
+export const getClientEnv = cache(() => clientEnvSchema.parse(readClientEnvInput()));
+
+export const getClientEnvResult = cache(() => clientEnvSchema.safeParse(readClientEnvInput()));
+
+export const getMissingClientEnvKeys = cache(() =>
+  Array.from(
+    new Set(
+      getClientEnvResult()
+        .error?.issues.map((issue) => issue.path[0])
+        .filter((key): key is string => typeof key === "string"),
+    ),
+  ),
 );
 
 export function getServerEnv() {
