@@ -2,13 +2,20 @@ import { redirect } from "next/navigation";
 
 import { IdleSessionWatcher } from "@/components/auth/idle-session-watcher";
 import { AppShell } from "@/components/layout/AppShell";
+import { MissingEnvScreen } from "@/components/setup/missing-env-screen";
 import { canManageUsers, canManageWorkers, canViewAudit, isWorkerScopedRole } from "@/lib/auth/roles";
-import { getClientEnv } from "@/lib/env";
+import { getClientEnv, getClientEnvResult, getMissingClientEnvKeys } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 import { signOutAction } from "./actions";
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const clientEnv = getClientEnvResult();
+
+  if (!clientEnv.success) {
+    return <MissingEnvScreen missingKeys={getMissingClientEnvKeys()} />;
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

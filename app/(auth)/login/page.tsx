@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { loginWithPasswordAction } from "@/app/(auth)/actions";
 import { LoginForm } from "@/components/auth/login-form";
+import { MissingEnvScreen } from "@/components/setup/missing-env-screen";
+import { getClientEnvResult, getMissingClientEnvKeys } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server-client";
 
 type LoginPageProps = {
@@ -31,6 +33,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       : errorCode === "rate_limited"
         ? "Demasiados intentos. Por favor espera unos minutos antes de intentar nuevamente."
         : null;
+  const clientEnv = getClientEnvResult();
+
+  if (!clientEnv.success) {
+    return <MissingEnvScreen missingKeys={getMissingClientEnvKeys()} />;
+  }
 
   const supabase = await createSupabaseServerClient();
   const {
